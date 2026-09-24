@@ -1,0 +1,78 @@
+{
+  "meta": {
+    "description": "Track your grocery prices against Bulgarian retail chains."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "competitors": "Competitors",
+    "language": "Language"
+  },
+  "dashboard": {
+    "title": "Price overview",
+    "intro": "How your catalog compares with competitor prices collected daily."
+  },
+  "status": {
+    "competitive": "Competitive",
+    "opportunity": "Opportunity",
+    "at-risk": "At risk",
+    "unmatched": "Unmatched"
+  },
+  "home": {
+    "eyebrow": "Daily price intelligence for Bulgarian grocers",
+    "title": "Know where every price stands, every morning.",
+    "lead": "PriceAI collects prices from {count} Bulgarian chains each night, matches them to your catalog and tells you which products to reprice.",
+    "cta": "Open dashboard",
+    "ctaSecondary": "How it works",
+    "preview": {
+      "label": "Example price comparison",
+      "product": "Fresh milk 3% 1 L",
+      "yours": "Your price",
+      "note": "Example data. 2 of 3 competitors are cheaper."
+    },
+    "how": {
+      "title": "How it works",
+      "steps": [
+        {
+          "title": "Collect",
+          "text": "Every night we read the official price feeds that large chains must publish by law."
+        },
+        {
+          "title": "Match",
+          "text": "A keyword search shortlists candidate listings, then Gemini confirms which one is the same product."
+        },
+        {
+          "title": "Label",
+          "text": "Each product gets a status so you see at a glance where to act."
+        }
+      ]
+    },
+    "statusTitle": "Four statuses, one glance",
+    "status": {
+      "competitive": {
+        "name": "Competitive",
+        "text": "Your price is in line with the market."
+      },
+      "opportunity": {
+        "name": "Opportunity",
+        "text": "You are cheaper than competitors and have room to raise the price."
+      },
+      "at-risk": {
+        "name": "At risk",
+        "text": "Competitors sell the same product for less."
+      },
+      "unmatched": {
+        "name": "Unmatched",
+        "text": "No competitor listing matched this product yet."
+      }
+    },
+    "chains": {
+      "title": "Chains we track",
+      "text": "Prices come from each chain’s own feed or the KZP open-data archive, refreshed daily. All prices are in euro."
+    },
+    "final": {
+      "title": "See your catalog against the market",
+      "text": "Start with the dashboard and filter by the products that need attention."
+    }
+  }
+}
