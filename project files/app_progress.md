@@ -48,3 +48,12 @@
 - CBA is out of scope: its EIK (`202420609`) is no longer in the KZP ZIP and it has no other feed.
 - Deleted `project files/scrapers/cba.js` and removed CBA from `scrapers/index.js`, `COMPETITORS` in `src/lib/config.js`, `markets_information.md`, `scrapers/README.md` and `CLAUDE.md` (it's now listed as out of scope).
 - Open: a `competitors` row for `cba` must not be seeded when the migrations are built.
+
+## 2026-09-24: Git repo
+
+- Initialised git, added a `README.md` and pushed the first commit to `https://github.com/itsachev/price_ai` (`main`).
+- Open: an empty stray `app_progress.md` in the project root is untracked; delete it (the real log is `project files/app_progress.md`).
+
+## 2026-09-24: AI performance rule
+
+- `CLAUDE.md`: added a rule that AI features must never slow down the site or navigation. AI runs in scripts, the daily job or a background task and stores its results in Supabase; pages only read them. No AI calls during render, in the proxy, in layouts, on route changes or from the browser.
