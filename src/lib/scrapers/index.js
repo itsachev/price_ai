@@ -8,27 +8,32 @@
  */
 import { loadZip, readChainCsvs, aggregateRows } from './kzp.js';
 
-// Chain -> company EIKs in the ZIP. Fantastico files under two companies (one
-// is a franchise); both share the chain's product codes.
-const KZP_EIKS = {
-  kaufland: ['131129282'],
-  lidl: ['131071587'],
-  billa: ['130007884'],
-  fantastico: ['206255903', '831556063'],
-  tmarket: ['131324923'],
-  metro: ['121644736'],
-  hitmax: ['131016929'],
-  bulmag: ['127585839'],
-  kammarket: ['202923636'],
-  berezka: ['201029124'],
+// Chain -> company EIKs in the ZIP, plus a first-run floor on product codes.
+// Fantastico files under two companies (one is a franchise); both share the
+// chain's codes. `minCodes` (roughly a third of a normal day in Sept 2026) is
+// used only while a chain has no recent history, e.g. its first run or after a
+// gap of over a week; after that the baseline comes from the chain's own data,
+// so a chain that legitimately shrinks isn't rejected forever. (BILLA's
+// 2026-09-24 file held one pharmacy's 53 codes instead of ~1,486.)
+const KZP_CHAINS = {
+  kaufland: { eiks: ['131129282'], minCodes: 800 },
+  lidl: { eiks: ['131071587'], minCodes: 250 },
+  billa: { eiks: ['130007884'], minCodes: 500 },
+  fantastico: { eiks: ['206255903', '831556063'], minCodes: 750 },
+  tmarket: { eiks: ['131324923'], minCodes: 250 },
+  metro: { eiks: ['121644736'], minCodes: 600 },
+  hitmax: { eiks: ['131016929'], minCodes: 1000 },
+  bulmag: { eiks: ['127585839'], minCodes: 500 },
+  kammarket: { eiks: ['202923636'], minCodes: 80 },
+  berezka: { eiks: ['201029124'], minCodes: 8 },
 };
 
-export const scrapers = Object.entries(KZP_EIKS).map(([competitorKey, eiks]) => ({
+export const scrapers = Object.entries(KZP_CHAINS).map(([competitorKey, { eiks, minCodes }]) => ({
   competitorKey,
   async scrape(supabase) {
     const { date, zip } = await loadZip();
     const rows = aggregateRows(await readChainCsvs(zip, eiks));
-    return upsertListings(supabase, competitorKey, rows, date);
+    return upsertListings(supabase, competitorKey, rows, date, minCodes);
   },
 }));
 
@@ -36,7 +41,8 @@ const BATCH_SIZE = 500;
 
 /**
  * A feed with under half the codes seen in the last week is a truncated
- * download or a wrong file; skip it rather than record a broken day.
+ * download or a wrong file; skip it rather than record a broken day. With no
+ * recent history, the scraper's static `minCodes` floor stands in.
  */
 const MIN_COVERAGE = 0.5;
 
@@ -46,7 +52,7 @@ const MIN_COVERAGE = 0.5;
  * so rerunning a day is harmless. Nothing is deleted: a delisted product just
  * stops getting new history, and its `captured_at` shows when it was last seen.
  */
-export async function upsertListings(supabase, competitorKey, rows, dataDate) {
+export async function upsertListings(supabase, competitorKey, rows, dataDate, minCodes = 1) {
   if (rows.length === 0) throw new Error('Feed had no usable rows');
 
   const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
@@ -56,8 +62,9 @@ export async function upsertListings(supabase, competitorKey, rows, dataDate) {
     .eq('competitor_key', competitorKey)
     .gte('captured_at', weekAgo);
   if (countError) throw countError;
-  if (recent && rows.length < recent * MIN_COVERAGE) {
-    throw new Error(`Only ${rows.length} codes vs ${recent} last week; feed looks truncated or wrong`);
+  const expected = recent ? Math.ceil(recent * MIN_COVERAGE) : minCodes;
+  if (rows.length < expected) {
+    throw new Error(`Only ${rows.length} codes (expected at least ${expected}); feed looks truncated or wrong`);
   }
 
   const capturedAt = new Date().toISOString();

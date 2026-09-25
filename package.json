@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "scrape": "node --env-file=.env.local scripts/scrape.mjs",
-    "check": "node scripts/check-kzp.mjs"
+    "check": "node scripts/check-kzp.mjs && node scripts/check-match.mjs",
+    "match": "node --env-file=.env.local scripts/match.mjs",
+    "seed-demo": "node --env-file=.env.local scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
