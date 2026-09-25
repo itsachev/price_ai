@@ -1,0 +1,33 @@
+/* Status badges */
+.status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  --c: var(--status-unmatched);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 0.75em;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+}
+
+.badge::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge[data-status='competitive'] { --c: var(--status-competitive); }
+.badge[data-status='opportunity'] { --c: var(--status-opportunity); }
+.badge[data-status='at-risk'] { --c: var(--status-at-risk); }

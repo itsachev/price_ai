@@ -1,9 +1,8 @@
 import { PRICE_STATUSES } from '@/lib/config';
-import { getDictionary } from '../dictionaries';
+import { getDictionary, getLocale } from '../dictionaries';
 
-export default async function DashboardPage({ params }) {
-  const { lang } = await params;
-  const dict = await getDictionary(lang);
+export default async function DashboardPage() {
+  const dict = await getDictionary(await getLocale());
 
   return (
     <section className="stack">

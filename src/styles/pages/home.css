@@ -1,0 +1,67 @@
+/* Hero */
+.hero {
+  display: grid;
+  gap: var(--space-3);
+  align-items: center;
+  padding-block: var(--space-2) 0;
+}
+
+@media (min-width: 60rem) {
+  .hero {
+    grid-template-columns: 1.15fr 1fr;
+    min-height: min(70dvh, 40rem);
+  }
+}
+
+/* Steps & statuses */
+.steps,
+.statuses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.steps li,
+.statuses li {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.statuses .badge {
+  justify-self: start;
+}
+
+.steps__num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+/* Chains */
+.chains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+
+.chains li {
+  padding: 0.5em 1em;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+/* Closing CTA */
+.cta {
+  margin-block: var(--space-4) var(--space-2);
+  padding: var(--space-3);
+  justify-items: start;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}

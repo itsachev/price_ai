@@ -2,13 +2,13 @@ import Link from 'next/link';
 import Reveal from '@/components/Reveal';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPrice } from '@/lib/format';
-import { getDictionary } from './dictionaries';
+import { getDictionary, getLocale } from './dictionaries';
 
 // Illustrative numbers for the hero preview card, not real data.
 const PREVIEW = { yours: 1.39, rivals: [['kaufland', 1.19], ['lidl', 1.25], ['billa', 1.45]] };
 
-export default async function HomePage({ params }) {
-  const { lang } = await params;
+export default async function HomePage() {
+  const lang = await getLocale();
   const { home } = await getDictionary(lang);
   const max = Math.max(PREVIEW.yours, ...PREVIEW.rivals.map(([, p]) => p));
 
@@ -20,7 +20,7 @@ export default async function HomePage({ params }) {
           <h1>{home.title}</h1>
           <p className="lead">{home.lead.replace('{count}', Object.keys(COMPETITORS).length)}</p>
           <div className="actions">
-            <Link href={`/${lang}/dashboard`} className="button button--primary">
+            <Link href="/dashboard" className="button button--primary">
               {home.cta}
             </Link>
             <a href="#how" className="button">
@@ -91,7 +91,7 @@ export default async function HomePage({ params }) {
         <h2>{home.final.title}</h2>
         <p className="muted">{home.final.text}</p>
         <div className="actions">
-          <Link href={`/${lang}/dashboard`} className="button button--primary">
+          <Link href="/dashboard" className="button button--primary">
             {home.cta}
           </Link>
         </div>

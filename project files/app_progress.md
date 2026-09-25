@@ -57,3 +57,33 @@
 ## 2026-09-24: AI performance rule
 
 - `CLAUDE.md`: added a rule that AI features must never slow down the site or navigation. AI runs in scripts, the daily job or a background task and stores its results in Supabase; pages only read them. No AI calls during render, in the proxy, in layouts, on route changes or from the browser.
+
+## 2026-09-25: Typography from the Mooni template
+
+- Took the type system from `mooni-webflow-template.webflow.io`: Parkinsans 500 for headings with -0.02em tracking, and Inter 16px/1.5 with -0.011em tracking for body text.
+- `src/app/[lang]/layout.js`: load Parkinsans (weight 500, Latin) through `next/font` as `--font-parkinsans`.
+- `src/app/globals.css`: new tokens `--font-heading`, `--text-h3`, `--weight-heading` and `--tracking-heading`. Fluid h1 goes from 40 to 72px, h2 from 36 to 56px and h3 from 20 to 28px, all with Mooni's line-heights. Lead text is 18px, buttons are weight 500 and the brand mark uses the heading font.
+- Open: Parkinsans has no Cyrillic, so `/bg` headings render in Inter. If that mix looks wrong, pick a heading font with Cyrillic support.
+
+## 2026-09-25: Standing rule for modern, fluid CSS
+
+- `CLAUDE.md`: the styling rules now require modern native CSS, with every screen covered and fluid type and layout. That means `clamp()` tokens, intrinsic grids, container queries for components, logical properties, nesting, `:has()`, `color-mix()`, `text-wrap` and no horizontal scroll.
+- `src/app/globals.css`: body text (16 to 17px) and lead text (18 to 20px) now scale with the screen. New fluid tokens `--text-sm` and `--text-xs` replace all hardcoded `font-size` values. Long headings now wrap and hyphenate so Bulgarian words don't overflow on 320px screens, and paragraphs use `text-wrap: pretty`.
+
+## 2026-09-25: Parkinsans fallback warning
+
+- The build prints "Failed to find font override values for font `Parkinsans`" because `next/font` has no size data for it. Turbopack (inside the SWC binary) prints this even with `adjustFontFallback: false`, so no code was changed. The warning does no harm: headings fall back to Inter through `--font-heading`, which can cause a small layout shift while Parkinsans loads.
+
+## 2026-09-25: CSS moved to `src/styles/`
+
+- Split `src/app/globals.css` into `src/styles/`: `base/tokens.css`, `base/reset.css`, `typography/typography.css`, `layout/layout.css`, `components/{header,badge,button,card,preview}.css` and `pages/home.css`. `main.css` `@import`s them in cascade order.
+- `src/app/[lang]/layout.js` now imports `@/styles/main.css`, and `globals.css` is deleted. Every rule was carried over unchanged (checked with a line-by-line diff).
+- `CLAUDE.md`: the styling rule points to the new structure.
+
+## 2026-09-25: Locale moved from the URL into a cookie
+
+- Removed the `[lang]` route segment so URLs are now `/` and `/dashboard`. The locale comes from a `lang` cookie through `getLocale()` in `src/app/dictionaries.js`, with `Accept-Language` and then `bg` as fallbacks.
+- The language switcher is now a `<form>` that posts to the `setLocale` server action in the new `src/app/actions/locale.js`. Setting the cookie re-renders the page in place, so switching language no longer reloads the page.
+- Deleted `src/proxy.js`, which is no longer needed. Header links now use `next/link`; they were bare `<a>` tags that did full page loads.
+- Files: `src/app/{layout,page,dictionaries}.js`, `src/app/dashboard/page.js` and `src/app/dictionaries/*` (all moved out of `[lang]/`), `src/styles/components/header.css` (switcher buttons), `src/styles/main.css` (comment) and `CLAUDE.md` (i18n section).
+- Open: every route is now dynamic because it reads cookies, so nothing is statically generated. That's fine for a dashboard. Old `/bg` and `/en` URLs now return 404.
