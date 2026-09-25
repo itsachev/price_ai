@@ -12,8 +12,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  flex-wrap: wrap; /* controls drop to a second row on the narrowest phones */
+  column-gap: var(--space-2);
   min-height: 3.5rem;
+}
+
+/* Account links: pushes the switches to the end of the row. */
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
 }
 
 .brand {
@@ -59,14 +67,15 @@
   display: grid;
   place-items: center;
   min-height: 2.75rem;
-  margin-inline-start: auto;
   padding-inline: var(--space-1);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
 }
 
-/* Theme switch: shows only the button that leads away from the active theme. */
+/* Icon buttons: sign out and the theme switch. The theme switch shows only
+   the button that leads away from the active theme. */
+.site-header__icon,
 .theme-switch button {
   display: grid;
   place-items: center;
@@ -91,7 +100,9 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
+}
 
+.theme-switch button {
   &[value='light'] {
     display: none;
   }

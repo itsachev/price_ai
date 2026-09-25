@@ -18,8 +18,8 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             }
           } catch {
-            // Server Components can't set cookies. Session refresh will live in
-            // src/proxy.js once auth is built.
+            // Server Components can't set cookies; src/proxy.js refreshes the
+            // session before the page renders.
           }
         },
       },

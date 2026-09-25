@@ -8,7 +8,7 @@ After every piece of work that changes the project, append an entry to `app_prog
 
 @AGENTS.md
 
-**Next.js 16:** middleware is now called `proxy.js` (there is none yet). Check the docs in `node_modules/next/dist/docs/` before relying on older Next.js patterns.
+**Next.js 16:** middleware is now called `proxy.js` (`src/proxy.js`). Check the docs in `node_modules/next/dist/docs/` before relying on older Next.js patterns.
 
 ## Commands
 
@@ -31,7 +31,7 @@ The frontend is set up with Next.js 16, the App Router and a `src/` directory. T
   - **Layout:** mobile-first, with intrinsic grids (`repeat(auto-fit, minmax(min(100%, X), 1fr))`) and flex-wrap. Use container queries (`container-type`, `@container`) when a component adapts to its own width, and media queries only for page-level changes. Nothing may scroll horizontally.
   - **Modern features to prefer:** logical properties (`padding-inline`, `margin-block`), `dvh`, CSS nesting, `:has()`, `color-mix()`, `text-wrap: balance` for headings and `pretty` for paragraphs, and `min()`/`max()`.
 - **AI must never slow down the site or navigation.** This covers every AI feature (Gemini matching, suggestions, summaries and anything added later). Run AI work outside the request path: in `scripts/*.mjs`, the daily job or a background task. Store the results in Supabase, and have pages only read those stored results. Never call an AI API during render, in a proxy, in a layout or on a route change, and never call one from the browser. If a user action has to trigger AI work, start it without blocking and show the result when it's ready (a server action that queues or streams, with a `Suspense` boundary). Navigation and first paint must never wait on it. Don't add AI SDKs to the client bundle.
-- **Supabase:** the schema is in `supabase/migrations/` (apply with `npx supabase db push`). Use `createClient()` from `src/lib/supabase/server.js` in server code (RLS applies), `src/lib/supabase/client.js` in Client Components and `createAdminClient()` from `src/lib/supabase/admin.js` only in `scripts/`. Competitor price history has no cascade, so never delete listings. **Not built yet:** auth and `src/proxy.js` session refresh.
+- **Supabase:** the schema is in `supabase/migrations/` (apply with `npx supabase db push`). Use `createClient()` from `src/lib/supabase/server.js` in server code (RLS applies), `src/lib/supabase/client.js` in Client Components and `createAdminClient()` from `src/lib/supabase/admin.js` only in `scripts/`. Competitor price history has no cascade, so never delete listings. **Auth:** Supabase email and password. `/login` holds one form with sign-in and sign-up buttons (`authenticate` in `src/app/actions/auth.js`, via `useActionState`). The sign-up confirmation link lands on `/auth/callback` (PKCE code exchange). `src/proxy.js` refreshes the session and redirects, but only for the routes in its `matcher` (`/dashboard/:path*`, `/login`), so marketing pages never pay for an auth check. Add every new signed-in route to that matcher, and still call `getClaims()` in the page and `redirect('/login')` without claims, because the proxy check is only optimistic.
 
 `project files/` is git-ignored and local only. It holds the product brief (`app_info.md`), the competitors in scope (`markets_information.md`), the data research (`data_sources_research.md`), and the old scrapers from `d:\work\scrapers`, which `src/lib/scrapers/` replaces. Still to build: `src/app/actions/products.js` and `.github/workflows/scrape.yml`.
 

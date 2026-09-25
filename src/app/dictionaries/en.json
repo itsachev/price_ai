@@ -9,7 +9,8 @@
     "language": "Language",
     "theme": "Theme",
     "themeLight": "Switch to light theme",
-    "themeDark": "Switch to dark theme"
+    "themeDark": "Switch to dark theme",
+    "main": "Main"
   },
   "dashboard": {
     "title": "Price overview",
@@ -205,5 +206,28 @@
     "dataText": "Daily price feeds that large chains must publish under Bulgarian price-transparency law, plus the KZP open data.",
     "currency": "All prices in EUR",
     "rights": "All rights reserved."
+  },
+  "auth": {
+    "title": "Sign in",
+    "intro": "Sign in to see how your catalog compares with the market, or create an account to start.",
+    "email": "Email",
+    "password": "Password (at least 8 characters)",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "signOut": "Sign out",
+    "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
+    "errors": {
+      "missing": "Enter your email and password.",
+      "invalid_credentials": "Wrong email or password.",
+      "email_not_confirmed": "Confirm your email first. The link is in your inbox.",
+      "user_already_exists": "An account with this email already exists. Sign in instead.",
+      "weak_password": "Choose a stronger password.",
+      "email_address_invalid": "Enter a valid email address.",
+      "over_email_send_rate_limit": "Too many emails sent. Try again in a few minutes.",
+      "over_request_rate_limit": "Too many attempts. Try again in a few minutes.",
+      "link": "That link is invalid or has expired. Sign in or create the account again.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "signedInAs": "Signed in as"
   }
 }

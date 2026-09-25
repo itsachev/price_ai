@@ -5,6 +5,7 @@ import { COMPETITORS, LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
 import { setTheme } from './actions/theme';
+import { signOut } from './actions/auth';
 import { cookies } from 'next/headers';
 import '@/styles/main.css';
 
@@ -20,7 +21,11 @@ export async function generateMetadata() {
 export default async function RootLayout({ children }) {
   const lang = await getLocale();
   const dict = await getDictionary(lang);
-  const theme = (await cookies()).get('theme')?.value;
+  const cookieStore = await cookies();
+  const theme = cookieStore.get('theme')?.value;
+  // Nav hint only: the session cookie exists (chunks end in .0, .1). No network
+  // call, so every page stays fast; the proxy and pages do the real check.
+  const signedIn = cookieStore.getAll().some((c) => /^sb-.+-auth-token(\.\d+)?$/.test(c.name));
 
   return (
     <html lang={lang} data-theme={theme} className={`${unbounded.variable} ${jetbrainsMono.variable}`}>
@@ -38,9 +43,24 @@ export default async function RootLayout({ children }) {
               <Link href="/" className="brand">
                 Price<span>AI</span>
               </Link>
-              <Link href="/dashboard" className="site-header__link">
-                {dict.nav.dashboard}
-              </Link>
+              <nav className="site-header__nav" aria-label={dict.nav.main}>
+                {signedIn ? (
+                  <>
+                    <Link href="/dashboard" className="site-header__link">
+                      {dict.nav.dashboard}
+                    </Link>
+                    <form action={signOut}>
+                      <button className="site-header__icon" aria-label={dict.auth.signOut} title={dict.auth.signOut}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <Link href="/login" className="site-header__link">
+                    {dict.auth.signIn}
+                  </Link>
+                )}
+              </nav>
               <form action={setLocale} className="lang-switch" aria-label={dict.nav.language}>
                 {LOCALES.map((l) => (
                   <button key={l} name="lang" value={l} aria-pressed={l === lang} lang={l}>
