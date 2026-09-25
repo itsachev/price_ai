@@ -19,8 +19,8 @@
     "unmatched": "Unmatched"
   },
   "home": {
-    "eyebrow": "Daily price intelligence for Bulgarian grocers",
-    "title": "Know where every price stands, every morning.",
+    "eyebrow": "Fresh competitor prices by 07:00 every day",
+    "title": "Know where every price stands,",
     "lead": "PriceAI collects prices from {count} Bulgarian chains each night, matches them to your catalog and tells you which products to reprice.",
     "cta": "Open dashboard",
     "ctaSecondary": "How it works",
@@ -28,7 +28,10 @@
       "label": "Example price comparison",
       "product": "Fresh milk 3% 1 L",
       "yours": "Your price",
-      "note": "Example data. 2 of 3 competitors are cheaper."
+      "note": "Example data. 2 of 3 competitors are cheaper.",
+      "updated": "Today, 06:42",
+      "kpiRisk": "products at risk today",
+      "kpiRoom": "average room to raise"
     },
     "how": {
       "title": "How it works",
@@ -45,7 +48,13 @@
           "title": "Label",
           "text": "Each product gets a status so you see at a glance where to act."
         }
-      ]
+      ],
+      "eyebrow": "From raw feeds to decisions",
+      "match": {
+        "yours": "Your catalog: Fresh milk Vereya 3% 1 L",
+        "theirs": "BILLA: Milk fresh VEREYA 3% 1L",
+        "confirmed": "Same product"
+      }
     },
     "statusTitle": "Four statuses, one glance",
     "status": {
@@ -73,6 +82,13 @@
     "final": {
       "title": "See your catalog against the market",
       "text": "Start with the dashboard and filter by the products that need attention."
+    },
+    "titleAccent": "every morning.",
+    "stats": {
+      "chains": "Chains tracked",
+      "fresh": "Fresh data every morning",
+      "statuses": "Clear price statuses",
+      "currency": "Every price in euro"
     }
   }
 }

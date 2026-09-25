@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { ReactLenis } from 'lenis/react';
+import { useEffect } from 'react';
+import { ReactLenis, useLenis } from 'lenis/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import 'lenis/dist/lenis.css';
@@ -9,29 +9,27 @@ import 'lenis/dist/lenis.css';
 gsap.registerPlugin(ScrollTrigger);
 
 // Lenis driven by GSAP's ticker so ScrollTrigger and smooth scroll share one clock.
+// Respect reduced motion: native wheel scrolling, no easing. Lenis is only built
+// on the client, so the server value never matters.
+const smoothWheel = typeof window !== 'undefined' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export default function SmoothScroll({ children }) {
-  const lenisRef = useRef(null);
+  // ReactLenis creates its instance in an effect, so wait for it here (root store)
+  // instead of reading a ref once — otherwise raf never runs and scrolling freezes.
+  const lenis = useLenis(ScrollTrigger.update);
 
   useEffect(() => {
-    const lenis = lenisRef.current?.lenis;
     if (!lenis) return;
 
-    // Respect reduced motion: native wheel scrolling, no easing.
-    lenis.options.smoothWheel = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    lenis.on('scroll', ScrollTrigger.update);
     const update = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
 
-    return () => {
-      lenis.off('scroll', ScrollTrigger.update);
-      gsap.ticker.remove(update);
-    };
-  }, []);
+    return () => gsap.ticker.remove(update);
+  }, [lenis]);
 
   return (
-    <ReactLenis root ref={lenisRef} options={{ autoRaf: false, lerp: 0.12, anchors: { offset: -64 } }}>
+    <ReactLenis root options={{ autoRaf: false, smoothWheel, lerp: 0.12, anchors: { offset: -64 } }}>
       {children}
     </ReactLenis>
   );

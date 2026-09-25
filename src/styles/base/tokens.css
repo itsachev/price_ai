@@ -1,14 +1,21 @@
-/* Design tokens — light by default, dark via OS preference. */
+/* Design tokens — light by default, dark via OS preference.
+   Palette: "ledger" green ink on warm paper, lime price-tag signal. */
 :root {
   color-scheme: light dark;
 
-  --bg: #f7f7f5;
+  --bg: #f5f4ef;
   --surface: #ffffff;
-  --text: #1a1c1e;
-  --muted: #5f6368;
-  --border: #e3e3df;
-  --accent: #1f6f5c;
+  --text: #0f1a17;
+  --muted: #58625e;
+  --border: #e3e2da;
+  --accent: #0f5c4a;
   --on-accent: #ffffff;
+  --signal: #d9f45b;
+  --on-signal: #0f1a17;
+  --band: #0f1f1a;
+  --on-band: #eef3ef;
+  --marker: color-mix(in srgb, var(--signal) 70%, transparent);
+  --shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--text) 30%, transparent);
 
   --status-competitive: #1e7d4f;
   --status-opportunity: #2463b8;
@@ -16,7 +23,8 @@
   --status-unmatched: #6b6f76;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-heading: var(--font-parkinsans), var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-onest), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius: 0.625rem;
   --gutter: clamp(1rem, 4vw, 2rem);
   --space-1: 0.5rem;
@@ -29,22 +37,26 @@
   --text-sm: clamp(0.8125rem, 0.78rem + 0.12vw, 0.875rem);
   --text-base: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
   --text-h1: clamp(2.5rem, 1.59rem + 3.88vw, 4.5rem);
-  --text-h2: clamp(2.25rem, 1.68rem + 2.42vw, 3.5rem);
+  --text-h2: clamp(2rem, 1.54rem + 1.94vw, 3rem);
   --text-h3: clamp(1.25rem, 1.02rem + 0.97vw, 1.75rem);
   --text-lead: clamp(1.125rem, 1.07rem + 0.24vw, 1.25rem);
-  --weight-heading: 500;
-  --tracking-heading: -0.02em;
+  --text-stat: clamp(2.25rem, 1.8rem + 1.9vw, 3.25rem);
+  --weight-heading: 600;
+  --tracking-heading: -0.035em;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121416;
-    --surface: #1b1e21;
-    --text: #e9eaeb;
-    --muted: #a3a8ae;
-    --border: #2c3035;
-    --accent: #4fc3a1;
-    --on-accent: #0d1f1a;
+    --bg: #0b1110;
+    --surface: #131b19;
+    --text: #e8eeea;
+    --muted: #9aa6a1;
+    --border: #25302c;
+    --accent: #5fd3ae;
+    --on-accent: #06231b;
+    --band: #122a22;
+    --marker: transparent;
+    --shadow: 0 1.5rem 3rem -1.5rem #000;
 
     --status-competitive: #5cc98f;
     --status-opportunity: #7aa9f0;

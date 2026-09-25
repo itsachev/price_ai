@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Inter, Parkinsans } from 'next/font/google';
+import { Geist_Mono, Inter, Onest } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import { LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
@@ -7,8 +7,8 @@ import { setLocale } from './actions/locale';
 import '@/styles/main.css';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
-// Latin only — Cyrillic headings fall back to Inter via --font-heading.
-const parkinsans = Parkinsans({ subsets: ['latin'], weight: ['500'], variable: '--font-parkinsans' });
+const onest = Onest({ subsets: ['latin', 'cyrillic'], weight: ['500', '600'], variable: '--font-onest' });
+const geistMono = Geist_Mono({ subsets: ['latin', 'cyrillic'], weight: ['500'], variable: '--font-geist-mono' });
 
 export async function generateMetadata() {
   const dict = await getDictionary(await getLocale());
@@ -20,7 +20,7 @@ export default async function RootLayout({ children }) {
   const dict = await getDictionary(lang);
 
   return (
-    <html lang={lang} className={`${inter.variable} ${parkinsans.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${onest.variable} ${geistMono.variable}`}>
       <body>
         <SmoothScroll>
           <header className="site-header">

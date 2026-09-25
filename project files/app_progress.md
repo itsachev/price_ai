@@ -87,3 +87,18 @@
 - Deleted `src/proxy.js`, which is no longer needed. Header links now use `next/link`; they were bare `<a>` tags that did full page loads.
 - Files: `src/app/{layout,page,dictionaries}.js`, `src/app/dashboard/page.js` and `src/app/dictionaries/*` (all moved out of `[lang]/`), `src/styles/components/header.css` (switcher buttons), `src/styles/main.css` (comment) and `CLAUDE.md` (i18n section).
 - Open: every route is now dynamic because it reads cookies, so nothing is statically generated. That's fine for a dashboard. Old `/bg` and `/en` URLs now return 404.
+
+## 2026-09-25: Home page redesign
+
+- Researched the direction with the `ui-ux-pro-max` skill (design system and font pairings), 21st.dev inspiration (bento and product-preview heroes) and a web search on 2026 SaaS landing trends. The skill's blue and amber default was rejected as generic.
+- New look: "ledger" green ink on warm paper with a lime price-tag signal (`--signal`, `--band`, `--marker` and `--shadow` tokens, plus dark-mode values) in `src/styles/base/tokens.css`.
+- Type: Onest 600 for headings and Geist Mono for prices and stats, loaded through `next/font` in `src/app/layout.js`. Both have Cyrillic, so this fixes the open Parkinsans/Cyrillic issue and its build warning. Inter stays for body text.
+- `src/app/page.js`: a hero with a live pill, a highlighted headline word, a preview card whose bars grow in, and floating KPI chips (placed with a container query). Also a chain strip, a stats row, a bento "how it works" with a match example, status cards with colored rules, and a dark CTA band.
+- CSS: `pages/home.css` and `components/preview.css` rewritten; `typography.css` (h1/h2 leading, the highlight) and `button.css` (`.button--signal`, arrow nudge) updated. New strings are in both `en.json` and `bg.json`.
+- Open: the KPI numbers and the match example are illustrative, like the preview; swap them for real data once Supabase is connected.
+
+## 2026-09-25: Fixed frozen scrolling
+
+- Page scrolling did nothing. `ReactLenis` creates its Lenis instance inside an effect and stores it in state, so `SmoothScroll` read `lenisRef.current.lenis` as `undefined` in its one-time effect. That meant it never hooked `lenis.raf` into GSAP's ticker. With `autoRaf: false`, Lenis swallowed wheel events and never moved the page.
+- `src/components/SmoothScroll.js`: gets the instance with `useLenis(ScrollTrigger.update)` (the root store) and starts the ticker in an effect that depends on it. The ref is removed.
+- The reduced-motion `smoothWheel` flag is now passed as an option when Lenis is created, instead of mutating `lenis.options` (a lint error).

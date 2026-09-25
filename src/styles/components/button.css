@@ -1,6 +1,8 @@
 .button {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
   min-height: 2.75rem;
   padding-inline: 1.25rem;
   border-radius: var(--radius);
@@ -23,4 +25,23 @@
 .button--primary:hover {
   background: color-mix(in srgb, var(--accent) 85%, var(--text));
   box-shadow: none;
+}
+
+.button--signal {
+  color: var(--on-signal);
+  background: var(--signal);
+  box-shadow: none;
+
+  &:hover {
+    background: color-mix(in srgb, var(--signal) 85%, var(--on-band));
+    box-shadow: none;
+  }
+}
+
+.button span {
+  transition: translate 0.2s;
+}
+
+.button:hover span {
+  translate: 0.2em 0;
 }
