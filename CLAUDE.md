@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Progress log
 
-After every piece of work that changes the project, append an entry to `project files/app_progress.md`. Do this in the same turn as the work, before reporting back. Each entry has a date heading, then short bullets covering what was built or changed, which files were touched, and any open issues. Add new entries at the bottom and never rewrite old ones. Read this file at the start of a session to see where things stand.
+After every piece of work that changes the project, append an entry to `app_progress.md` in the project root (git-ignored, local only). Do this in the same turn as the work, before reporting back. Each entry has a date heading, then short bullets covering what was built or changed, which files were touched, and any open issues. Add new entries at the bottom and never rewrite old ones. Read this file at the start of a session to see where things stand.
 
 @AGENTS.md
 
@@ -33,11 +33,12 @@ The frontend is set up with Next.js 16, the App Router and a `src/` directory. T
 - **AI must never slow down the site or navigation.** This covers every AI feature (Gemini matching, suggestions, summaries and anything added later). Run AI work outside the request path: in `scripts/*.mjs`, the daily job or a background task. Store the results in Supabase, and have pages only read those stored results. Never call an AI API during render, in a proxy, in a layout or on a route change, and never call one from the browser. If a user action has to trigger AI work, start it without blocking and show the result when it's ready (a server action that queues or streams, with a `Suspense` boundary). Navigation and first paint must never wait on it. Don't add AI SDKs to the client bundle.
 - **Supabase:** the schema is in `supabase/migrations/` (apply with `npx supabase db push`). Use `createClient()` from `src/lib/supabase/server.js` in server code (RLS applies), `src/lib/supabase/client.js` in Client Components and `createAdminClient()` from `src/lib/supabase/admin.js` only in `scripts/`. Competitor price history has no cascade, so never delete listings. **Not built yet:** auth and `src/proxy.js` session refresh.
 
-`project files/` holds the product brief (`app_info.md`), the list of competitors in scope (`markets_information.md`) and the scrapers, which were copied from `d:\work\scrapers`. The scraper docs also refer to paths that don't exist yet: `src/lib/pipeline/match.js`, `src/app/actions/products.js`, `scripts/scrape.mjs`, `scripts/match.mjs`, `supabase/migrations/0001…0009` and `.github/workflows/scrape.yml`. Build those to match the paths and contracts the scraper docs describe.
+`project files/` is git-ignored and local only. It holds the product brief (`app_info.md`), the competitors in scope (`markets_information.md`), the data research (`data_sources_research.md`), and the old scrapers from `d:\work\scrapers`, which `src/lib/scrapers/` replaces. Still to build: `scripts/match.mjs`, `src/lib/pipeline/match.js`, `src/app/actions/products.js` and `.github/workflows/scrape.yml`.
 
-The scrapers expect these commands once the scripts exist:
+Commands:
 - `npm run scrape` runs all scrapers. `npm run scrape kaufland lidl` runs only the ones named.
-- `npm run match` runs matching in bulk.
+- `npm run check` runs the KZP parser self-check (`scripts/check-kzp.mjs`).
+- `npm run match` (not built yet) runs matching in bulk.
 
 Both read a service-role Supabase client from `.env.local`, which must set `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `GEMINI_API_KEY`.
 
@@ -52,22 +53,16 @@ PriceAI (npm package `priceai`) is a dashboard in English and Bulgarian. A Bulga
 
 **Currency is EUR (`€`) only.** Bulgaria has used the euro since 1 January 2026. Never display or store лв/BGN.
 
-**Stack:** Next.js, plain modern CSS (no Tailwind or CSS-in-JS), **JavaScript with no TypeScript**, Supabase, and Lenis with GSAP for animation. The scrapers are ES modules. Their only dependencies are `jszip` and `exceljs`.
+**Stack:** Next.js, plain modern CSS (no Tailwind or CSS-in-JS), **JavaScript with no TypeScript**, Supabase, and Lenis with GSAP for animation. The package is `"type": "module"`. The scrapers' only dependency is `jszip`.
 
-## Scraper architecture (`project files/scrapers/`)
+## Scraper architecture (`src/lib/scrapers/`)
 
-- **Module contract:** each scraper exports `competitorKey` and `async scrape(supabase)`, which returns `{ count, pruned }`. Every `competitorKey` must appear in `COMPETITORS` in `src/lib/config.js`, in the `competitors` table and in `markets_information.md`.
-- **`index.js`** registers every scraper. `scrapeAll(supabase)` runs them one after another. When one scraper fails, the run records the failure and moves on. The results are saved to `scrape_runs` and `scrape_run_results` on a best-effort basis.
-- **The client must be service-role.** Row-level security only lets the pipeline write to `competitor_listings`.
-- **`shared.js` → `upsertListings`:**
-  - Upserts on `(competitor_key, external_id)`, so listing `id`s stay the same across runs and `product_matches` stay valid.
-  - Writes one `competitor_listing_price_history` row per listing on every run.
-  - Then deletes the rows this run didn't see. If the run found fewer than half of the previous count (`PRUNE_MIN_COVERAGE`), it skips the delete, so a truncated feed can't wipe good data.
-  - Writes in batches of 500.
-- **Data sources:** the price-transparency law (чл. 55б ЗВЕРБ) makes large chains publish a daily price feed. `normalizeKzpRows` turns a feed's header and rows into listing rows, with one row per product code. `price` is the effective shelf price: the promo price when there is a valid one, otherwise the regular price. A promo price of `0` means the product is not on promotion. The feeds use two sets of column names, and the function reads both.
-  - **The chain's own feed:** `fantastico.js` (CSV) and `lidl.js` (two XLSX files, each with its own header).
-  - **Kaufland** is special. It scrapes the SSR JSON on Kaufland's own offers page, which lists promotions only, so every row gets `on_promo = true`.
-  - **KZP open-data ZIP** (`kolkostruva.js`): one ZIP of about 18 MB, downloaded once per process and memoized. It holds one CSV per chain. A chain's CSV is found by its company EIK (`scrapeFromKolkostruva(supabase, key, eik)`), because the display names change. The download tries yesterday's file first and falls back up to 4 days. BILLA, METRO, BulMag, Hit Max, KAM Market, Berezka and T-Market use this source. T-Market's own feed returns 403 to GitHub runners.
+- **One source: the KZP open-data ZIP** (`kzp.js`). `https://kolkostruva.bg/opendata_files/<date>.zip` holds one CSV per chain, found by company EIK because display names change. It is fetched once per process and memoized, trying yesterday first and falling back up to 4 days. The ZIP's date is stored as `data_date`, not the run date. Every chain in scope is in it, with stable product codes, regular and promo prices, the KZP category and one row per store. The chains' own feeds and Kaufland's offers page are no longer used (Kaufland's weekly offer IDs broke matches and history).
+- **`parseCsv`** is lenient: it detects `,` or `;`, and a quote closes a field only before a delimiter or line end (Lidl's CSV has stray quotes). Prices accept a decimal comma.
+- **`aggregateRows`** collapses per-store rows into one row per code: the typical (most common) effective price, the typical regular price, min/max and store count. A promo counts only when it is positive and below retail.
+- **`index.js`:** `KZP_EIKS` maps each `competitorKey` to its EIKs (Fantastico has two). `scrapers` is a list of `{ competitorKey, scrape(supabase) }`, and a non-ZIP scraper can be added to it later. Every key must appear in `COMPETITORS`, the `competitors` table and `markets_information.md`. `scrapeAll(supabase, keys)` runs them one after another, records failures and moves on, and logs to `scrape_runs` and `scrape_run_results` on a best-effort basis.
+- **`upsertListings`** upserts listings on `(competitor_key, external_id)` and history on `(listing_id, data_date)` in batches of 500, so a rerun is harmless. It never deletes: a delisted product stops getting history, and `captured_at` shows when it was last seen. A feed with under half the codes seen in the last 7 days is rejected as truncated or wrong.
+- **The client must be service-role.** Row-level security only lets the pipeline write competitor data.
 - **Out of scope:** CBA (no longer in the KZP ZIP as of Sept 2026), Carrefour (left Bulgaria in 2016 and returned in 2025 through Parkmart; to reconsider) and ProMarket (publishes no чл. 55б feed).
-- **Research and known issues:** `project files/data_sources_research.md` covers the legal basis (since 9 Aug 2026 the obligation comes from the ЗЗП: turnover over €25M, publish by 07:00, valid until 9 Aug 2027), the KZP data spec (only the ~101-product basket, one row per store, category codes that include pack size, promo prices that include card discounts) and the problems in the current scrapers. Read it before designing the schema or changing the scrapers.
+- **Research and known issues:** `project files/data_sources_research.md` covers the legal basis (since 9 Aug 2026 the obligation comes from the ЗЗП: turnover over €25M, publish by 07:00, valid until 9 Aug 2027), the KZP data spec (only the ~101-product basket, one row per store, category codes that include pack size, promo prices that include card discounts) and the problems found in the old scrapers. Read it before changing the schema or the scrapers.
 - **Planned daily job:** GitHub Actions at 03:00 UTC runs `npm run scrape` and then `npm run match`. A script fails the job only when every item fails, not when some do.
