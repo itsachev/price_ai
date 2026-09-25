@@ -3,9 +3,12 @@
 @import './base/reset.css';
 @import './typography/typography.css';
 @import './layout/layout.css';
+@import './components/background.css';
 @import './components/header.css';
 @import './components/badge.css';
 @import './components/button.css';
 @import './components/card.css';
-@import './components/preview.css';
+@import './components/scan.css';
+@import './components/tracker.css';
+@import './components/chart.css';
 @import './pages/home.css';

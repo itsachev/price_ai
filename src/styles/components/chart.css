@@ -1,0 +1,185 @@
+/* Price-trend line chart. Lines are an SVG stretched over the plot; ticks and
+   dots are HTML placed by percent, so text stays crisp at any width. */
+.chart {
+  --yours: var(--status-competitive);
+  --market: var(--status-opportunity);
+  display: grid;
+  gap: var(--space-2);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.chart__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+
+  & .stack {
+    gap: 0.25rem;
+  }
+
+  & strong {
+    font-size: var(--text-h3);
+    font-weight: 700;
+  }
+
+  & small {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+}
+
+.chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 0.5rem 1.25rem;
+  font-size: var(--text-sm);
+
+  & span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      content: '';
+      inline-size: 1.25rem;
+      border-block-start: 2px solid var(--yours);
+    }
+  }
+
+  & [data-series='market']::before {
+    border-block-start: 2px dashed var(--market);
+  }
+}
+
+.chart__area {
+  position: relative;
+  block-size: clamp(10rem, 28vw, 15rem);
+  margin-inline-start: 3.75rem;
+  margin-block: 0.5rem;
+
+  & svg {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+  }
+
+  & polyline {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  & [data-series='yours'] { stroke: var(--yours); }
+
+  & polyline[data-series='market'] {
+    stroke: var(--market);
+    stroke-dasharray: 6 6;
+  }
+}
+
+.chart__tick {
+  position: absolute;
+  inset-block-start: var(--y);
+  inset-inline: 0;
+  border-block-start: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+
+  /* Label sits in the left gutter, centred on its line. */
+  text-indent: -3.75rem;
+  line-height: 0;
+}
+
+.chart__dot {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-block-start: var(--y);
+  inline-size: 0.625rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+  background: var(--yours);
+
+  &[data-series='market'] {
+    background: var(--surface);
+    box-shadow: inset 0 0 0 2px var(--market);
+  }
+}
+
+.chart__x {
+  display: flex;
+  justify-content: space-between;
+  margin-inline-start: 3.75rem;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+
+  /* Centre each month under its point. */
+  & li {
+    inline-size: 0;
+    display: grid;
+    justify-items: center;
+    white-space: nowrap;
+  }
+}
+
+.chart__foot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: var(--space-2);
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--border);
+
+  & div {
+    --c: var(--text);
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+  }
+
+  & [data-series='market'] { --c: var(--market); }
+  & [data-status='at-risk'] { --c: var(--status-at-risk); }
+
+  & dt {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+
+  & dd {
+    font-size: var(--text-h3);
+    font-weight: 700;
+    color: var(--c);
+  }
+}
+
+/* Draw the price line as the chart scrolls into view. Scroll-driven, so no JS;
+   browsers without support simply show the finished line. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .chart__area polyline[data-series='yours'] {
+      animation: chart-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
+}
+
+@keyframes chart-draw {
+  from {
+    clip-path: inset(-10% 100% -10% 0);
+  }
+
+  to {
+    clip-path: inset(-10% 0 -10% 0);
+  }
+}

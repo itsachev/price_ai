@@ -1,30 +1,38 @@
-/* Design tokens — light by default, dark via OS preference.
+/* Design tokens — colors use light-dark(), so `color-scheme` picks the theme:
+   the OS preference by default, or the `theme` cookie via <html data-theme>.
    Palette: "ledger" green ink on warm paper, lime price-tag signal. */
 :root {
   color-scheme: light dark;
 
-  --bg: #f5f4ef;
-  --surface: #ffffff;
-  --text: #0f1a17;
-  --muted: #58625e;
-  --border: #e3e2da;
-  --accent: #0f5c4a;
-  --on-accent: #ffffff;
+  --bg: light-dark(#f5f4ef, #0b1110);
+  --surface: light-dark(#ffffff, #131b19);
+  --text: light-dark(#0f1a17, #e8eeea);
+  --muted: light-dark(#58625e, #9aa6a1);
+  --border: light-dark(#e3e2da, #25302c);
+  --accent: light-dark(#0f5c4a, #5fd3ae);
+  --on-accent: light-dark(#ffffff, #06231b);
   --signal: #d9f45b;
   --on-signal: #0f1a17;
-  --band: #0f1f1a;
+  --band: light-dark(#0f1f1a, #122a22);
   --on-band: #eef3ef;
-  --marker: color-mix(in srgb, var(--signal) 70%, transparent);
-  --shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--text) 30%, transparent);
+  --marker-text: light-dark(var(--text), var(--signal));
+  --marker: light-dark(color-mix(in srgb, var(--signal) 70%, transparent), transparent);
+  --shadow: 0 1.5rem 3rem -1.5rem light-dark(color-mix(in srgb, var(--text) 30%, transparent), #000);
 
-  --status-competitive: #1e7d4f;
-  --status-opportunity: #2463b8;
-  --status-at-risk: #b3261e;
-  --status-unmatched: #6b6f76;
+  /* AI backdrop glows: softer on paper, brighter on the dark theme. */
+  --glow-1: light-dark(color-mix(in srgb, #0f5c4a 12%, transparent), color-mix(in srgb, #5fd3ae 20%, transparent));
+  --glow-2: light-dark(color-mix(in srgb, #d9f45b 35%, transparent), color-mix(in srgb, #d9f45b 10%, transparent));
+  --glow-3: light-dark(color-mix(in srgb, #2463b8 8%, transparent), color-mix(in srgb, #7aa9f0 14%, transparent));
+  --grid-line: color-mix(in srgb, var(--accent) 9%, transparent);
 
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-heading: var(--font-onest), var(--font-inter), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --status-competitive: light-dark(#1e7d4f, #5cc98f);
+  --status-opportunity: light-dark(#2463b8, #7aa9f0);
+  --status-at-risk: light-dark(#b3261e, #f08a82);
+  --status-unmatched: light-dark(#6b6f76, #a3a8ae);
+
+  --font-sans: var(--font-unbounded), system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --radius: 0.625rem;
   --gutter: clamp(1rem, 4vw, 2rem);
   --space-1: 0.5rem;
@@ -32,35 +40,19 @@
   --space-3: clamp(1.5rem, 3vw, 2.5rem);
   --space-4: clamp(3rem, 8vw, 6rem);
 
-  /* Type scale: fluid from 375px to 1200px viewports. */
+  /* Type scale: fluid from 375px to 1200px viewports. Sized for Unbounded,
+     a wide face, so long Bulgarian words still fit on 320px screens. */
   --text-xs: clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
   --text-sm: clamp(0.8125rem, 0.78rem + 0.12vw, 0.875rem);
   --text-base: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
-  --text-h1: clamp(2.5rem, 1.59rem + 3.88vw, 4.5rem);
-  --text-h2: clamp(2rem, 1.54rem + 1.94vw, 3rem);
-  --text-h3: clamp(1.25rem, 1.02rem + 0.97vw, 1.75rem);
-  --text-lead: clamp(1.125rem, 1.07rem + 0.24vw, 1.25rem);
+  --text-h1: clamp(2rem, 1.36rem + 2.73vw, 3.75rem);
+  --text-h2: clamp(1.625rem, 1.33rem + 1.27vw, 2.5rem);
+  --text-h3: clamp(1.125rem, 1.04rem + 0.36vw, 1.375rem);
+  --text-lead: clamp(1.0625rem, 1.02rem + 0.18vw, 1.1875rem);
   --text-stat: clamp(2.25rem, 1.8rem + 1.9vw, 3.25rem);
-  --weight-heading: 600;
-  --tracking-heading: -0.035em;
+  --weight-heading: 700;
+  --tracking-heading: -0.02em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b1110;
-    --surface: #131b19;
-    --text: #e8eeea;
-    --muted: #9aa6a1;
-    --border: #25302c;
-    --accent: #5fd3ae;
-    --on-accent: #06231b;
-    --band: #122a22;
-    --marker: transparent;
-    --shadow: 0 1.5rem 3rem -1.5rem #000;
-
-    --status-competitive: #5cc98f;
-    --status-opportunity: #7aa9f0;
-    --status-at-risk: #f08a82;
-    --status-unmatched: #a3a8ae;
-  }
-}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }

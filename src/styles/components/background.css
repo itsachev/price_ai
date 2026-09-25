@@ -1,0 +1,80 @@
+/* AI backdrop: a circuit grid with glowing nodes, three drifting glows and a
+   slow scan line. Pure CSS, fixed behind everything. Motion is transform-only
+   so it stays on the compositor and never triggers layout or paint. */
+.ai-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+
+  /* Grid lines plus a node on every intersection, fading out down the page. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle, color-mix(in srgb, var(--accent) 40%, transparent) 0.09rem, transparent 0.12rem) -1.75rem -1.75rem / 3.5rem 3.5rem,
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 3.5rem 3.5rem,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 3.5rem 3.5rem;
+    mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, #000 25%, transparent 85%);
+  }
+}
+
+.ai-bg__glow {
+  position: absolute;
+  inline-size: 48vmax;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--glow), transparent);
+
+  &:nth-child(1) {
+    --glow: var(--glow-1);
+    inset-block-start: -18vmax;
+    inset-inline-start: -14vmax;
+  }
+
+  &:nth-child(2) {
+    --glow: var(--glow-2);
+    inline-size: 38vmax;
+    inset-block-start: 20%;
+    inset-inline-end: -16vmax;
+  }
+
+  &:nth-child(3) {
+    --glow: var(--glow-3);
+    inset-block-end: -22vmax;
+    inset-inline-start: 25%;
+  }
+}
+
+.ai-bg__scan {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 35vh;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 5%, transparent) 70%, color-mix(in srgb, var(--accent) 14%, transparent) 99%, transparent);
+  translate: 0 -100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ai-bg__glow {
+    animation: ai-drift 28s ease-in-out infinite alternate;
+
+    &:nth-child(2) { animation-duration: 34s; animation-direction: alternate-reverse; }
+    &:nth-child(3) { animation-duration: 40s; }
+  }
+
+  .ai-bg__scan {
+    animation: ai-scan 12s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+}
+
+@keyframes ai-drift {
+  to { translate: 8vmax 6vmax; scale: 1.15; }
+}
+
+@keyframes ai-scan {
+  to { translate: 0 calc(100dvh + 100%); }
+}

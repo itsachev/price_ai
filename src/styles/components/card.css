@@ -1,6 +1,7 @@
+/* Slightly translucent so the AI backdrop shows through; no backdrop-filter, it's costly. */
 .card {
   padding: var(--space-2);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) * 1.5);
 }

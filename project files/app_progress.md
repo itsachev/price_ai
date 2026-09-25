@@ -102,3 +102,33 @@
 - Page scrolling did nothing. `ReactLenis` creates its Lenis instance inside an effect and stores it in state, so `SmoothScroll` read `lenisRef.current.lenis` as `undefined` in its one-time effect. That meant it never hooked `lenis.raf` into GSAP's ticker. With `autoRaf: false`, Lenis swallowed wheel events and never moved the page.
 - `src/components/SmoothScroll.js`: gets the instance with `useLenis(ScrollTrigger.update)` (the root store) and starts the ticker in an effect that depends on it. The ref is removed.
 - The reduced-motion `smoothWheel` flag is now passed as an option when Lenis is created, instead of mutating `lenis.options` (a lint error).
+
+## 2026-09-25: Light and dark theme toggle
+
+- Researched palettes with the `ui-ux-pro-max` skill. Its top dashboard matches are generic slate-and-blue sets, so the "ledger" palette stays. A WCAG check shows every text pairing passes AA in both themes: text 15–18:1, muted 5.7–7.6:1, accent 7.2–10.4:1, status colors 5.0–8.5:1.
+- `src/styles/base/tokens.css`: color tokens are now `light-dark()` pairs, which replaces the `prefers-color-scheme` block. `:root[data-theme]` forces `color-scheme`. New `--marker-text` token replaces the dark-mode rule in `typography/typography.css`.
+- New `src/app/actions/theme.js` `setTheme` server action stores a `theme` cookie, the same way `setLocale` does. `src/app/layout.js` renders it as `<html data-theme>`, so a saved choice paints on first load with no flash. Without a cookie the site follows the OS.
+- The header has a sun/moon toggle, a `<form>` with two buttons. CSS in `components/header.css` shows only the one that switches away from the active theme, so no client JS is needed. New strings `nav.theme`, `nav.themeLight` and `nav.themeDark` are in both dictionaries.
+- `CLAUDE.md`: the styling rule now describes the `light-dark()` and `data-theme` setup.
+- Open: there's no way to go back to "follow the OS" after choosing a theme, short of clearing the cookie. Add a third "system" option if it's needed.
+
+## 2026-09-25: Home page rebuilt after the bg-price-ai.vercel.app reference
+
+- Studied the reference site's HTML and CSS with curl (no browser). Kept our "ledger" palette and borrowed its structure, techniques and typography.
+- Type: switched to Unbounded (all text, headings 700/800) and JetBrains Mono (prices, labels, badges), both variable and with Cyrillic, in `src/app/layout.js`. The type scale in `base/tokens.css` is retuned for the wide face so Bulgarian words fit on 320px screens. Eyebrows and badges are now mono uppercase.
+- AI background: a new `components/background.css` and markup in `layout.js`. It's a circuit grid with glowing nodes, three drifting glows (new `--glow-*` tokens, softer in light mode) and a slow scan line. It's pure CSS with transform-only motion, `contain: strict`, no canvas, no blur filter, and it stops under reduced motion. Cards are slightly translucent so the backdrop shows through.
+- `src/app/page.js` sections:
+  - a hero with a word-by-word headline reveal (CSS only, so first paint never waits for JS) and a browser-style "live scan" panel
+  - the chain strip
+  - count-up stats (added to `Reveal.js`)
+  - six feature cards
+  - a price tracker with status counts, category chips (radio buttons plus `:has()`, no JS) and a table that becomes cards below 40rem via a container query
+  - a price-trend chart (server-rendered SVG with HTML ticks and dots; the line draws in with a scroll-driven CSS animation where supported)
+  - AI insight cards
+  - reports (top at-risk, top opportunities, matches per chain)
+  - four "how it works" steps and the CTA band
+- New CSS files: `components/{scan,tracker,chart,background}.css`. Removed `components/preview.css`. `pages/home.css` is rewritten; `layout.css` gained `.visually-hidden` and `.note`.
+- `src/lib/format.js`: new `formatPercent(ratio, lang, sign)`. Bulgarian chart months use the first three letters of the long name, because CLDR's Bulgarian short month is numeric ("04").
+- Both dictionaries have a rewritten `home` object.
+- Left out on purpose: the reference site's testimonials (invented people, and fake reviews are misleading) and its loading screen (it delays first paint).
+- Open: all sample numbers (scan, tracker, chart, reports) are marked "Example data". Replace them with stored Supabase results once the pipeline runs.

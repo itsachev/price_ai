@@ -65,3 +65,46 @@
   font-weight: 600;
   text-decoration: none;
 }
+
+/* Theme switch: shows only the button that leads away from the active theme. */
+.theme-switch button {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem; /* 44px touch target */
+  min-height: 2.75rem;
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text);
+  }
+
+  & svg {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &[value='light'] {
+    display: none;
+  }
+}
+
+:root[data-theme='dark'] .theme-switch button {
+  &[value='dark'] { display: none; }
+  &[value='light'] { display: grid; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .theme-switch button {
+    &[value='dark'] { display: none; }
+    &[value='light'] { display: grid; }
+  }
+}

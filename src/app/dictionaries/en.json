@@ -6,7 +6,10 @@
     "dashboard": "Dashboard",
     "products": "Products",
     "competitors": "Competitors",
-    "language": "Language"
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Switch to light theme",
+    "themeDark": "Switch to dark theme"
   },
   "dashboard": {
     "title": "Price overview",
@@ -19,44 +22,161 @@
     "unmatched": "Unmatched"
   },
   "home": {
-    "eyebrow": "Fresh competitor prices by 07:00 every day",
-    "title": "Know where every price stands,",
-    "lead": "PriceAI collects prices from {count} Bulgarian chains each night, matches them to your catalog and tells you which products to reprice.",
+    "eyebrow": "AI price intelligence for Bulgarian grocers",
+    "title": [
+      "Match every price.",
+      "Beat every chain.",
+      "Protect your margin."
+    ],
+    "lead": "PriceAI reads the prices of {count} Bulgarian chains every night, matches them to your catalog product by product and tells you where to raise, lower or hold.",
     "cta": "Open dashboard",
     "ctaSecondary": "How it works",
-    "preview": {
-      "label": "Example price comparison",
-      "product": "Fresh milk 3% 1 L",
-      "yours": "Your price",
-      "note": "Example data. 2 of 3 competitors are cheaper.",
-      "updated": "Today, 06:42",
-      "kpiRisk": "products at risk today",
-      "kpiRoom": "average room to raise"
+    "trust": [
+      "Official chain price feeds",
+      "Every price in euro",
+      "English and Bulgarian"
+    ],
+    "example": "Example data",
+    "scan": {
+      "label": "Example price scan for one product",
+      "live": "Live scan",
+      "product": "Product",
+      "compare": "Price comparison",
+      "below": "{pct} below market",
+      "yours": "Your store",
+      "best": "Best",
+      "aiLabel": "AI suggestion:",
+      "ai": "Hold at {price}. You stay below every tracked chain and keep your margin."
+    },
+    "chains": {
+      "title": "Chains we track every day"
+    },
+    "stats": {
+      "chains": "Bulgarian chains tracked",
+      "basket": "Basket products per chain",
+      "fresh": "Fresh prices every morning",
+      "statuses": "Clear price statuses"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Everything you need to price with confidence",
+      "text": "Built for Bulgarian grocery merchants: track, match and act on competitor prices without checking shelves by hand.",
+      "items": [
+        {
+          "title": "AI product matching",
+          "text": "A keyword search shortlists listings, then Gemini confirms it is the same product by name, brand and size."
+        },
+        {
+          "title": "Price statuses",
+          "text": "Every product is labelled competitive, opportunity, at risk or unmatched, so you know where to look first."
+        },
+        {
+          "title": "Daily scans",
+          "text": "Prices come from the feeds large chains must publish by law, refreshed before 07:00 every morning."
+        },
+        {
+          "title": "Price history",
+          "text": "Every run is kept, so you can see how your price and the market moved over weeks and months."
+        },
+        {
+          "title": "Portfolio reports",
+          "text": "Your top at-risk products, your best opportunities and match coverage per chain, at a glance."
+        },
+        {
+          "title": "Made for Bulgaria",
+          "text": "The whole app works in English and Bulgarian, and every price is shown in euro."
+        }
+      ]
+    },
+    "tracker": {
+      "eyebrow": "Live dashboard",
+      "title": "Your command center for pricing",
+      "text": "Track every product, compare it with the best market price and filter to what needs attention.",
+      "card": "Product price tracker",
+      "live": "Live data from {count} chains",
+      "total": "Total products",
+      "filter": "Filter by category",
+      "all": "All",
+      "categories": {
+        "dairy": "Dairy",
+        "bakery": "Bakery",
+        "pantry": "Pantry"
+      },
+      "cols": {
+        "product": "Product",
+        "yours": "Your price",
+        "best": "Market best",
+        "delta": "Δ vs. market",
+        "status": "Status"
+      }
+    },
+    "insights": {
+      "eyebrow": "AI price insights",
+      "title": "Turn price changes into margin",
+      "text": "PriceAI does not just show you the market. It tells you what to do about it.",
+      "chart": {
+        "title": "Price trend",
+        "subtitle": "6 months · your price vs. market average",
+        "yours": "Your price",
+        "market": "Market average",
+        "current": "Current price",
+        "delta": "Δ vs. market",
+        "label": "Line chart: your price rose from April to September and is now {yours}, while the market average is {market}."
+      },
+      "heading": "AI insights",
+      "sub": "Examples from a sample catalog",
+      "items": [
+        {
+          "title": "Price recommendation",
+          "text": "{product} is {pct} above the market. Lower it to {price} to move back into the competitive band."
+        },
+        {
+          "title": "New match found",
+          "text": "Chicken fillet 1 kg now matches a {chain} listing at {match}, 2% below your price."
+        },
+        {
+          "title": "Unmatched product",
+          "text": "{count} product in your catalog has no competitor match yet. Add a brand or size to help the AI."
+        }
+      ]
+    },
+    "reports": {
+      "eyebrow": "Reports",
+      "title": "Your whole catalog in one weekly report",
+      "text": "See which products lose you sales, where you can raise prices and how well each chain covers your range.",
+      "atRisk": "Top at-risk products",
+      "opportunity": "Top opportunities",
+      "byChain": "Products matched per chain",
+      "note": "Example data from a sample catalog."
     },
     "how": {
-      "title": "How it works",
+      "eyebrow": "How it works",
+      "title": "From raw feeds to smarter prices",
+      "text": "No technical setup. Add your products and the pipeline does the rest overnight.",
       "steps": [
         {
-          "title": "Collect",
+          "title": "Add your products",
+          "text": "Enter each product with its name, price and optional brand and size. More detail means better matches."
+        },
+        {
+          "title": "We collect prices",
           "text": "Every night we read the official price feeds that large chains must publish by law."
         },
         {
-          "title": "Match",
-          "text": "A keyword search shortlists candidate listings, then Gemini confirms which one is the same product."
+          "title": "AI matches them",
+          "text": "A keyword search shortlists listings, then Gemini confirms which one is the same product."
         },
         {
-          "title": "Label",
-          "text": "Each product gets a status so you see at a glance where to act."
+          "title": "You act on it",
+          "text": "Each product gets a status and shows up in your reports, so you know what to reprice today."
         }
-      ],
-      "eyebrow": "From raw feeds to decisions",
-      "match": {
-        "yours": "Your catalog: Fresh milk Vereya 3% 1 L",
-        "theirs": "BILLA: Milk fresh VEREYA 3% 1L",
-        "confirmed": "Same product"
-      }
+      ]
     },
-    "statusTitle": "Four statuses, one glance",
+    "final": {
+      "eyebrow": "Start today",
+      "title": "Know where you stand against the market",
+      "text": "Open the dashboard and filter by the products that need attention."
+    },
     "status": {
       "competitive": {
         "name": "Competitive",
@@ -74,21 +194,6 @@
         "name": "Unmatched",
         "text": "No competitor listing matched this product yet."
       }
-    },
-    "chains": {
-      "title": "Chains we track",
-      "text": "Prices come from each chain’s own feed or the KZP open-data archive, refreshed daily. All prices are in euro."
-    },
-    "final": {
-      "title": "See your catalog against the market",
-      "text": "Start with the dashboard and filter by the products that need attention."
-    },
-    "titleAccent": "every morning.",
-    "stats": {
-      "chains": "Chains tracked",
-      "fresh": "Fresh data every morning",
-      "statuses": "Clear price statuses",
-      "currency": "Every price in euro"
     }
   }
 }
