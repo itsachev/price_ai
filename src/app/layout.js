@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
-import { LOCALES } from '@/lib/config';
+import { COMPETITORS, LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
 import { setTheme } from './actions/theme';
@@ -60,6 +60,39 @@ export default async function RootLayout({ children }) {
             </div>
           </header>
           <main className="container">{children}</main>
+          <footer className="site-footer">
+            <div className="container site-footer__inner">
+              <div className="site-footer__intro stack">
+                <Link href="/" className="brand">
+                  Price<span>AI</span>
+                </Link>
+                <p>{dict.footer.tagline}</p>
+                <p className="site-footer__live">{dict.footer.updated}</p>
+              </div>
+              <nav className="site-footer__col" aria-labelledby="footer-product">
+                <h2 id="footer-product" className="eyebrow">{dict.footer.product}</h2>
+                <ul>
+                  <li><Link href="/dashboard">{dict.nav.dashboard}</Link></li>
+                  <li><Link href="/#how">{dict.home.how.eyebrow}</Link></li>
+                </ul>
+              </nav>
+              <section className="site-footer__col" aria-labelledby="footer-chains">
+                <h2 id="footer-chains" className="eyebrow">{dict.footer.coverage}</h2>
+                <ul className="site-footer__chains">
+                  {Object.values(COMPETITORS).map((name) => <li key={name}>{name}</li>)}
+                </ul>
+              </section>
+              <section className="site-footer__col" aria-labelledby="footer-data">
+                <h2 id="footer-data" className="eyebrow">{dict.footer.data}</h2>
+                <p>{dict.footer.dataText}</p>
+              </section>
+              <p className="site-footer__wordmark" aria-hidden="true">PriceAI</p>
+              <div className="site-footer__bar">
+                <p>© {new Date().getFullYear()} PriceAI. {dict.footer.rights}</p>
+                <p>{dict.footer.currency}</p>
+              </div>
+            </div>
+          </footer>
         </SmoothScroll>
       </body>
     </html>

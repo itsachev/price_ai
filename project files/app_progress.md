@@ -132,3 +132,10 @@
 - Both dictionaries have a rewritten `home` object.
 - Left out on purpose: the reference site's testimonials (invented people, and fake reviews are misleading) and its loading screen (it delays first paint).
 - Open: all sample numbers (scan, tracker, chart, reports) are marked "Example data". Replace them with stored Supabase results once the pipeline runs.
+
+## 2026-09-25: Site footer
+
+- `src/app/layout.js`: new footer on every page. It has the brand, a tagline and a pulsing "refreshed daily" pill, then three columns: product links (dashboard, how it works), the tracked chains (rendered from `COMPETITORS`, so the list stays in sync with the scrapers) and the data source. Below them sit an oversized "PriceAI" wordmark that fades out (decorative, `aria-hidden`) and a bar with the copyright and the EUR note.
+- New `src/styles/components/footer.css`, imported in `main.css`. Intrinsic grid that becomes an intro-plus-three-columns layout from 64rem, links with 44px targets and an underline that grows on hover, a wordmark sized with `min(14.5vw, 12rem)` so it never overflows at 320px, and `overflow-x: clip` as a guard. It reuses the `pulse` keyframes and stops under reduced motion.
+- New `footer` strings in both `en.json` and `bg.json`.
+- Open: no legal pages (privacy, terms) exist yet to link from the footer.
