@@ -31,7 +31,7 @@ The frontend is set up with Next.js 16, the App Router and a `src/` directory. T
   - **Layout:** mobile-first, with intrinsic grids (`repeat(auto-fit, minmax(min(100%, X), 1fr))`) and flex-wrap. Use container queries (`container-type`, `@container`) when a component adapts to its own width, and media queries only for page-level changes. Nothing may scroll horizontally.
   - **Modern features to prefer:** logical properties (`padding-inline`, `margin-block`), `dvh`, CSS nesting, `:has()`, `color-mix()`, `text-wrap: balance` for headings and `pretty` for paragraphs, and `min()`/`max()`.
 - **AI must never slow down the site or navigation.** This covers every AI feature (Gemini matching, suggestions, summaries and anything added later). Run AI work outside the request path: in `scripts/*.mjs`, the daily job or a background task. Store the results in Supabase, and have pages only read those stored results. Never call an AI API during render, in a proxy, in a layout or on a route change, and never call one from the browser. If a user action has to trigger AI work, start it without blocking and show the result when it's ready (a server action that queues or streams, with a `Suspense` boundary). Navigation and first paint must never wait on it. Don't add AI SDKs to the client bundle.
-- **Not built yet:** the Supabase client helpers and auth, even though `@supabase/supabase-js` and `@supabase/ssr` are already installed.
+- **Supabase:** the schema is in `supabase/migrations/` (apply with `npx supabase db push`). Use `createClient()` from `src/lib/supabase/server.js` in server code (RLS applies), `src/lib/supabase/client.js` in Client Components and `createAdminClient()` from `src/lib/supabase/admin.js` only in `scripts/`. Competitor price history has no cascade, so never delete listings. **Not built yet:** auth and `src/proxy.js` session refresh.
 
 `project files/` holds the product brief (`app_info.md`), the list of competitors in scope (`markets_information.md`) and the scrapers, which were copied from `d:\work\scrapers`. The scraper docs also refer to paths that don't exist yet: `src/lib/pipeline/match.js`, `src/app/actions/products.js`, `scripts/scrape.mjs`, `scripts/match.mjs`, `supabase/migrations/0001…0009` and `.github/workflows/scrape.yml`. Build those to match the paths and contracts the scraper docs describe.
 
@@ -47,6 +47,8 @@ PriceAI (npm package `priceai`) is a dashboard in English and Bulgarian. A Bulga
 
 1. Matches it to competitor listings. A keyword search picks candidates, then Gemini confirms the match.
 2. Labels the merchant's price as `competitive`, `opportunity`, `at-risk` or `unmatched`.
+
+**Think about the whole product.** The goal is revenue: merchants should love PriceAI, come back every day and pay for it, so it has to do more than match prices. Judge each change by that. Matching starts with grocery chains (Kaufland and the other KZP chains). Other market types (electronics, DIY, drugstores and so on) come later, so don't hard-code grocery-only assumptions into the schema, config, matching or UI. The free Gemini tier is limited in requests per minute, so matching must narrow candidates without AI first (keywords, category, pack size), batch candidates into one request, cache every verdict (rejected ones too), and throttle and resume after rate-limit errors.
 
 **Currency is EUR (`€`) only.** Bulgaria has used the euro since 1 January 2026. Never display or store лв/BGN.
 

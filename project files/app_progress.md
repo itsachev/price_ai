@@ -139,3 +139,40 @@
 - New `src/styles/components/footer.css`, imported in `main.css`. Intrinsic grid that becomes an intro-plus-three-columns layout from 64rem, links with 44px targets and an underline that grows on hover, a wordmark sized with `min(14.5vw, 12rem)` so it never overflows at 320px, and `overflow-x: clip` as a guard. It reuses the `pulse` keyframes and stops under reduced motion.
 - New `footer` strings in both `en.json` and `bg.json`.
 - Open: no legal pages (privacy, terms) exist yet to link from the footer.
+
+## 2026-09-25: Local environment keys
+
+- Added `.env.local` (git-ignored by the `.env*` rule) with `NEXT_PUBLIC_SUPABASE_URL` (project `rgszoofbwhptzcmixgjp`), `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (the `sb_secret_` key) and `GEMINI_API_KEY`.
+- Development uses the free Gemini 3.5 Flash model.
+- Open: the GitHub Actions job will need the same values as repository secrets.
+
+## 2026-09-25: Supabase schema and client helpers
+
+- Decisions: KZP per-store rows are stored as one row per listing per data date, holding the typical (most common) price plus min/max and the store count (~15k rows/day, which fits the free tier). The app is multi-merchant (Supabase Auth, `products.owner_id`, RLS). Migrations are applied with the Supabase CLI.
+- Added `supabase` as a dev dependency and ran `supabase init` (`supabase/config.toml`, `supabase/.gitignore`).
+- `supabase/migrations/0001_init.sql`: one migration instead of the `0001…0009` files the scraper docs mention. It creates:
+  - `competitors`, seeded with the 10 keys from `COMPETITORS`
+  - `competitor_listings`, unique on `(competitor_key, external_id)`, with a new `category_code`
+  - `competitor_listing_price_history`, keyed `(listing_id, data_date)`, with `regular_price`, `min_price`, `max_price`, `store_count` and `promo_ends_on`, and **no cascade**, so history can't be deleted by accident
+  - `scrape_runs` and `scrape_run_results`
+  - `products`, `product_price_history` and `product_matches` (which keeps rejected pairs too, so Gemini isn't asked twice)
+- Triggers: `products_touch` keeps `updated_at` current, and `products_log_price` writes `product_price_history` on every insert or price change, so server actions don't have to.
+- RLS: signed-in users can read competitor data; only the service role writes it. Merchants have full access to their own `products` and read-only access to their own history and matches.
+- `src/lib/supabase/server.js` (cookie-based `createClient`, RLS applies), `client.js` (browser client for future auth UI) and `admin.js` (`createAdminClient`, service role, for scripts only).
+- Checked: `npm run lint` and `npm run build` pass. The SQL has not been run yet (no Docker for a local database).
+- To apply: `npx supabase login`, `npx supabase link --project-ref rgszoofbwhptzcmixgjp`, `npx supabase db push`.
+- Open: `shared.js` still assumes the old contract. It must stop pruning with deletes (the FK now blocks deleting listings that have history), aggregate store rows into typical/min/max, upsert history on `(listing_id, data_date)` with the feed's date and fill `category_code`. Next come `scripts/scrape.mjs`, the auth pages and `src/proxy.js` for session refresh.
+
+## 2026-09-25: Migration applied
+
+- The user pushed `0001_init.sql` to project `rgszoofbwhptzcmixgjp`.
+- Checked with the service-role key: all 8 tables exist, `competitors` holds 10 rows, and the rest are empty. With the publishable (anon) key, `competitors` returns 0 rows, so RLS blocks visitors who aren't signed in.
+- Next: adapt `shared.js` and `kolkostruva.js` to the new schema, then add `scripts/scrape.mjs`.
+
+## 2026-09-25: Big-picture product rule
+
+- `CLAUDE.md`: new "Think about the whole product" rule in the Product section:
+  - The goal is revenue and merchants who come back daily, so the app has to do more than match prices.
+  - Grocery chains come first and other market types come later, so nothing should be grocery-only.
+  - The free Gemini tier has a per-minute limit, so matching narrows candidates without AI first, batches candidates into one request, caches every verdict and throttles.
+- Open: `competitors` has no market-type column yet. Add one (for example `market_type text default 'grocery'`) when the second market type arrives, or earlier if the UI starts to filter by it.
