@@ -16,8 +16,39 @@
     "menu": "Menu"
   },
   "dashboard": {
-    "title": "Price overview",
-    "intro": "How your catalog compares with competitor prices collected daily."
+    "title": "Your prices today",
+    "intro": "How your catalog compares with competitor prices collected daily.",
+    "dataAsOf": "Competitor prices as of {date}",
+    "dataStale": "Out of date",
+    "noData": "No competitor data yet",
+    "summary": "Summary",
+    "hints": {
+      "at-risk": "More than {pct} above the cheapest chain",
+      "opportunity": "Cheapest by more than {pct}, room to raise",
+      "competitive": "Within {pct} of the cheapest chain",
+      "unmatched": "No chain sells it yet, or matching is pending"
+    },
+    "products": "Products",
+    "filter": "Filter by status",
+    "all": "All",
+    "cols": {
+      "product": "Product",
+      "yourPrice": "Your price",
+      "cheapest": "Cheapest competitor",
+      "gap": "Gap",
+      "status": "Status"
+    },
+    "promo": "Promo",
+    "chains": "{n} chains",
+    "chain": "1 chain",
+    "noMatch": "No match yet",
+    "empty": "No products yet",
+    "emptyText": "Your catalog will appear here once products are added.",
+    "emptyFilter": "No products with this status.",
+    "pagination": "Pages",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {pages}"
   },
   "status": {
     "competitive": "Competitive",
@@ -259,7 +290,6 @@
       "unknown": "Something went wrong. Please try again.",
       "same_password": "Choose a password different from your current one.",
       "password_mismatch": "The passwords don't match."
-    },
-    "signedInAs": "Signed in as"
+    }
   }
 }
