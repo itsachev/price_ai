@@ -341,3 +341,58 @@
   font-size: var(--text-sm);
   text-wrap: pretty;
 }
+
+/* Possible matches: listings Gemini flagged as similar, on the edit page. */
+.dash__suggest {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.suggest__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  container-type: inline-size;
+}
+
+.suggest__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding-block: var(--space-1);
+  border-block-start: 1px solid var(--border);
+
+  & form { grid-column: 1 / -1; }
+  &[data-linked] .suggest__title { font-weight: 600; }
+}
+
+.suggest__text {
+  display: grid;
+  gap: 0.15em;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+
+  & small { font-size: var(--text-xs); }
+}
+
+.suggest__chain {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.suggest__price { font-weight: 600; white-space: nowrap; }
+
+@container (width >= 36rem) {
+  .suggest__item {
+    grid-template-columns: 1fr auto auto;
+    & form { grid-column: auto; }
+  }
+}

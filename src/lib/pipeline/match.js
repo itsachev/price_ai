@@ -1,6 +1,7 @@
 /**
  * Matches merchant products to competitor listings, then labels each product's
- * price. Runs only in scripts/match.mjs (the daily job), never on a request.
+ * price. Runs in scripts/match.mjs (the daily job, every product) and in the
+ * background after a product is saved (just that product), never on a request.
  *
  * 1. Narrow without AI: titles are transliterated to Latin (feeds mix "Vereya"
  *    and "Верея"), tokenized and scored by shared tokens weighted by IDF over
@@ -9,8 +10,11 @@
  * 2. Ask Gemini about the remaining pairs, many per request, throttled, and
  *    resuming after rate limits. Every verdict, rejected ones too, is cached in
  *    `match_verdicts` per normalized product text, so no pair is judged twice
- *    and merchants selling the same product share verdicts.
- * 3. Recompute `products.price_status` from confirmed matches' latest prices.
+ *    and merchants selling the same product share verdicts. Rejected pairs that
+ *    could still be the product (the merchant's text is too vague to be sure)
+ *    are flagged `possible` and shown to the merchant as possible matches.
+ * 3. Recompute `products.price_status` from confirmed matches and the listings
+ *    the merchant linked by hand (`product_links`).
  *
  * Every limit is env config with free-tier defaults, so production (paid tier,
  * stronger model) is a config change.
@@ -157,7 +161,9 @@ For each pair, decide whether the competitor listing is the SAME product the mer
 Same means: same brand (or both unbranded/private label of the same kind), same variant (flavor, fat %, type) and same pack size.
 Titles may be in Cyrillic or Latin, abbreviated, truncated or in a different word order; that alone is not a difference.
 A different brand, a different variant or a different pack size is NOT the same product.
-Return one result per pair id: same (boolean), confidence 0..1 and a reason of at most 8 words.`;
+When not the same, set similar to true only if the listing could still be the merchant's product and it is
+unclear only because a text leaves out a detail (e.g. no fat %, flavor or pack size); a stated difference is not similar.
+Return one result per pair id: same (boolean), similar (boolean), confidence 0..1 and a reason of at most 8 words.`;
 
 const SCHEMA = {
   type: 'ARRAY',
@@ -166,10 +172,11 @@ const SCHEMA = {
     properties: {
       id: { type: 'INTEGER' },
       same: { type: 'BOOLEAN' },
+      similar: { type: 'BOOLEAN' },
       confidence: { type: 'NUMBER' },
       reason: { type: 'STRING' },
     },
-    required: ['id', 'same', 'confidence', 'reason'],
+    required: ['id', 'same', 'similar', 'confidence', 'reason'],
   },
 };
 
@@ -242,15 +249,19 @@ async function loadAll(query) {
 }
 
 /**
- * Matches every product (service-role client) and refreshes price statuses.
- * `judge` defaults to a Gemini client; pass a fake to run without AI.
+ * Matches every product, or only `productIds`, (service-role client) and
+ * refreshes their price statuses. `judge` defaults to a Gemini client; pass a
+ * fake to run without AI.
  */
-export async function runMatch(supabase, { config = matchConfig(), judge, log = console.log } = {}) {
+export async function runMatch(supabase, { config = matchConfig(), judge, log = console.log, productIds } = {}) {
   const since = new Date(Date.now() - config.activeDays * 864e5).toISOString();
   const listings = await loadAll(() =>
     supabase.from('competitor_listings').select('id, competitor_key, title, category_code, price').gte('captured_at', since).order('id'),
   );
-  const products = await loadAll(() => supabase.from('products').select('id, name, brand, size, category_code, price, match_key, price_status').order('id'));
+  const products = await loadAll(() => {
+    const q = supabase.from('products').select('id, name, brand, size, category_code, price, match_key, price_status');
+    return (productIds ? q.in('id', productIds) : q).order('id');
+  });
   const productById = new Map(products.map((p) => [p.id, p]));
   log(`${products.length} products, ${listings.length} active listings`);
 
@@ -276,17 +287,27 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
   const verdicts = new Map([...byKey.keys()].map((k) => [k, new Map()]));
   for (const part of chunks([...byKey.keys()], 50)) {
     const rows = await loadAll(() =>
-      supabase.from('match_verdicts').select('match_key, listing_id, confirmed').in('match_key', part)
+      supabase.from('match_verdicts').select('match_key, listing_id, confirmed, possible').in('match_key', part)
         .order('match_key').order('listing_id'),
     );
-    for (const v of rows) verdicts.get(v.match_key).set(v.listing_id, v.confirmed);
+    for (const v of rows) verdicts.get(v.match_key).set(v.listing_id, v);
   }
 
-  // Pairs no one has judged yet.
+  // Listings merchants linked by hand, per product.
+  const links = new Map();
+  for (const part of chunks(products.map((p) => p.id), CHUNK)) {
+    const rows = await loadAll(() =>
+      supabase.from('product_links').select('product_id, listing_id').in('product_id', part).order('product_id').order('listing_id'),
+    );
+    for (const l of rows) links.set(l.product_id, [...(links.get(l.product_id) ?? []), l.listing_id]);
+  }
+
+  // Pairs no one has judged yet, and rejections from before `possible` existed.
   const pending = [];
   for (const [key, { product }] of byKey) {
     for (const { listing } of findCandidates(product, index, config)) {
-      if (!verdicts.get(key).has(listing.id)) pending.push({ key, product, listing });
+      const v = verdicts.get(key).get(listing.id);
+      if (!v || (!v.confirmed && v.possible == null)) pending.push({ key, product, listing });
     }
   }
   log(`${byKey.size} distinct products, ${pending.length} pairs to judge`);
@@ -321,10 +342,13 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
       .map((r) => {
         const { key, listing } = batch[r.id];
         const confidence = Math.min(1, Math.max(0, Number(r.confidence) || 0));
+        const confirmed = Boolean(r.same) && confidence >= config.minConfidence;
         return {
           match_key: key,
           listing_id: listing.id,
-          confirmed: Boolean(r.same) && confidence >= config.minConfidence,
+          confirmed,
+          // A low-confidence "same" is a possible match too.
+          possible: !confirmed && (Boolean(r.similar) || Boolean(r.same)),
           confidence,
           reason: String(r.reason ?? '').slice(0, 200),
           model: config.model,
@@ -333,20 +357,21 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
     // Unanswered pairs stay pending and are asked again next run.
     const { error } = await supabase.from('match_verdicts').upsert(rows, { onConflict: 'match_key,listing_id' });
     if (error) throw error;
-    for (const r of rows) verdicts.get(r.match_key).set(r.listing_id, r.confirmed);
+    for (const r of rows) verdicts.get(r.match_key).set(r.listing_id, r);
     judged += rows.length;
     log(`request ${requests}: ${rows.filter((r) => r.confirmed).length}/${rows.length} confirmed`);
   }
 
-  // Price statuses from confirmed, still-listed matches.
+  // Price statuses from confirmed or linked, still-listed matches.
   const changes = new Map();
   const counts = {};
   for (const [key, { ids }] of byKey) {
-    const prices = [...verdicts.get(key)]
-      .filter(([listingId, confirmed]) => confirmed && activeById.has(listingId))
-      .map(([listingId]) => Number(activeById.get(listingId).price));
+    const confirmed = [...verdicts.get(key).values()].filter((v) => v.confirmed).map((v) => v.listing_id);
     for (const id of ids) {
       const p = productById.get(id);
+      const prices = [...new Set([...confirmed, ...(links.get(id) ?? [])])]
+        .filter((listingId) => activeById.has(listingId))
+        .map((listingId) => Number(activeById.get(listingId).price));
       const status = priceStatus(Number(p.price), prices, config.priceTolerance);
       counts[status] = (counts[status] ?? 0) + 1;
       if (status !== p.price_status) {

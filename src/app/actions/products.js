@@ -2,7 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { decodeCsv, parseCatalogCsv, toProduct } from '@/lib/catalog';
+import { matchConfig, priceStatus, runMatch } from '@/lib/pipeline/match';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
 // Rows per import_products call; keeps each request well under PostgREST's body limit.
@@ -21,6 +24,19 @@ async function merchant() {
 const fields = (formData) => Object.fromEntries(['name', 'brand', 'size', 'sku', 'price'].map((f) => [f, formData.get(f)]));
 const dbError = (error) => (error.code === '23505' ? 'sku_taken' : 'unknown');
 
+// Matches one saved product against the listings already scraped, after the
+// response is sent, so saving never waits on Gemini. The id came back through
+// RLS, so the service-role client only touches the caller's own product. If the
+// platform cuts the run short, the daily `npm run match` picks it up.
+// ponytail: one run per save; batch through a queue if imports should match too.
+function matchInBackground(id) {
+  after(() =>
+    runMatch(createAdminClient(), { productIds: [id], log: () => {} })
+      .then(({ stopped }) => stopped && console.warn('background match stopped', id, stopped))
+      .catch((error) => console.error('background match failed', id, error)),
+  );
+}
+
 function done() {
   revalidatePath('/dashboard', 'layout');
 }
@@ -34,11 +50,11 @@ export async function saveProduct(_prev, formData) {
 
   const supabase = await merchant();
   const id = formData.get('id');
-  const res = id
-    ? await supabase.from('products').update(product).eq('id', id)
-    : await supabase.from('products').insert(product);
+  const query = id ? supabase.from('products').update(product).eq('id', id) : supabase.from('products').insert(product);
+  const res = await query.select('id').single();
   if (res.error) return { error: dbError(res.error), values };
 
+  matchInBackground(res.data.id);
   done();
   if (id) redirect('/dashboard/products?notice=saved');
   return { notice: 'added' };
@@ -80,4 +96,35 @@ export async function importProducts(_prev, formData) {
     skipped: errors.length,
     errors: errors.slice(0, 10),
   };
+}
+
+// Accept or undo a possible match (a listing Gemini flagged as similar). RLS on
+// product_links only allows the caller's own products. The status is refreshed
+// here from the overview, so the dashboard shows the new gap at once.
+async function setLink(formData, linked) {
+  const supabase = await merchant();
+  const productId = Number(formData.get('product_id'));
+  const listingId = Number(formData.get('listing_id'));
+  const { error } = linked
+    ? await supabase.from('product_links').upsert({ product_id: productId, listing_id: listingId })
+    : await supabase.from('product_links').delete().eq('product_id', productId).eq('listing_id', listingId);
+  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
+
+  const { activeDays, priceTolerance } = matchConfig();
+  const { data, error: overviewError } = await supabase
+    .rpc('product_overview', { active_days: activeDays })
+    .eq('id', productId)
+    .single();
+  if (overviewError) throw new Error(`${overviewError.code}: ${overviewError.message}`, { cause: overviewError });
+  const status = priceStatus(Number(data.price), data.best_price == null ? [] : [Number(data.best_price)], priceTolerance);
+  if (status !== data.price_status) await supabase.from('products').update({ price_status: status }).eq('id', productId);
+  done();
+}
+
+export async function linkListing(formData) {
+  await setLink(formData, true);
+}
+
+export async function unlinkListing(formData) {
+  await setLink(formData, false);
 }

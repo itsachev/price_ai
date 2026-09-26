@@ -153,6 +153,10 @@ export default async function DashboardPage({ searchParams }) {
                           {r.chain_count === 1 ? t.chain : fill(t.chains, { n: r.chain_count })}
                         </small>
                       </>
+                    ) : r.suggestion_count > 0 ? (
+                      <Link href={`/dashboard/products?edit=${r.id}`} className="dash__suggest">
+                        {r.suggestion_count === 1 ? t.suggestion : fill(t.suggestions, { n: r.suggestion_count })}
+                      </Link>
                     ) : (
                       <span className="muted">{t.noMatch}</span>
                     )}

@@ -50,7 +50,9 @@
     "next": "Next",
     "page": "Page {page} of {pages}",
     "manage": "Manage products",
-    "addFirst": "Add products"
+    "addFirst": "Add products",
+    "suggestion": "1 possible match",
+    "suggestions": "{n} possible matches"
   },
   "status": {
     "competitive": "Competitive",
@@ -270,15 +272,6 @@
       "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
       "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox."
     },
-    "aside": {
-      "title": "Your prices, checked every morning",
-      "points": [
-        "Shelf prices from {count} chains, collected every night",
-        "Each of your products matched to the same item at every chain",
-        "A clear call per product: hold, raise or lower"
-      ],
-      "chains": "Chains we track"
-    },
     "errors": {
       "missing": "Enter your email and password.",
       "invalid_credentials": "Wrong email or password.",
@@ -320,7 +313,7 @@
     "delete": "Delete",
     "confirmDelete": "Delete this product and its price history?",
     "notices": {
-      "added": "Product added. Add another or import a list.",
+      "added": "Product added. Its competitor prices appear within a minute. Add another or import a list.",
       "saved": "Changes saved.",
       "deleted": "Product deleted."
     },
@@ -345,6 +338,12 @@
       "skipped": "{skipped} rows skipped:",
       "rowError": "Row {row}: {error}"
     },
-    "matchNote": "New and renamed products are matched with competitor prices in the next daily update and show as unmatched until then."
+    "matchNote": "New and renamed products are matched with competitor prices in the next daily update and show as unmatched until then.",
+    "suggest": {
+      "title": "Possible matches",
+      "help": "We couldn’t confirm these listings are your product, often because the name leaves out a detail such as fat % or pack size. Use the ones that are the same product and their prices count towards your status. Adding the missing detail to the name also lets matching find it on its own.",
+      "link": "Use this match",
+      "unlink": "Remove match"
+    }
   }
 }

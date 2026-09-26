@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Service-role client: bypasses RLS. Only for scripts/*.mjs and the daily job
-// (scrapers, matching). Never import it from app code that reaches the browser.
+// Service-role client: bypasses RLS. Only for scripts/*.mjs, the daily job and
+// the post-save background match. Never import it from code that reaches the browser.
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
