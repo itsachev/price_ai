@@ -167,8 +167,8 @@ export default function AiBackground() {
 
     const color = readColors(box.querySelector('.ai-bg__probe'));
     const setColors = () => {
-      const ink = color('var(--accent)').slice(0, 3);
-      const hot = color('light-dark(#2563eb, var(--signal))').slice(0, 3);
+      const ink = color('var(--bg-ink)').slice(0, 3);
+      const hot = color('var(--bg-hot)').slice(0, 3);
       gl.useProgram(bg);
       gl.uniform3fv(u(bg, 'uBg'), color('var(--bg)').slice(0, 3));
       gl.uniform3fv(u(bg, 'uInk'), ink);
@@ -282,7 +282,7 @@ export default function AiBackground() {
     const onMove = (e) => { target.x = e.clientX; target.y = e.clientY; };
     const onLeave = () => { target.x = target.y = -1e4; };
     const scheme = matchMedia('(prefers-color-scheme: dark)');
-    const themeObserver = new MutationObserver(redraw); // the theme toggle sets <html data-theme>
+    const themeObserver = new MutationObserver(redraw); // theme toggle and PageTone set <html data-theme|data-tone>
     const onLost = (e) => { e.preventDefault(); gsap.ticker.remove(tick); box.classList.remove('is-gl'); };
 
     redraw();
@@ -293,7 +293,7 @@ export default function AiBackground() {
     document.documentElement.addEventListener('pointerleave', onLeave);
     scheme.addEventListener('change', redraw);
     still.addEventListener('change', redraw);
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-tone'] });
     canvas.addEventListener('webglcontextlost', onLost);
 
     return () => {

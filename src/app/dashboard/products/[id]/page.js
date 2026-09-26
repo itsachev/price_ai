@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { applyPrice, deleteProduct, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
 import MatchPoller from '@/components/MatchPoller';
+import PageTone from '@/components/PageTone';
 import ProductDialog from '@/components/ProductDialog';
 import { DeleteForm, ProductForm } from '@/components/ProductForms';
 import { COMPETITORS } from '@/lib/config';
@@ -85,12 +86,12 @@ export default async function ProductPage({ params, searchParams }) {
     if (Date.parse(listing.captured_at) >= Date.parse(since) && !matches.has(listing.id)) matches.set(listing.id, { ...listing, linked: true });
   }
   const listings = [...matches.values()].sort((a, b) => a.price - b.price);
-  // Once the merchant links one suggestion, the rest are noise: keep only the
-  // linked ones, so they can still be undone.
+  // Once the product has a match (confirmed or linked), the rest are noise:
+  // keep only the linked ones, so they can still be undone.
   let possible = possibleRes.data
     .map((v) => ({ ...v.listing, reason: v.reason, linked: linked.has(v.listing.id) }))
     .sort((a, b) => a.price - b.price);
-  if (possible.some((l) => l.linked)) possible = possible.filter((l) => l.linked);
+  if (listings.length || possible.some((l) => l.linked)) possible = possible.filter((l) => l.linked);
 
   // Latest KZP day per matched listing: regular price, promo end, store count.
   const latest = new Map();
@@ -125,6 +126,7 @@ export default async function ProductPage({ params, searchParams }) {
 
   return (
     <article className="dash pd">
+      {product.match_key && <PageTone tone={product.price_status} />}
       <Link href="/dashboard" className="pd__back">← {p.back}</Link>
 
       <header className="dash__head">

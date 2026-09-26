@@ -96,3 +96,17 @@
   &::before,
   .ai-bg__aurora { animation: none; opacity: 0; transition: opacity 1.2s ease; }
 }
+
+/* Page tone (PageTone sets <html data-tone>): a product page tints the whole
+   backdrop, glows, dots and particles, with its price-status colour. */
+:root[data-tone] {
+  --glow-1: light-dark(color-mix(in srgb, var(--tone) 14%, transparent), color-mix(in srgb, var(--tone) 26%, transparent));
+  --glow-2: light-dark(color-mix(in srgb, var(--tone) 18%, transparent), color-mix(in srgb, var(--tone) 14%, transparent));
+  --glow-3: light-dark(color-mix(in srgb, var(--tone) 8%, transparent), color-mix(in srgb, var(--tone) 16%, transparent));
+  --bg-ink: var(--tone);
+  --bg-hot: light-dark(color-mix(in srgb, var(--tone) 80%, black), color-mix(in srgb, var(--tone) 65%, white));
+}
+:root[data-tone='competitive'] { --tone: var(--status-competitive); }
+:root[data-tone='opportunity'] { --tone: var(--status-opportunity); }
+:root[data-tone='at-risk'] { --tone: var(--status-at-risk); }
+:root[data-tone='unmatched'] { --tone: var(--status-unmatched); }

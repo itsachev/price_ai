@@ -23,6 +23,9 @@
   --glow-1: light-dark(color-mix(in srgb, #2563eb 12%, transparent), color-mix(in srgb, #3b82f6 22%, transparent));
   --glow-2: light-dark(color-mix(in srgb, #38bdf8 22%, transparent), color-mix(in srgb, #38bdf8 12%, transparent));
   --glow-3: light-dark(color-mix(in srgb, #6366f1 8%, transparent), color-mix(in srgb, #818cf8 14%, transparent));
+  /* Backdrop dots and particles: resting ink and the scan-sweep highlight. */
+  --bg-ink: var(--accent);
+  --bg-hot: light-dark(#2563eb, var(--signal));
   --grid-line: color-mix(in srgb, #2563eb 10%, transparent);
 
   /* Titles: ink easing into the accent. Edges: the accent-to-signal strip on cards and overlays. */
