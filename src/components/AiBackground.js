@@ -12,6 +12,7 @@ import gsap from 'gsap';
 
 const DPR_CAP = 1.5; // soft ambient art: sharper than 1.5x costs fill rate for nothing
 const CELL = 24; // dot spacing in CSS px, same as the old CSS matrix
+const DOT_OPACITY = 0.55; // scales both dot layers (matrix and constellation points)
 const SCAN_SECONDS = 12;
 
 const VERT = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
@@ -73,8 +74,8 @@ void main() {
   float r = .9 + market * .9 + scan * 1.3 + lift * 1.3;
   float dotA = 1. - smoothstep(r - .7, r + .7, length(f));
   float heat = clamp(scan + wake * .8 + lift * .7, 0., 1.);
-  float alpha = clamp((.14 + market * .3) * mask + heat * .75, 0., 1.);
-  col = mix(col, mix(uInk, uHot, heat), dotA * alpha);
+  float alpha = clamp((.14 + market * .3) * mask + heat * .3, 0., 1.);
+  col = mix(col, mix(uInk, uHot, heat), dotA * alpha * ${DOT_OPACITY});
 
   gl_FragColor = vec4(col, 1.);
 }`;
@@ -245,7 +246,7 @@ export default function AiBackground() {
         }
       }
       const lineVerts = k / 4;
-      for (const p of particles) push(p.x, p.y, (0.35 + p.heat * 0.6) * fade(p.y), p.heat);
+      for (const p of particles) push(p.x, p.y, (0.35 + p.heat * 0.6) * fade(p.y) * DOT_OPACITY, p.heat);
 
       gl.useProgram(pts);
       gl.bindBuffer(gl.ARRAY_BUFFER, pbuf);

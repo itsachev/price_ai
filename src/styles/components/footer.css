@@ -109,7 +109,7 @@
   text-align: center;
   user-select: none;
   color: transparent;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 45%, transparent), transparent 85%);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 18%, transparent), transparent 85%);
   background-clip: text;
 }
 
