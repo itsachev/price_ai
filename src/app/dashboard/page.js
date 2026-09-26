@@ -11,7 +11,7 @@ import { matchConfig, suggestPrice } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../dictionaries';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 // Tiles lead with the statuses that cost money; the quiet ones need no action.
 const TILE_ORDER = ['at-risk', 'opportunity', 'competitive', 'unmatched'];
 const QUIET = new Set(['competitive', 'unmatched']);
