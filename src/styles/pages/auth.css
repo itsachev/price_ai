@@ -9,7 +9,7 @@
   border-radius: calc(var(--radius) * 2);
   box-shadow: var(--shadow);
   /* Thin accent strip along the top edge. */
-  background-image: linear-gradient(90deg, var(--accent), var(--signal));
+  background-image: var(--edge-gradient);
   background-size: 100% 4px;
   background-repeat: no-repeat;
 

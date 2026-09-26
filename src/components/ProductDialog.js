@@ -1,18 +1,27 @@
 'use client';
 
 import { useId, useRef } from 'react';
+import { revealIn } from '@/lib/reveal';
 
 // Native modal <dialog> behind its own trigger button: focus trap, Esc and the
 // backdrop come from the browser, and it opens instantly with no server trip.
 // It stays open after an add, so several products can be added in a row; give
 // it a `key` that changes on save (e.g. updated_at) to close it after an edit.
+// On open, the title, fields and actions stagger in (GSAP).
+const REVEAL = '.modal__head h2, .modal__body > :not(form), .modal__body form > :not(.product-form__fields, [type=hidden]), .product-form__fields > *';
+
 export default function ProductDialog({ label, title, closeLabel, variant, children }) {
   const ref = useRef(null);
   const titleId = useId();
 
+  const open = () => {
+    ref.current.showModal();
+    revealIn(ref.current.querySelectorAll(REVEAL));
+  };
+
   return (
     <>
-      <button type="button" className={variant ? `button button--${variant}` : 'button'} onClick={() => ref.current.showModal()}>
+      <button type="button" className={variant ? `button button--${variant}` : 'button'} onClick={open}>
         {label}
       </button>
       <dialog ref={ref} className="modal" aria-labelledby={titleId} closedby="any" data-lenis-prevent>

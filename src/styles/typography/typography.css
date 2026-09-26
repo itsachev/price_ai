@@ -43,6 +43,20 @@ h1 {
   }
 }
 
+/* Page and section titles fill with the title gradient. Skipped where the
+   heading has its own colour (hero, CTA band, eyebrow labels). */
+:is(h1, h2):not(.hero__title, .cta h2, .eyebrow, .chain-strip__title) {
+  background: var(--title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  @media (forced-colors: active) {
+    background: none;
+    color: CanvasText;
+  }
+}
+
 h2 {
   font-size: var(--text-h2);
   line-height: 1.1;

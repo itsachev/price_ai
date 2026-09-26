@@ -158,7 +158,29 @@
   }
 }
 
+/* File input: the native button restyled as a small accent pill. */
 .field input[type='file'] {
-  padding-block: 0.6rem;
+  padding: 0.375rem;
+  font-size: var(--text-sm);
+  color: var(--muted);
   cursor: pointer;
+
+  &::file-selector-button {
+    min-block-size: 2rem;
+    margin-inline-end: 0.75rem;
+    padding-inline: 0.875rem;
+    font: inherit;
+    font-weight: 600;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: calc(var(--radius) * 0.75);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  &:hover::file-selector-button {
+    color: var(--on-accent);
+    background: var(--accent);
+  }
 }

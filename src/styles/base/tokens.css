@@ -25,6 +25,10 @@
   --glow-3: light-dark(color-mix(in srgb, #6366f1 8%, transparent), color-mix(in srgb, #818cf8 14%, transparent));
   --grid-line: color-mix(in srgb, #2563eb 10%, transparent);
 
+  /* Titles: ink easing into the accent. Edges: the accent-to-signal strip on cards and overlays. */
+  --title-gradient: linear-gradient(100deg, var(--text) 30%, color-mix(in srgb, var(--accent) 80%, var(--text)) 75%, var(--accent));
+  --edge-gradient: linear-gradient(90deg, var(--accent), var(--signal));
+
   --status-competitive: light-dark(#1d4ed8, #7aa9ff);
   --status-opportunity: light-dark(#b45309, #f5b454);
   --status-at-risk: light-dark(#b3261e, #f08a82);
