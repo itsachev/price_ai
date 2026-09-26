@@ -31,7 +31,7 @@
 /* The intro takes its own row until there is room for it beside the columns. */
 @media (width >= 64rem) {
   .site-footer__inner {
-    grid-template-columns: 1.6fr repeat(3, 1fr);
+    grid-template-columns: 1.6fr 1fr;
   }
 
   .site-footer__intro {
@@ -94,20 +94,6 @@
       color: var(--text);
       background-size: 100% 1px;
     }
-  }
-}
-
-.site-footer__chains {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-
-  & li {
-    padding: 0.25em 0.6em;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) * 0.6);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
   }
 }
 

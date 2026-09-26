@@ -13,8 +13,7 @@
     "main": "Main",
     "features": "Features",
     "how": "How it works",
-    "menu": "Menu",
-    "start": "Get started"
+    "menu": "Menu"
   },
   "dashboard": {
     "title": "Price overview",
@@ -205,9 +204,6 @@
     "tagline": "AI price intelligence for Bulgarian grocers. Your catalog against every major chain, every morning.",
     "updated": "Price feeds refreshed daily",
     "product": "Product",
-    "coverage": "Chains tracked",
-    "data": "Data",
-    "dataText": "Daily price feeds that large chains must publish under Bulgarian price-transparency law, plus the KZP open data.",
     "currency": "All prices in EUR",
     "rights": "All rights reserved."
   },

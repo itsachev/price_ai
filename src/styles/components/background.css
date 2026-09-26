@@ -1,6 +1,7 @@
-/* AI backdrop: a circuit grid with glowing nodes, three drifting glows and a
-   slow scan line. Pure CSS, fixed behind everything. Motion is transform-only
-   so it stays on the compositor and never triggers layout or paint. */
+/* AI backdrop: three aurora ribbons that slowly sway and turn over a fine dot
+   matrix, with a static film grain on top. Pure CSS, fixed behind everything.
+   Motion is transform-only so it stays on the compositor and never triggers
+   layout or paint; the grain and dots never move. */
 .ai-bg {
   position: fixed;
   inset: 0;
@@ -9,72 +10,67 @@
   pointer-events: none;
   contain: strict;
 
-  /* Grid lines plus a node on every intersection, fading out down the page. */
+  /* Dot matrix, strongest at the top and fading out down the page. */
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(circle, color-mix(in srgb, var(--accent) 40%, transparent) 0.09rem, transparent 0.12rem) -1.75rem -1.75rem / 3.5rem 3.5rem,
-      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 3.5rem 3.5rem,
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 3.5rem 3.5rem;
-    mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, #000 25%, transparent 85%);
+    background: radial-gradient(circle, var(--grid-line) 0.07rem, transparent 0.1rem) 0 0 / 1.5rem 1.5rem;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 20%, transparent 80%);
+  }
+
+  /* Film grain: one static SVG noise tile, so gradients never band. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.06;
   }
 }
 
-.ai-bg__glow {
+/* Wide, thin ellipses read as light ribbons rather than round blobs. */
+.ai-bg__aurora {
   position: absolute;
-  inline-size: 48vmax;
-  aspect-ratio: 1;
+  inset-inline-start: 50%;
+  inline-size: 130vmax;
+  block-size: 34vmax;
+  margin-inline-start: -65vmax;
   border-radius: 50%;
   background: radial-gradient(closest-side, var(--glow), transparent);
 
   &:nth-child(1) {
     --glow: var(--glow-1);
-    inset-block-start: -18vmax;
-    inset-inline-start: -14vmax;
+    inset-block-start: -12vmax;
+    rotate: -12deg;
   }
 
   &:nth-child(2) {
     --glow: var(--glow-2);
-    inline-size: 38vmax;
-    inset-block-start: 20%;
-    inset-inline-end: -16vmax;
+    block-size: 24vmax;
+    inset-block-start: 6vmax;
+    rotate: 8deg;
   }
 
   &:nth-child(3) {
     --glow: var(--glow-3);
-    inset-block-end: -22vmax;
-    inset-inline-start: 25%;
+    inset-block-start: 45%;
+    rotate: -4deg;
   }
-}
-
-.ai-bg__scan {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  block-size: 35vh;
-  background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 5%, transparent) 70%, color-mix(in srgb, var(--accent) 14%, transparent) 99%, transparent);
-  translate: 0 -100%;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .ai-bg__glow {
-    animation: ai-drift 28s ease-in-out infinite alternate;
+  .ai-bg__aurora {
+    animation: ai-aurora 26s ease-in-out infinite alternate;
 
-    &:nth-child(2) { animation-duration: 34s; animation-direction: alternate-reverse; }
-    &:nth-child(3) { animation-duration: 40s; }
-  }
-
-  .ai-bg__scan {
-    animation: ai-scan 12s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    &:nth-child(2) { animation-duration: 32s; animation-direction: alternate-reverse; }
+    &:nth-child(3) { animation-duration: 40s; animation-delay: -12s; }
   }
 }
 
-@keyframes ai-drift {
-  to { translate: 8vmax 6vmax; scale: 1.15; }
-}
-
-@keyframes ai-scan {
-  to { translate: 0 calc(100dvh + 100%); }
+/* `transform` composes with the static `rotate` above, so each ribbon keeps
+   its own tilt while it sways. */
+@keyframes ai-aurora {
+  50% { transform: translate(-6vmax, 4vmax) rotate(6deg) scale(1.1, 1.3); }
+  to { transform: translate(7vmax, -2vmax) rotate(-5deg) scale(0.95, 1.1); }
 }

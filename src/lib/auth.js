@@ -9,18 +9,18 @@ export function safeNext(value, fallback = '/dashboard') {
 // Pages for signed-out visitors; signed-in visitors skip them.
 export const GUEST_PAGES = ['/login', '/signup', '/forgot-password'];
 
-// Header hint with no network call: a session cookie whose access token hasn't
-// expired. A stale cookie (expired, or left over from a deleted user) reads as
-// signed out; visiting /login lets the proxy clear it.
-// ponytail: a user deleted in Supabase still reads as signed in until the token
-// expires (JWT expiry, 1h by default); the proxy and pages do the real check.
+// Header hint with no network call: a session cookie that holds a refresh token.
+// The access token inside expires hourly and only gets refreshed on proxy routes,
+// so checking its expiry showed signed-in visitors "Sign in" on marketing pages.
+// ponytail: a revoked session or deleted user still reads as signed in here; the
+// first app route they open runs the proxy, which sends them to /login and clears it.
 export async function hasSession(cookieStore) {
   const first = cookieStore.getAll().find((c) => /^sb-.+-auth-token(\.0)?$/.test(c.name));
   if (!first) return false;
   try {
     let raw = await combineChunks(first.name.replace(/\.0$/, ''), (name) => cookieStore.get(name)?.value);
     if (raw?.startsWith('base64-')) raw = stringFromBase64URL(raw.slice('base64-'.length));
-    return JSON.parse(raw).expires_at * 1000 > Date.now();
+    return Boolean(JSON.parse(raw).refresh_token);
   } catch {
     return false;
   }

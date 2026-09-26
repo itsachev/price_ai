@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import MenuCloser from '@/components/MenuCloser';
-import { COMPETITORS, LOCALES } from '@/lib/config';
+import { LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
 import { setTheme } from './actions/theme';
@@ -33,10 +33,9 @@ export default async function RootLayout({ children }) {
       <body>
         {/* Decorative AI backdrop: pure CSS, transform-only motion. */}
         <div className="ai-bg" aria-hidden="true">
-          <span className="ai-bg__glow" />
-          <span className="ai-bg__glow" />
-          <span className="ai-bg__glow" />
-          <span className="ai-bg__scan" />
+          <span className="ai-bg__aurora" />
+          <span className="ai-bg__aurora" />
+          <span className="ai-bg__aurora" />
         </div>
         <SmoothScroll>
           <header className="site-header">
@@ -76,9 +75,9 @@ export default async function RootLayout({ children }) {
                   <Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>
                 )}
               </nav>
-              <Link href={signedIn ? '/dashboard' : '/signup'} className="button button--signal site-header__cta">
-                {signedIn ? dict.nav.dashboard : dict.nav.start}
-              </Link>
+              {signedIn && (
+                <Link href="/dashboard" className="button button--signal site-header__cta">{dict.nav.dashboard}</Link>
+              )}
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
               </button>
@@ -102,16 +101,6 @@ export default async function RootLayout({ children }) {
                   <li><Link href="/#how">{dict.home.how.eyebrow}</Link></li>
                 </ul>
               </nav>
-              <section className="site-footer__col" aria-labelledby="footer-chains">
-                <h2 id="footer-chains" className="eyebrow">{dict.footer.coverage}</h2>
-                <ul className="site-footer__chains">
-                  {Object.values(COMPETITORS).map((name) => <li key={name}>{name}</li>)}
-                </ul>
-              </section>
-              <section className="site-footer__col" aria-labelledby="footer-data">
-                <h2 id="footer-data" className="eyebrow">{dict.footer.data}</h2>
-                <p>{dict.footer.dataText}</p>
-              </section>
               <p className="site-footer__wordmark" aria-hidden="true">PriceAI</p>
               <div className="site-footer__bar">
                 <p>© {new Date().getFullYear()} PriceAI. {dict.footer.rights}</p>
