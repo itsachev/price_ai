@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "scrape": "node --env-file=.env.local scripts/scrape.mjs",
-    "check": "node scripts/check-kzp.mjs && node scripts/check-match.mjs",
+    "check": "node scripts/check-kzp.mjs && node scripts/check-match.mjs && node scripts/check-auth.mjs",
     "match": "node --env-file=.env.local scripts/match.mjs",
     "seed-demo": "node --env-file=.env.local scripts/seed-demo.mjs"
   },

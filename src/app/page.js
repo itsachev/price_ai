@@ -159,7 +159,7 @@ export default async function HomePage() {
         ))}
       </dl>
 
-      <section className="section stack" aria-labelledby="features-title">
+      <section id="features" className="section stack" aria-labelledby="features-title">
         <header className="section-head" data-reveal>
           <p className="eyebrow">{home.features.eyebrow}</p>
           <h2 id="features-title">{home.features.title}</h2>

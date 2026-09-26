@@ -1,27 +1,24 @@
-/* Header */
+/* Header: a floating glass bar. Phones get brand, CTA and a menu button; the
+   nav (a native popover) opens as a panel under the bar. From 60rem the same
+   nav sits inline, so there's one set of links and no JS menu state. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
+  padding-block: 0.625rem;
 }
 
 .site-header__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap; /* controls drop to a second row on the narrowest phones */
-  column-gap: var(--space-2);
+  gap: 0.25rem;
   min-height: 3.5rem;
-}
-
-/* Account links: pushes the switches to the end of the row. */
-.site-header__nav {
-  display: flex;
-  align-items: center;
-  margin-inline-start: auto;
+  padding: 0.25rem 0.375rem 0.25rem clamp(0.75rem, 2vw, 1.125rem);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: calc(var(--radius) * 1.6);
+  box-shadow: 0 0.75rem 2rem -1.25rem light-dark(color-mix(in srgb, var(--text) 25%, transparent), #000);
 }
 
 .brand {
@@ -30,65 +27,44 @@
   letter-spacing: var(--tracking-heading);
   font-size: var(--text-lead);
   text-decoration: none;
+  margin-inline-end: auto;
 }
 
 .brand span {
   color: var(--accent);
 }
 
-.lang-switch {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.lang-switch button {
-  display: grid;
-  place-items: center;
-  min-width: 2.75rem; /* 44px touch target */
-  min-height: 2.75rem;
-  border-radius: var(--radius);
+.site-header__cta {
+  padding-inline: clamp(0.875rem, 2vw, 1.25rem);
   font-size: var(--text-sm);
   font-weight: 600;
-  font-family: inherit;
+  white-space: nowrap;
+}
+
+/* Shared look for the small header controls: 44px targets, quiet until hovered. */
+.site-header__menu,
+.lang-switch button,
+.theme-switch button,
+.site-menu__links a,
+.site-menu__account {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--muted);
   background: none;
   border: 0;
-  cursor: pointer;
-}
-
-.lang-switch button[aria-pressed='true'] {
-  color: var(--text);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--border);
-}
-
-/* Header link */
-.site-header__link {
-  display: grid;
-  place-items: center;
-  min-height: 2.75rem;
-  padding-inline: var(--space-1);
-  font-size: var(--text-sm);
-  font-weight: 600;
   text-decoration: none;
-}
-
-/* Icon buttons: sign out and the theme switch. The theme switch shows only
-   the button that leads away from the active theme. */
-.site-header__icon,
-.theme-switch button {
-  display: grid;
-  place-items: center;
-  min-width: 2.75rem; /* 44px touch target */
-  min-height: 2.75rem;
-  border-radius: var(--radius);
-  color: var(--muted);
-  background: none;
-  border: 0;
   cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
 
   &:hover {
     color: var(--text);
+    background: color-mix(in srgb, var(--text) 6%, transparent);
   }
 
   & svg {
@@ -102,10 +78,30 @@
   }
 }
 
-.theme-switch button {
-  &[value='light'] {
-    display: none;
-  }
+.site-menu__links a,
+.site-menu__account {
+  padding-inline: 0.875rem;
+}
+
+.site-menu__account {
+  color: var(--text);
+}
+
+.lang-switch,
+.theme-switch {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.lang-switch button[aria-pressed='true'] {
+  color: var(--text);
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* The theme switch shows only the button that leads away from the active theme. */
+.theme-switch button[value='light'] {
+  display: none;
 }
 
 :root[data-theme='dark'] .theme-switch button {
@@ -117,5 +113,131 @@
   :root:not([data-theme='light']) .theme-switch button {
     &[value='dark'] { display: none; }
     &[value='light'] { display: grid; }
+  }
+}
+
+.site-menu__links {
+  display: flex;
+  gap: 0.125rem;
+  padding: 0;
+  list-style: none;
+}
+
+.site-menu__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Phone and tablet: the nav is a popover panel under the bar. */
+.site-menu {
+  position: fixed;
+  inset: 4.75rem var(--gutter) auto;
+  inline-size: auto;
+  max-block-size: calc(100dvh - 5.75rem);
+  margin: 0;
+  padding: var(--space-1);
+  overflow: auto;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.6);
+  box-shadow: var(--shadow);
+
+  &:popover-open {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  & .site-menu__links {
+    flex-direction: column;
+
+    & a {
+      justify-items: start;
+      font-size: var(--text-lead);
+      color: var(--text);
+    }
+  }
+
+  & .site-menu__tools {
+    justify-content: space-between;
+    padding-block-start: var(--space-1);
+    border-block-start: 1px solid var(--border);
+  }
+
+  & .site-menu__account {
+    inline-size: 100%;
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--bg) 40%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (width < 60rem) {
+  .site-menu {
+    transition: opacity 0.18s, translate 0.18s, display 0.18s allow-discrete, overlay 0.18s allow-discrete;
+
+    &:not(:popover-open) {
+      opacity: 0;
+      translate: 0 -0.5rem;
+    }
+  }
+
+  @starting-style {
+    .site-menu:popover-open {
+      opacity: 0;
+      translate: 0 -0.5rem;
+    }
+  }
+}
+
+/* Desktop: the same nav, inline. Author styles beat the popover UA styles. */
+@media (width >= 60rem) {
+  .site-header__menu {
+    display: none;
+  }
+
+  .brand {
+    margin-inline-end: var(--space-2);
+  }
+
+  .site-menu {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.25rem;
+    position: static;
+    max-block-size: none;
+    padding: 0;
+    overflow: visible;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    opacity: 1;
+    translate: none;
+
+    & .site-menu__links {
+      flex-direction: row;
+      margin-inline-end: auto;
+
+      & a {
+        font-size: var(--text-sm);
+        color: var(--muted);
+      }
+    }
+
+    & .site-menu__tools {
+      padding: 0 0.5rem 0 0;
+      margin-inline-end: 0.25rem;
+      border: 0;
+      border-inline-end: 1px solid var(--border);
+    }
+
+    & .site-menu__account {
+      inline-size: auto;
+      box-shadow: none;
+    }
   }
 }

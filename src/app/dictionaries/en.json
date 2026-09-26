@@ -10,7 +10,11 @@
     "theme": "Theme",
     "themeLight": "Switch to light theme",
     "themeDark": "Switch to dark theme",
-    "main": "Main"
+    "main": "Main",
+    "features": "Features",
+    "how": "How it works",
+    "menu": "Menu",
+    "start": "Get started"
   },
   "dashboard": {
     "title": "Price overview",
@@ -208,14 +212,44 @@
     "rights": "All rights reserved."
   },
   "auth": {
-    "title": "Sign in",
-    "intro": "Sign in to see how your catalog compares with the market, or create an account to start.",
+    "signInTitle": "Welcome back",
+    "signInIntro": "Sign in to see where your prices stand this morning.",
+    "signUpTitle": "Create your account",
+    "signUpIntro": "Add your catalog and see how every product compares with the chains.",
+    "forgotTitle": "Reset your password",
+    "forgotIntro": "Enter your account email and we'll send you a link to choose a new password.",
+    "resetTitle": "Choose a new password",
+    "resetIntro": "You'll go straight to your dashboard after saving it.",
     "email": "Email",
-    "password": "Password (at least 8 characters)",
+    "password": "Password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHint": "At least 6 characters",
     "signIn": "Sign in",
     "signUp": "Create account",
+    "signUpLink": "Create an account",
     "signOut": "Sign out",
-    "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
+    "sendLink": "Send reset link",
+    "savePassword": "Save password",
+    "forgot": "Forgot password?",
+    "noAccount": "New to PriceAI?",
+    "haveAccount": "Already have an account?",
+    "backToSignIn": "Back to sign in",
+    "notices": {
+      "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
+      "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox."
+    },
+    "aside": {
+      "title": "Your prices, checked every morning",
+      "points": [
+        "Shelf prices from {count} chains, collected every night",
+        "Each of your products matched to the same item at every chain",
+        "A clear call per product: hold, raise or lower"
+      ],
+      "chains": "Chains we track"
+    },
     "errors": {
       "missing": "Enter your email and password.",
       "invalid_credentials": "Wrong email or password.",
@@ -225,8 +259,10 @@
       "email_address_invalid": "Enter a valid email address.",
       "over_email_send_rate_limit": "Too many emails sent. Try again in a few minutes.",
       "over_request_rate_limit": "Too many attempts. Try again in a few minutes.",
-      "link": "That link is invalid or has expired. Sign in or create the account again.",
-      "unknown": "Something went wrong. Please try again."
+      "link": "That link is invalid or has expired. Request a new one or sign in again.",
+      "unknown": "Something went wrong. Please try again.",
+      "same_password": "Choose a password different from your current one.",
+      "password_mismatch": "The passwords don't match."
     },
     "signedInAs": "Signed in as"
   }

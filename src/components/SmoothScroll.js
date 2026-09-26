@@ -29,7 +29,7 @@ export default function SmoothScroll({ children }) {
   }, [lenis]);
 
   return (
-    <ReactLenis root options={{ autoRaf: false, smoothWheel, lerp: 0.12, anchors: { offset: -64 } }}>
+    <ReactLenis root options={{ autoRaf: false, smoothWheel, lerp: 0.12, anchors: { offset: -96 } }}>
       {children}
     </ReactLenis>
   );

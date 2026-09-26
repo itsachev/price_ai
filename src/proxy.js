@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { GUEST_PAGES, safeNext } from '@/lib/auth';
 
 // Refreshes the Supabase session cookie and does the optimistic auth redirects.
 // Pages still check the user themselves; RLS is the real guard.
@@ -24,9 +25,13 @@ export async function proxy(request) {
 
   const { data } = await supabase.auth.getClaims();
   const signedIn = Boolean(data?.claims);
-  const { pathname } = request.nextUrl;
+  const { pathname, search, searchParams } = request.nextUrl;
+  const guestPage = GUEST_PAGES.includes(pathname);
 
-  const target = !signedIn && pathname !== '/login' ? '/login' : signedIn && pathname === '/login' ? '/dashboard' : null;
+  // Signed out on an app page: sign in, then come back. Signed in on a guest page: go on.
+  const target = !signedIn && !guestPage
+    ? `/login?next=${encodeURIComponent(pathname + search)}`
+    : signedIn && guestPage ? safeNext(searchParams.get('next')) : null;
   if (!target) return response;
 
   // Keep any refreshed session cookies on the redirect.
@@ -38,5 +43,5 @@ export async function proxy(request) {
 // Only app routes pay for the session check; marketing pages stay untouched.
 // Add every new signed-in route here.
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/reset-password', '/login', '/signup', '/forgot-password'],
 };
