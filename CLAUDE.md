@@ -42,6 +42,7 @@ Commands:
 - `npm run check` runs the self-checks (`scripts/check-kzp.mjs`, `scripts/check-match.mjs`, `scripts/check-auth.mjs`, `scripts/check-catalog.mjs`).
 - `npm run match` matches every product and refreshes price statuses (`src/lib/pipeline/match.js`).
 - `npm run seed-demo` creates a demo merchant (`demo@priceai.test`) with a small catalog.
+- `npm run seed-history -- <email> [--clean]` adds 10 `DEMO-` products to that account, linked to real listings, with about 4 months of fake competitor and merchant price history before the newest feed date (marked `captured_at = 2000-01-01`). `--clean` removes it all.
 
 Both read a service-role Supabase client from `.env.local`, which must set `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `GEMINI_API_KEY`.
 

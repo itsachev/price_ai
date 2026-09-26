@@ -61,19 +61,23 @@ export default async function DashboardPage({ searchParams }) {
   const countQuery = (s) =>
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('price_status', s);
 
-  const [rowsRes, addedRes, latestRes, ...countRes] = await Promise.all([
+  const [rowsRes, addedRes, latestRes, movesRes, ...countRes] = await Promise.all([
     rowsQuery,
     // A just-added product goes first, wherever it sorts.
     added ? supabase.rpc('product_overview', { active_days: activeDays }).eq('id', added).maybeSingle() : { data: null },
     supabase.from('competitor_listing_price_history').select('data_date').order('data_date', { ascending: false }).limit(1),
+    // The day's price moves at the chains (Reports), counted for the link above the tiles.
+    supabase.rpc('price_moves').select('kind'),
     ...PRICE_STATUSES.map(countQuery),
   ]);
-  for (const res of [rowsRes, addedRes, latestRes, ...countRes]) {
+  for (const res of [rowsRes, addedRes, latestRes, movesRes, ...countRes]) {
     if (res.error) throw new Error(`${res.error.code}: ${res.error.message}`, { cause: res.error });
   }
 
   const counts = Object.fromEntries(PRICE_STATUSES.map((s, i) => [s, countRes[i].count ?? 0]));
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const moves = movesRes.data.length;
+  const undercut = movesRes.data.filter((m) => m.kind === 'undercut').length;
   const rows = addedRes.data ? [addedRes.data, ...rowsRes.data.filter((r) => r.id !== added)] : rowsRes.data;
   const pages = Math.max(1, Math.ceil((rowsRes.count ?? 0) / PAGE_SIZE));
 
@@ -109,6 +113,13 @@ export default async function DashboardPage({ searchParams }) {
       </header>
 
       {rows.some((r) => !r.match_key) && <MatchPoller />}
+
+      {moves > 0 && (
+        <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
+          {fill(t.movesToday, { n: moves })}
+          {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
+        </Link>
+      )}
 
       {tp.notices[notice] && (
         <p className="form-message" role="status" data-kind="notice">{tp.notices[notice]}</p>

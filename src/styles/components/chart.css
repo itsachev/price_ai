@@ -149,6 +149,7 @@
 
   & [data-series='market'] { --c: var(--market); }
   & [data-status='at-risk'] { --c: var(--status-at-risk); }
+  & [data-status='competitive'] { --c: var(--status-competitive); }
 
   & dt {
     font-size: var(--text-sm);

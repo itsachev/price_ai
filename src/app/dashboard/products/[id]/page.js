@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { applyPrice, deleteProduct, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
 import MatchPoller from '@/components/MatchPoller';
 import PageTone from '@/components/PageTone';
+import PriceTrend from '@/components/PriceTrend';
 import ProductDialog from '@/components/ProductDialog';
 import { DeleteForm, ProductForm } from '@/components/ProductForms';
 import { COMPETITORS } from '@/lib/config';
@@ -17,6 +18,8 @@ import { getDictionary, getLocale } from '../../../dictionaries';
 // runs here.
 const LISTING = 'id, competitor_key, title, price, on_promo, captured_at, url';
 const HISTORY_ROWS = 12;
+// Price trend: one point a week, back this many weeks from the newest feed date.
+const TREND_WEEKS = 26;
 
 // Listings not seen within this window count as delisted.
 const activeSince = (days) => new Date(Date.now() - days * 864e5).toISOString();
@@ -74,7 +77,8 @@ export default async function ProductPage({ params, searchParams }) {
       .select('price, recorded_at')
       .eq('product_id', id)
       .order('recorded_at', { ascending: false })
-      .limit(HISTORY_ROWS),
+      // ponytail: every change, for the trend chart; cap by date once prices change many times a day.
+      .limit(1000),
   ]);
   check(overviewRes, confirmedRes, possibleRes, linksRes, ownHistoryRes);
 
@@ -98,12 +102,37 @@ export default async function ProductPage({ params, searchParams }) {
   if (listings.length) {
     const historyRes = await supabase
       .from('competitor_listing_price_history')
-      .select('listing_id, regular_price, promo_ends_on, store_count')
+      .select('listing_id, data_date, regular_price, promo_ends_on, store_count')
       .in('listing_id', listings.map((l) => l.id))
       .gte('data_date', since.slice(0, 10))
       .order('data_date', { ascending: false });
     check(historyRes);
     for (const h of historyRes.data) if (!latest.has(h.listing_id)) latest.set(h.listing_id, h);
+  }
+
+  // Price trend, weekly: the merchant's price in effect that day against the
+  // average of the matched listings. Weeks with no feed, or before the product
+  // had a price, are left out.
+  const newest = latest.size ? [...latest.values()].map((h) => h.data_date).sort().at(-1) : null;
+  const trend = { yours: [], market: [], dates: [] };
+  if (newest) {
+    const weeks = Array.from({ length: TREND_WEEKS }, (_, i) =>
+      new Date(Date.parse(newest) - (TREND_WEEKS - 1 - i) * 7 * 864e5).toISOString().slice(0, 10));
+    const weeklyRes = await supabase
+      .from('competitor_listing_price_history')
+      .select('data_date, price')
+      .in('listing_id', listings.map((l) => l.id))
+      .in('data_date', weeks);
+    check(weeklyRes);
+    const byDate = Map.groupBy(weeklyRes.data, (h) => h.data_date);
+    for (const d of weeks) {
+      const rows = byDate.get(d);
+      const own = ownHistoryRes.data.find((h) => h.recorded_at.slice(0, 10) <= d);
+      if (!rows || !own) continue;
+      trend.dates.push(d);
+      trend.yours.push(Number(own.price));
+      trend.market.push(rows.reduce((sum, h) => sum + Number(h.price), 0) / rows.length);
+    }
   }
 
   const o = overviewRes.data ?? {};
@@ -122,7 +151,10 @@ export default async function ProductPage({ params, searchParams }) {
   const margin = (at) => (cost == null ? null : { amount: at - cost, pct: formatPercent((at - cost) / at, lang, 'auto') });
   const current = margin(price);
   const atSuggested = suggested != null && margin(suggested);
-  const history = ownHistoryRes.data;
+  const history = ownHistoryRes.data.slice(0, HISTORY_ROWS);
+  // Month name under the first point of each month.
+  const trendLabels = trend.dates.map((d, i) =>
+    i === 0 || d.slice(0, 7) !== trend.dates[i - 1].slice(0, 7) ? date(d, { month: 'short', timeZone: 'UTC' }) : '');
 
   return (
     <article className="dash pd">
@@ -262,6 +294,17 @@ export default async function ProductPage({ params, searchParams }) {
           <small>{fill(p.listings, { n: listings.length })}</small>
         </div>
       </dl>
+
+      {trend.dates.length > 1 && (
+        <PriceTrend
+          t={p.trend}
+          yours={trend.yours}
+          market={trend.market}
+          xLabels={trendLabels}
+          money={money}
+          pct={(v) => formatPercent(v, lang)}
+        />
+      )}
 
       <section className="dash__panel" aria-labelledby="pd-listings">
         <div className="dash__panel-head">

@@ -52,7 +52,9 @@
     "next": "Next",
     "page": "Page {page} of {pages}",
     "suggestion": "1 possible match",
-    "suggestions": "{n} possible matches"
+    "suggestions": "{n} possible matches",
+    "movesToday": "{n} price moves at the chains",
+    "movesUndercut": "{n} now cheaper than you"
   },
   "status": {
     "competitive": "Competitive",
@@ -397,7 +399,16 @@
       "confirmed": "AI match, {pct} sure",
       "seen": "Seen {date}",
       "historyTitle": "Your price history",
-      "matching": "AI is looking for this product at competitor chains. This page updates when it finishes."
+      "matching": "AI is looking for this product at competitor chains. This page updates when it finishes.",
+      "trend": {
+        "title": "Price trend",
+        "subtitle": "Weekly · your price vs. the average of the matched chains",
+        "yours": "Your price",
+        "market": "Market average",
+        "current": "Current price",
+        "delta": "Δ vs. market",
+        "label": "Line chart of your price and the market average by week. Your price is now {yours}, the market average {market}."
+      }
     },
     "matching": "AI matching…"
   },
@@ -410,9 +421,11 @@
   },
   "reports": {
     "title": "Reports",
-    "intro": "Trends across your catalog and the chains.",
-    "soon": "Reports are coming soon",
-    "soonText": "Weekly price moves, promotion calendars and margin impact will appear here as competitor history builds up.",
-    "back": "Go to dashboard"
+    "intro": "Your catalog at a glance: what moved at the chains and where to look first.",
+    "noMoves": "No price moves at the chains in the latest daily prices",
+    "topRisk": "Top 5 at risk",
+    "topOpportunity": "Top 5 opportunities",
+    "noneRisk": "Nothing at risk. None of your prices is above the cheapest chain.",
+    "noneOpportunity": "No opportunities right now. None of your prices is well below the cheapest chain."
   }
 }

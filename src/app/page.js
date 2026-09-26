@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PriceTrend from '@/components/PriceTrend';
 import Reveal from '@/components/Reveal';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
@@ -21,7 +22,6 @@ const CATEGORIES = ['dairy', 'bakery', 'pantry'];
 
 // Six months, April to September 2026.
 const TREND = { yours: [1.29, 1.29, 1.32, 1.35, 1.35, 1.38], market: [1.35, 1.34, 1.33, 1.34, 1.36, 1.3] };
-const TREND_TICKS = [1.25, 1.29, 1.34, 1.38, 1.42];
 
 const MATCHES = [['billa', 45], ['kaufland', 42], ['lidl', 37], ['fantastico', 31], ['metro', 28], ['hitmax', 24]];
 
@@ -36,12 +36,6 @@ const ICONS = [
 
 const delta = (row) => (row.best ? (row.yours - row.best) / row.best : null);
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
-
-// Chart coordinates in percent of the plot area.
-const [LO, HI] = [TREND_TICKS[0], TREND_TICKS.at(-1)];
-const yPct = (v) => ((HI - v) / (HI - LO)) * 100;
-const xPct = (i) => (i / (TREND.yours.length - 1)) * 100;
-const points = (series) => series.map((v, i) => `${xPct(i)},${yPct(v)}`).join(' ');
 
 export default async function HomePage() {
   const lang = await getLocale();
@@ -241,41 +235,16 @@ export default async function HomePage() {
           <p className="muted">{home.insights.text}</p>
         </header>
         <div className="insights">
-          <figure className="chart card" data-reveal>
-            <figcaption className="chart__head">
-              <span className="stack">
-                <strong>{home.insights.chart.title}</strong>
-                <span>{SCAN.product}</span>
-                <small>{home.insights.chart.subtitle}</small>
-              </span>
-              <span className="chart__legend">
-                <span data-series="yours">{home.insights.chart.yours}</span>
-                <span data-series="market">{home.insights.chart.market}</span>
-              </span>
-            </figcaption>
-            <div className="chart__area" role="img" aria-label={fill(home.insights.chart.label, { yours: price(nowYours), market: price(nowMarket) })}>
-              {TREND_TICKS.map((t) => (
-                <span key={t} className="chart__tick" style={{ '--y': `${yPct(t)}%` }}>{price(t)}</span>
-              ))}
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <polyline data-series="market" points={points(TREND.market)} />
-                <polyline data-series="yours" points={points(TREND.yours)} />
-              </svg>
-              {['market', 'yours'].map((s) =>
-                TREND[s].map((v, i) => (
-                  <span key={s + i} className="chart__dot" data-series={s} style={{ '--x': `${xPct(i)}%`, '--y': `${yPct(v)}%` }} />
-                ))
-              )}
-            </div>
-            <ol className="chart__x" aria-hidden="true">
-              {months.map((m) => <li key={m}>{m}</li>)}
-            </ol>
-            <dl className="chart__foot">
-              <div><dt>{home.insights.chart.current}</dt><dd>{price(nowYours)}</dd></div>
-              <div data-series="market"><dt>{home.insights.chart.market}</dt><dd>{price(nowMarket)}</dd></div>
-              <div data-status="at-risk"><dt>{home.insights.chart.delta}</dt><dd>{pct((nowYours - nowMarket) / nowMarket)}</dd></div>
-            </dl>
-          </figure>
+          <PriceTrend
+            data-reveal
+            t={home.insights.chart}
+            product={SCAN.product}
+            yours={TREND.yours}
+            market={TREND.market}
+            xLabels={months}
+            money={price}
+            pct={pct}
+          />
 
           <div className="stack insight-list">
             <div className="insight-list__head" data-reveal>
