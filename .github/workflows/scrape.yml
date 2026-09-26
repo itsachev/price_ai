@@ -1,0 +1,46 @@
+# Daily data job: scrape the KZP feed, then match products and refresh statuses.
+# Needs repo secrets NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and
+# GEMINI_API_KEY. Optional repo variables override the match settings
+# (GEMINI_MODEL, GEMINI_RPM, MATCH_*); unset ones fall back to the code defaults.
+name: Daily scrape and match
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: daily-data
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      GEMINI_RPM: ${{ vars.GEMINI_RPM }}
+      MATCH_PAIRS_PER_REQUEST: ${{ vars.MATCH_PAIRS_PER_REQUEST }}
+      MATCH_MAX_REQUESTS: ${{ vars.MATCH_MAX_REQUESTS }}
+      MATCH_CANDIDATES_PER_CHAIN: ${{ vars.MATCH_CANDIDATES_PER_CHAIN }}
+      MATCH_MIN_SCORE: ${{ vars.MATCH_MIN_SCORE }}
+      MATCH_MIN_CONFIDENCE: ${{ vars.MATCH_MIN_CONFIDENCE }}
+      MATCH_PRICE_TOLERANCE: ${{ vars.MATCH_PRICE_TOLERANCE }}
+      MATCH_ACTIVE_DAYS: ${{ vars.MATCH_ACTIVE_DAYS }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Scrape
+        run: npm run scrape
+      # Match even when every scraper failed: new products still get matched
+      # against the listings already stored.
+      - name: Match
+        if: success() || failure()
+        run: npm run match
