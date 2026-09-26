@@ -32,11 +32,12 @@
     "products": "Products",
     "filter": "Filter by status",
     "all": "All",
+    "bestAt": "Best price {price} · {chain}",
     "cols": {
       "product": "Product",
-      "yourPrice": "Price",
-      "cheapest": "Cheapest competitor",
-      "gap": "Gap",
+      "yourPrice": "Your price",
+      "cheapest": "Market best",
+      "gap": "Δ vs. market",
       "status": "Status"
     },
     "promo": "Promo",

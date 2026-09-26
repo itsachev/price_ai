@@ -193,62 +193,53 @@
   }
 }
 
-/* Each row is its own card, with a gap between rows. */
+/* Same look as the home page tracker: a tinted header bar, rows split by
+   hairlines, mono figures. */
 .dash__table {
-  --row-bg: color-mix(in srgb, var(--text) 3%, transparent);
+  --row-bg: transparent;
   inline-size: 100%;
-  border-collapse: separate;
-  border-spacing: 0 var(--space-1);
-  padding-inline: var(--space-1);
+  border-collapse: collapse;
   font-size: var(--text-sm);
 
   & th,
   & td {
-    padding: 0.8rem var(--space-2);
+    padding: 1rem var(--space-2);
     text-align: start;
-    vertical-align: top;
-  }
-
-  & tbody > tr > * {
-    background: var(--row-bg);
-    transition: background-color 0.15s;
-
-    &:first-child {
-      border-start-start-radius: var(--radius);
-      border-end-start-radius: var(--radius);
-      box-shadow: inset 3px 0 0 var(--c);
-    }
-
-    &:last-child {
-      border-start-end-radius: var(--radius);
-      border-end-end-radius: var(--radius);
-    }
+    vertical-align: middle;
   }
 
   & thead th {
+    padding-block: 0.875rem;
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 500;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     white-space: nowrap;
     color: var(--muted);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
   }
 
+  & tbody tr {
+    background: var(--row-bg);
+    border-block-start: 1px solid var(--border);
+    transition: background-color 0.2s;
+  }
+
+  & td {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
 
   & .num {
-    text-align: end;
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
 
-  & td > .num {
-    font-weight: 600;
-  }
-
   & small {
     display: block;
+    font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--muted);
     font-weight: 400;
@@ -256,7 +247,7 @@
 }
 
 .dash__product {
-  font-weight: 500;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
@@ -269,11 +260,6 @@
   color: var(--on-signal);
   background: var(--signal);
   border-radius: 0.25em;
-}
-
-.dash__gap {
-  font-weight: 600;
-  color: var(--c);
 }
 
 .dash__empty {
@@ -321,9 +307,7 @@
       display: none;
     }
     & tbody {
-      display: grid;
-      gap: var(--space-1);
-      padding-block: var(--space-1);
+      display: block;
     }
 
     & tbody tr {
@@ -331,16 +315,10 @@
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
       gap: 0.6rem var(--space-2);
       padding: var(--space-2);
-      border-radius: var(--radius);
-      background: var(--row-bg);
-      box-shadow: inset 3px 0 0 var(--c);
     }
 
-    & tbody > tr > :is(*, :first-child, :last-child) {
+    & tbody > tr > * {
       padding: 0;
-      background: none;
-      box-shadow: none;
-      border-radius: 0;
     }
 
     & .dash__product,
@@ -459,7 +437,7 @@
   }
 
   &:hover {
-    --row-bg: color-mix(in srgb, var(--text) 7%, transparent);
+    --row-bg: color-mix(in srgb, var(--accent) 5%, transparent);
   }
 
   &:has(> .dash__product > a:first-child:focus-visible) {
@@ -469,7 +447,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dash__table tbody > tr > * {
+  .dash__table tbody tr {
     transition: none;
   }
 }

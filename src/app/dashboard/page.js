@@ -140,18 +140,19 @@ export default async function DashboardPage({ searchParams }) {
                   <th scope="row" className="dash__product">
                     <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
                     {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
+                    {r.best_price != null && (
+                      <small>
+                        {fill(t.bestAt, {
+                          price: formatPrice(r.best_price, lang),
+                          chain: COMPETITORS[r.best_competitor] ?? r.best_competitor,
+                        })}
+                      </small>
+                    )}
                   </th>
                   <td className="num" data-label={t.cols.yourPrice}>{formatPrice(r.price, lang)}</td>
                   <td data-label={t.cols.cheapest}>
                     {r.best_price != null ? (
-                      <>
-                        <span className="num">{formatPrice(r.best_price, lang)}</span>
-                        {r.best_on_promo && <span className="dash__promo">{t.promo}</span>}
-                        <small>
-                          {COMPETITORS[r.best_competitor] ?? r.best_competitor} ·{' '}
-                          {r.chain_count === 1 ? t.chain : fill(t.chains, { n: r.chain_count })}
-                        </small>
-                      </>
+                      <span className="muted">{formatPrice(r.best_price, lang)}</span>
                     ) : r.suggestion_count > 0 ? (
                       <Link href={`/dashboard/products/${r.id}`} className="dash__suggest">
                         {r.suggestion_count === 1 ? t.suggestion : fill(t.suggestions, { n: r.suggestion_count })}
@@ -162,10 +163,8 @@ export default async function DashboardPage({ searchParams }) {
                   </td>
                   <td className="num" data-label={t.cols.gap}>
                     {r.gap != null ? (
-                      <span className="dash__gap">
-                        {r.gap > 0 ? '+' : r.gap < 0 ? '−' : ''}
-                        {formatPrice(Math.abs(r.gap), lang)}
-                        <small>{formatPercent(Number(r.gap_ratio), lang)}</small>
+                      <span className="tracker__delta" data-dir={r.gap > 0 ? 'up' : r.gap < 0 ? 'down' : undefined}>
+                        {formatPercent(Number(r.gap_ratio), lang)}
                       </span>
                     ) : (
                       <span className="muted">—</span>
