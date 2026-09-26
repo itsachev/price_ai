@@ -34,3 +34,14 @@ assert.equal(suggestPrice(1.8, 2.0, 0.03), 1.99, 'opportunity: a cent under the 
 assert.equal(suggestPrice(2, 2.01, 0.03), null, 'competitive');
 assert.equal(suggestPrice(2, null, 0.03), null, 'unmatched');
 console.log('match ok');
+
+// splitSize: a listing title becomes the merchant's name + size fields.
+{
+  const { splitSize } = await import('../src/lib/pipeline/match.js');
+  const eq = (a, b) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`splitSize: ${JSON.stringify(a)} != ${JSON.stringify(b)}`); };
+  eq(splitSize('Хляб EXTRA LINE типов 500г'), { name: 'Хляб EXTRA LINE типов', size: '500г' });
+  eq(splitSize('Мляко 3% 1,5 л Верея'), { name: 'Мляко 3% Верея', size: '1,5л' });
+  eq(splitSize('Бира 6 x 500 мл'), { name: 'Бира', size: '6x500мл' });
+  eq(splitSize('Банани'), { name: 'Банани', size: null });
+  console.log('splitSize ok');
+}

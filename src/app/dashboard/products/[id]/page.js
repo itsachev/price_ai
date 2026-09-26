@@ -125,7 +125,7 @@ export default async function ProductPage({ params, searchParams }) {
 
   return (
     <article className="dash pd">
-      <Link href="/dashboard/products" className="pd__back">← {p.back}</Link>
+      <Link href="/dashboard" className="pd__back">← {p.back}</Link>
 
       <header className="dash__head">
         <div className="dash__title">
@@ -143,7 +143,9 @@ export default async function ProductPage({ params, searchParams }) {
           <ProductDialog key={product.updated_at} label={p.edit} title={t.editTitle} closeLabel={t.close} variant="primary">
             <ProductForm t={t} action={saveProduct} product={product} />
           </ProductDialog>
-          <DeleteForm t={t} action={deleteProduct} id={product.id} />
+          <ProductDialog label={t.delete} title={t.delete} closeLabel={t.close} variant="danger">
+            <DeleteForm t={t} action={deleteProduct} id={product.id} />
+          </ProductDialog>
         </div>
       </header>
 

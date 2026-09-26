@@ -1,5 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { importProducts, saveProduct } from '@/app/actions/products';
+import MatchPoller from '@/components/MatchPoller';
+import ProductDialog from '@/components/ProductDialog';
+import { ImportForm, ProductForm } from '@/components/ProductForms';
+import ProductSearch from '@/components/ProductSearch';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
@@ -13,18 +18,24 @@ const isStale = (date) => Date.now() - Date.parse(date) > (STALE_DAYS + 1) * 86_
 
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
-function dashboardHref(status, page = 1) {
+function dashboardHref({ status, q, page = 1 } = {}) {
   const params = new URLSearchParams();
   if (status) params.set('status', status);
+  if (q) params.set('q', q);
   if (page > 1) params.set('page', page);
   const query = params.toString();
   return query ? `/dashboard?${query}` : '/dashboard';
 }
 
+// The merchant's one product list: status summary, search, add and import.
+// Matching runs in the background after a save, never here, so saving stays
+// instant; a product with no match_key is still being matched and the page
+// polls until it lands.
 export default async function DashboardPage({ searchParams }) {
   const lang = await getLocale();
   const dict = await getDictionary(lang);
   const t = dict.dashboard;
+  const tp = dict.products;
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims) redirect('/login');
@@ -32,6 +43,10 @@ export default async function DashboardPage({ searchParams }) {
   const params = await searchParams;
   const status = PRICE_STATUSES.includes(params.status) ? params.status : null;
   const page = Math.max(1, Number.parseInt(params.page, 10) || 1);
+  // Strip what PostgREST's or() filter syntax would read as operators.
+  const q = String(params.q ?? '').replace(/[,()*%\\]/g, ' ').trim().slice(0, 100);
+  const added = /^\d+$/.test(params.added ?? '') ? Number(params.added) : null;
+  const notice = added ? 'added' : params.notice;
   const { activeDays, priceTolerance } = matchConfig();
 
   let rowsQuery = supabase
@@ -41,22 +56,25 @@ export default async function DashboardPage({ searchParams }) {
     .order('name')
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   if (status) rowsQuery = rowsQuery.eq('price_status', status);
+  if (q) rowsQuery = rowsQuery.or(`name.ilike.*${q}*,brand.ilike.*${q}*,sku.ilike.*${q}*`);
 
   const countQuery = (s) =>
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('price_status', s);
 
-  const [rowsRes, latestRes, ...countRes] = await Promise.all([
+  const [rowsRes, addedRes, latestRes, ...countRes] = await Promise.all([
     rowsQuery,
+    // A just-added product goes first, wherever it sorts.
+    added ? supabase.rpc('product_overview', { active_days: activeDays }).eq('id', added).maybeSingle() : { data: null },
     supabase.from('competitor_listing_price_history').select('data_date').order('data_date', { ascending: false }).limit(1),
     ...PRICE_STATUSES.map(countQuery),
   ]);
-  for (const res of [rowsRes, latestRes, ...countRes]) {
+  for (const res of [rowsRes, addedRes, latestRes, ...countRes]) {
     if (res.error) throw new Error(`${res.error.code}: ${res.error.message}`, { cause: res.error });
   }
 
   const counts = Object.fromEntries(PRICE_STATUSES.map((s, i) => [s, countRes[i].count ?? 0]));
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const rows = rowsRes.data;
+  const rows = addedRes.data ? [addedRes.data, ...rowsRes.data.filter((r) => r.id !== added)] : rowsRes.data;
   const pages = Math.max(1, Math.ceil((rowsRes.count ?? 0) / PAGE_SIZE));
 
   const dataDate = latestRes.data[0]?.data_date;
@@ -73,6 +91,16 @@ export default async function DashboardPage({ searchParams }) {
           <p className="muted">{t.intro}</p>
         </div>
         <div className="dash__actions">
+          <ProductDialog label={tp.importOpen} title={tp.import.title} closeLabel={tp.close}>
+            <p className="muted">
+              {tp.import.help}{' '}
+              <Link href="/catalog-template.csv" download className="catalog__link">{tp.import.template}</Link>
+            </p>
+            <ImportForm t={tp} action={importProducts} />
+          </ProductDialog>
+          <ProductDialog label={tp.add} title={tp.addTitle} closeLabel={tp.close} variant="primary">
+            <ProductForm key={added} t={tp} action={saveProduct} />
+          </ProductDialog>
           <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
             {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
             {stale && <strong> · {t.dataStale}</strong>}
@@ -80,11 +108,17 @@ export default async function DashboardPage({ searchParams }) {
         </div>
       </header>
 
+      {rows.some((r) => !r.match_key) && <MatchPoller />}
+
+      {tp.notices[notice] && (
+        <p className="form-message" role="status" data-kind="notice">{tp.notices[notice]}</p>
+      )}
+
       <nav className="dash__tiles" aria-label={t.summary}>
         {PRICE_STATUSES.map((s) => (
           <Link
             key={s}
-            href={status === s ? dashboardHref() : dashboardHref(s)}
+            href={dashboardHref({ status: status === s ? null : s, q })}
             className="dash__tile"
             data-status={s}
             aria-current={status === s ? 'page' : undefined}
@@ -99,12 +133,15 @@ export default async function DashboardPage({ searchParams }) {
       <div className="dash__panel">
         <div className="dash__panel-head">
           <h2>{t.products}</h2>
+          <ProductSearch action="/dashboard" defaultValue={q} placeholder={tp.searchPlaceholder} label={tp.search}>
+            {status && <input type="hidden" name="status" value={status} />}
+          </ProductSearch>
           <nav className="dash__chips" aria-label={t.filter}>
-            <Link href={dashboardHref()} className="dash__chip" aria-current={!status ? 'page' : undefined}>
+            <Link href={dashboardHref({ q })} className="dash__chip" aria-current={!status ? 'page' : undefined}>
               {t.all} <span>{total}</span>
             </Link>
             {PRICE_STATUSES.map((s) => (
-              <Link key={s} href={dashboardHref(s)} className="dash__chip" aria-current={status === s ? 'page' : undefined}>
+              <Link key={s} href={dashboardHref({ status: s, q })} className="dash__chip" aria-current={status === s ? 'page' : undefined}>
                 {dict.status[s]} <span>{counts[s]}</span>
               </Link>
             ))}
@@ -117,7 +154,11 @@ export default async function DashboardPage({ searchParams }) {
               <>
                 <h3>{t.empty}</h3>
                 <p className="muted">{t.emptyText}</p>
-                <Link href="/dashboard/products" className="button button--primary">{t.addFirst}</Link>
+              </>
+            ) : q ? (
+              <>
+                <p className="muted">{fill(tp.noResults, { q })}</p>
+                <Link href={dashboardHref({ status })} className="button">{tp.clearSearch}</Link>
               </>
             ) : (
               <p className="muted">{t.emptyFilter}</p>
@@ -136,7 +177,7 @@ export default async function DashboardPage({ searchParams }) {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} data-status={r.price_status}>
+                <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined}>
                   <th scope="row" className="dash__product">
                     <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
                     {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
@@ -171,7 +212,11 @@ export default async function DashboardPage({ searchParams }) {
                     )}
                   </td>
                   <td className="dash__status">
-                    <span className="badge" data-status={r.price_status}>{dict.status[r.price_status]}</span>
+                    {r.match_key ? (
+                      <span className="badge" data-status={r.price_status}>{dict.status[r.price_status]}</span>
+                    ) : (
+                      <span className="badge" data-status="matching">{tp.matching}</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -181,9 +226,9 @@ export default async function DashboardPage({ searchParams }) {
 
         {pages > 1 && (
           <nav className="dash__pager" aria-label={t.pagination}>
-            {page > 1 ? <Link href={dashboardHref(status, page - 1)} className="dash__chip">{t.prev}</Link> : <span />}
+            {page > 1 ? <Link href={dashboardHref({ status, q, page: page - 1 })} className="dash__chip">{t.prev}</Link> : <span />}
             <span className="muted">{fill(t.page, { page, pages })}</span>
-            {page < pages ? <Link href={dashboardHref(status, page + 1)} className="dash__chip">{t.next}</Link> : <span />}
+            {page < pages ? <Link href={dashboardHref({ status, q, page: page + 1 })} className="dash__chip">{t.next}</Link> : <span />}
           </nav>
         )}
       </div>

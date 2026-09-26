@@ -1,10 +1,10 @@
 {
+  "loading": "Loading…",
   "meta": {
     "description": "Track your grocery prices against Bulgarian retail chains."
   },
   "nav": {
     "dashboard": "Dashboard",
-    "products": "Products",
     "competitors": "Competitors",
     "language": "Language",
     "theme": "Theme",
@@ -51,7 +51,6 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page {page} of {pages}",
-    "addFirst": "Add products",
     "suggestion": "1 possible match",
     "suggestions": "{n} possible matches"
   },
@@ -294,8 +293,6 @@
     "usernameHint": "Shown in the header"
   },
   "products": {
-    "title": "Your products",
-    "intro": "Every product you sell, with your price and how it compares. Open one to edit it or review possible matches.",
     "addTitle": "Add a product",
     "editTitle": "Edit product",
     "fields": {
@@ -357,15 +354,6 @@
     "close": "Close",
     "search": "Search products",
     "searchPlaceholder": "Name, brand or SKU",
-    "searchSubmit": "Search",
-    "cols": {
-      "product": "Product",
-      "price": "Price",
-      "status": "Status",
-      "best": "Market best"
-    },
-    "empty": "No products yet",
-    "emptyText": "Add your products one by one or import your price list as a CSV file.",
     "noResults": "No products match “{q}”.",
     "clearSearch": "Clear search",
     "page": {
@@ -411,10 +399,7 @@
       "historyTitle": "Your price history",
       "matching": "AI is looking for this product at competitor chains. This page updates when it finishes."
     },
-    "matching": "AI matching…",
-    "similar": "{n} similar found",
-    "similarOne": "1 similar found",
-    "countLabel": "Products"
+    "matching": "AI matching…"
   },
   "settings": {
     "title": "Settings",

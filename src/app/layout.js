@@ -54,7 +54,6 @@ export default async function RootLayout({ children }) {
                   signedIn={
                     <ul className="site-menu__links">
                       <li><NavLink href="/dashboard" exact>{dict.nav.dashboard}</NavLink></li>
-                      <li><NavLink href="/dashboard/products">{dict.nav.products}</NavLink></li>
                       <li><NavLink href="/dashboard/reports">{dict.nav.reports}</NavLink></li>
                     </ul>
                   }

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
 import { decodeCsv, parseCatalogCsv, parsePrice, toProduct } from '@/lib/catalog';
-import { matchConfig, priceStatus, runMatch } from '@/lib/pipeline/match';
+import { matchConfig, priceStatus, runMatch, splitSize } from '@/lib/pipeline/match';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -17,7 +17,7 @@ const MAX_CSV_BYTES = 4 * 1024 * 1024;
 async function merchant() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) redirect('/login?next=/dashboard/products');
+  if (!data?.claims) redirect('/login?next=/dashboard');
   return supabase;
 }
 
@@ -57,7 +57,7 @@ export async function saveProduct(_prev, formData) {
   matchInBackground(res.data.id);
   done();
   if (id) redirect(`/dashboard/products/${id}?notice=saved`);
-  redirect(`/dashboard/products?added=${res.data.id}`);
+  redirect(`/dashboard?added=${res.data.id}`);
 }
 
 export async function deleteProduct(formData) {
@@ -65,7 +65,7 @@ export async function deleteProduct(formData) {
   const { error } = await supabase.from('products').delete().eq('id', formData.get('id'));
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
   done();
-  redirect('/dashboard/products?notice=deleted');
+  redirect('/dashboard?notice=deleted');
 }
 
 export async function importProducts(_prev, formData) {
@@ -117,12 +117,40 @@ async function setLink(formData, linked) {
   const supabase = await merchant();
   const productId = Number(formData.get('product_id'));
   const listingId = Number(formData.get('listing_id'));
+  if (linked) await adoptListing(supabase, productId, listingId);
   const { error } = linked
     ? await supabase.from('product_links').upsert({ product_id: productId, listing_id: listingId })
     : await supabase.from('product_links').delete().eq('product_id', productId).eq('listing_id', listingId);
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
   await refreshStatus(supabase, productId);
+  if (linked) matchInBackground(productId);
   done();
+}
+
+// A merchant who picks a listing is saying "this is my product", so the
+// listing's fuller name, pack size, brand and category replace the vague ones.
+// That makes the next match find it in other chains too (matchInBackground).
+// Runs before the link is written: the rename trigger drops existing links.
+// The SKU and prices stay the merchant's own; unlinking keeps the new details.
+async function adoptListing(supabase, productId, listingId) {
+  const [{ data: listing, error }, { data: product, error: productError }] = await Promise.all([
+    supabase.from('competitor_listings').select('title, brand, size, category_code').eq('id', listingId).single(),
+    supabase.from('products').select('brand, category_code, product_links(listing_id)').eq('id', productId).single(),
+  ]);
+  if (error || productError) throw new Error('listing or product not found', { cause: error ?? productError });
+  // Only the first pick renames; a rename would drop the links already chosen.
+  if (product.product_links.length) return;
+  const { name, size } = splitSize(listing.title);
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({
+      name,
+      size: listing.size ?? size,
+      brand: listing.brand ?? product.brand,
+      category_code: listing.category_code ?? product.category_code,
+    })
+    .eq('id', productId);
+  if (updateError) throw new Error(`${updateError.code}: ${updateError.message}`, { cause: updateError });
 }
 
 export async function linkListing(formData) {

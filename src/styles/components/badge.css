@@ -51,27 +51,3 @@
 @keyframes badge-pulse {
   50% { opacity: 0.25; scale: 0.6; }
 }
-
-/* A count next to a heading: round for small numbers, a pill once it grows. */
-.count-head {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.count-badge {
-  display: inline-grid;
-  place-items: center;
-  min-inline-size: 1.9em;
-  block-size: 1.9em;
-  padding-inline: 0.55em;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
-}

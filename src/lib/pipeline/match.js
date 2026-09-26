@@ -64,6 +64,15 @@ export function parseSize(text) {
   return { unit, amount: Math.round(Number(m[1] ?? 1) * Number(m[2]) * factor) };
 }
 
+const SIZE_TEXT = /\s*((?:\d+\s*[xх*]\s*)?\d+(?:[.,]\d+)?\s*(?:кг|гр|г|мл|лт|л|бр|kg|gr|g|ml|lt|l|br|pcs)\.?)(?=[\s,;)]|$)/iu;
+
+/** A listing title split into name and pack size text, as the merchant would type them. */
+export function splitSize(title) {
+  const m = SIZE_TEXT.exec(title);
+  if (!m) return { name: title.trim(), size: null };
+  return { name: (title.slice(0, m.index) + title.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(), size: m[1].replace(/\s+/g, '') };
+}
+
 /** Tokens and pack size of a title. Size tokens are removed, "3%" is kept. */
 export function analyze(text) {
   const t = translit(text);

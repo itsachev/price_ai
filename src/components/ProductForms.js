@@ -55,14 +55,15 @@ export function ProductForm({ t, action, product }) {
   );
 }
 
-// Delete one product, after the browser's confirm().
+// Delete one product. Lives inside a ProductDialog, which is the confirmation.
 export function DeleteForm({ t, action, id }) {
   return (
-    <form action={action}>
+    <form action={action} className="product-form">
+      <p>{t.confirmDelete}</p>
       <input type="hidden" name="id" value={id} />
-      <button className="button button--danger" onClick={(e) => confirm(t.confirmDelete) || e.preventDefault()}>
-        {t.delete}
-      </button>
+      <div className="product-form__actions">
+        <button className="button button--danger">{t.delete}</button>
+      </div>
     </form>
   );
 }

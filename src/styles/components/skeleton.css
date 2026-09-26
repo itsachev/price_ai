@@ -1,0 +1,38 @@
+/* Loading placeholders (PageSkeleton). Opacity-only pulse, so it stays on the compositor. */
+.skeleton {
+  & .skeleton__title,
+  & .skeleton__line {
+    display: block;
+    block-size: 1lh;
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--muted) 18%, transparent);
+    animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+  & .skeleton__title {
+    inline-size: min(100%, 18ch);
+    font-size: var(--text-h1);
+  }
+  & .skeleton__line {
+    inline-size: min(100%, 45ch);
+  }
+}
+
+.skeleton__panel {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+
+  & .skeleton__line {
+    inline-size: 100%;
+  }
+}
+
+@keyframes skeleton-pulse {
+  to {
+    opacity: 0.45;
+  }
+}
