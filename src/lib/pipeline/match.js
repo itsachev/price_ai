@@ -23,7 +23,7 @@
 const env = (name, fallback) => process.env[name] || fallback;
 
 export const matchConfig = () => ({
-  model: env('GEMINI_MODEL', 'gemini-3.5-flash'),
+  model: env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
   rpm: Number(env('GEMINI_RPM', 10)),
   pairsPerRequest: Number(env('MATCH_PAIRS_PER_REQUEST', 60)),
   maxRequests: Number(env('MATCH_MAX_REQUESTS', Infinity)),
