@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { GUEST_PAGES, safeNext } from '@/lib/auth';
+import { GUEST_PAGES, SESSION_COOKIE, safeNext } from '@/lib/auth';
 
 // Refreshes the Supabase session cookie and does the optimistic auth redirects.
 // Pages still check the user themselves; RLS is the real guard.
@@ -25,6 +25,17 @@ export async function proxy(request) {
 
   const { data } = await supabase.auth.getClaims();
   const signedIn = Boolean(data?.claims);
+
+  // A dead session (revoked, failed refresh) can leave its cookie behind, and the
+  // header reads only the cookie, so it would keep showing "Sign out". Drop it here.
+  const stale = signedIn ? [] : request.cookies.getAll().filter((c) => SESSION_COOKIE.test(c.name) && c.value);
+  if (stale.length) {
+    for (const { name } of stale) request.cookies.delete(name);
+    const kept = response.cookies.getAll();
+    response = NextResponse.next({ request });
+    for (const cookie of kept) response.cookies.set(cookie);
+    for (const { name } of stale) response.cookies.delete(name);
+  }
   const { pathname, search, searchParams } = request.nextUrl;
   const guestPage = GUEST_PAGES.includes(pathname);
 

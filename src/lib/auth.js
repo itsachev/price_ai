@@ -9,14 +9,17 @@ export function safeNext(value, fallback = '/dashboard') {
 // Pages for signed-out visitors; signed-in visitors skip them.
 export const GUEST_PAGES = ['/login', '/signup', '/forgot-password'];
 
+// Supabase session cookie, whole or chunked (.0, .1…); not the PKCE code-verifier.
+export const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
+
 // Header hint with no network call: a session cookie that holds a refresh token.
 // The access token inside expires hourly and only gets refreshed on proxy routes,
 // so checking its expiry showed signed-in visitors "Sign in" on marketing pages.
-// ponytail: a revoked session or deleted user still reads as signed in here; the
-// first app route they open runs the proxy, which sends them to /login and clears it.
+// ponytail: a revoked session or deleted user still reads as signed in here until
+// the first proxy route they open, where the proxy clears the dead cookie.
 export async function hasSession(cookieStore) {
-  const first = cookieStore.getAll().find((c) => /^sb-.+-auth-token(\.0)?$/.test(c.name));
-  if (!first) return false;
+  const first = cookieStore.getAll().find((c) => SESSION_COOKIE.test(c.name) && /(token|\.0)$/.test(c.name));
+  if (!first?.value) return false;
   try {
     let raw = await combineChunks(first.name.replace(/\.0$/, ''), (name) => cookieStore.get(name)?.value);
     if (raw?.startsWith('base64-')) raw = stringFromBase64URL(raw.slice('base64-'.length));

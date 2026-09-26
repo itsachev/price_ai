@@ -1,9 +1,9 @@
 'use server';
 
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { safeNext } from '@/lib/auth';
+import { SESSION_COOKIE, safeNext } from '@/lib/auth';
 
 // Supabase error codes the auth forms have a translated message for.
 const KNOWN_ERRORS = [
@@ -77,5 +77,9 @@ export async function updatePassword(_prev, formData) {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // signOut keeps the cookie when the logout call fails (network error), so the
+  // header would still say "Sign out"; the user asked to leave, so drop it anyway.
+  const cookieStore = await cookies();
+  for (const { name } of cookieStore.getAll()) if (SESSION_COOKIE.test(name)) cookieStore.delete(name);
   redirect('/');
 }

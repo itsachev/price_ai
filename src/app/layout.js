@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import MenuCloser from '@/components/MenuCloser';
+import SessionSwitch from '@/components/SessionSwitch';
 import { LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
@@ -67,17 +68,20 @@ export default async function RootLayout({ children }) {
                     </button>
                   </form>
                 </div>
-                {signedIn ? (
-                  <form action={signOut}>
-                    <button className="site-menu__account">{dict.auth.signOut}</button>
-                  </form>
-                ) : (
-                  <Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>
-                )}
+                <SessionSwitch
+                  initial={signedIn}
+                  signedIn={
+                    <form action={signOut}>
+                      <button className="site-menu__account">{dict.auth.signOut}</button>
+                    </form>
+                  }
+                  signedOut={<Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>}
+                />
               </nav>
-              {signedIn && (
-                <Link href="/dashboard" className="button button--signal site-header__cta">{dict.nav.dashboard}</Link>
-              )}
+              <SessionSwitch
+                initial={signedIn}
+                signedIn={<Link href="/dashboard" className="button button--signal site-header__cta">{dict.nav.dashboard}</Link>}
+              />
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
               </button>
