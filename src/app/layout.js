@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
+import AiBackground from '@/components/AiBackground';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
@@ -35,12 +36,8 @@ export default async function RootLayout({ children }) {
   return (
     <html lang={lang} data-theme={theme} className={`${unbounded.variable} ${jetbrainsMono.variable}`}>
       <body>
-        {/* Decorative AI backdrop: pure CSS, transform-only motion. */}
-        <div className="ai-bg" aria-hidden="true">
-          <span className="ai-bg__aurora" />
-          <span className="ai-bg__aurora" />
-          <span className="ai-bg__aurora" />
-        </div>
+        {/* Decorative AI backdrop: WebGL shader over a pure-CSS fallback. */}
+        <AiBackground />
         <SmoothScroll>
           <header className="site-header">
             <div className="container site-header__inner">
