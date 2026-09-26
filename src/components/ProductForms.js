@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
@@ -13,8 +13,15 @@ function Message({ kind, children }) {
 }
 
 // Add or edit one product. `t` is dict.products (dictionaries are server-only).
+// Adding closes the dialog at once and the new row shows up in the list; the
+// dialog only comes back if the server rejects the input.
 export function ProductForm({ t, action, product }) {
   const [state, formAction, pending] = useActionState(action, null);
+  const ref = useRef(null);
+  useEffect(() => {
+    const dialog = ref.current?.closest('dialog');
+    if (state?.error && dialog && !dialog.open) dialog.showModal();
+  }, [state]);
   const values = state?.values ?? product ?? {};
   const field = (name, props = {}) => (
     <label className="field" data-field={name}>
@@ -27,7 +34,7 @@ export function ProductForm({ t, action, product }) {
   );
 
   return (
-    <form action={formAction} className="product-form">
+    <form ref={ref} action={formAction} onSubmit={product ? undefined : (e) => e.currentTarget.closest('dialog')?.close()} className="product-form">
       {product && <input type="hidden" name="id" value={product.id} />}
       <div className="product-form__fields">
         {field('name', { required: true, maxLength: 200 })}

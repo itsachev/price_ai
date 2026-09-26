@@ -57,7 +57,7 @@ export async function saveProduct(_prev, formData) {
   matchInBackground(res.data.id);
   done();
   if (id) redirect(`/dashboard/products/${id}?notice=saved`);
-  return { notice: 'added' };
+  redirect(`/dashboard/products?added=${res.data.id}`);
 }
 
 export async function deleteProduct(formData) {

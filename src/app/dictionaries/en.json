@@ -34,7 +34,7 @@
     "all": "All",
     "cols": {
       "product": "Product",
-      "yourPrice": "Your price",
+      "yourPrice": "Price",
       "cheapest": "Cheapest competitor",
       "gap": "Gap",
       "status": "Status"
@@ -302,7 +302,7 @@
       "brand": "Brand",
       "size": "Size",
       "sku": "SKU",
-      "price": "Your price (€)",
+      "price": "Price (€)",
       "cost": "Cost price (€)"
     },
     "fieldHints": {
@@ -318,7 +318,7 @@
     "delete": "Delete",
     "confirmDelete": "Delete this product and its price history?",
     "notices": {
-      "added": "Product added. Its competitor prices appear within a minute. Add another or import a list.",
+      "added": "Product added. AI is looking for it at competitor chains; its row updates when it finishes.",
       "saved": "Changes saved.",
       "deleted": "Product deleted.",
       "priceApplied": "New price applied. Your status is updated."
@@ -349,19 +349,19 @@
       "title": "Possible matches",
       "help": "We couldn’t confirm these listings are your product, often because the name leaves out a detail such as fat % or pack size. Use the ones that are the same product and their prices count towards your status. Adding the missing detail to the name also lets matching find it on its own.",
       "link": "Use this match",
-      "unlink": "Remove match"
+      "unlink": "Remove match",
+      "chosen": "Your chosen match"
     },
     "importOpen": "Import CSV",
     "close": "Close",
     "search": "Search products",
     "searchPlaceholder": "Name, brand or SKU",
     "searchSubmit": "Search",
-    "count": "{n} products",
     "cols": {
       "product": "Product",
-      "sku": "SKU",
-      "price": "Your price",
-      "status": "Status"
+      "price": "Price",
+      "status": "Status",
+      "best": "Market best"
     },
     "empty": "No products yet",
     "emptyText": "Add your products one by one or import your price list as a CSV file.",
@@ -382,7 +382,7 @@
       "competitive": "Your price is competitive. The cheapest chain, {chain}, sells it for {best}. Nothing to change today.",
       "reviewMatches": "No confirmed competitor prices yet. Review the possible matches below: each one you accept adds its price.",
       "nothing": "No suggestions yet. No chain lists this product, or matching hasn’t run. Adding brand and pack size helps matching find it.",
-      "yourPrice": "Your price",
+      "yourPrice": "Price",
       "margin": "Your margin",
       "marginPer": "{amount} per unit",
       "noCost": "Add your cost price to see it",
@@ -407,8 +407,13 @@
       "linked": "Linked by you",
       "confirmed": "AI match, {pct} sure",
       "seen": "Seen {date}",
-      "historyTitle": "Your price history"
-    }
+      "historyTitle": "Your price history",
+      "matching": "AI is looking for this product at competitor chains. This page updates when it finishes."
+    },
+    "matching": "AI matching…",
+    "similar": "{n} similar found",
+    "similarOne": "1 similar found",
+    "countLabel": "Products"
   },
   "settings": {
     "title": "Settings",

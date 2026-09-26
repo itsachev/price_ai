@@ -287,14 +287,6 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
     byKey.get(key).ids.push(p.id);
   }
 
-  for (const [key, { ids }] of byKey) {
-    const stale = ids.filter((id) => productById.get(id).match_key !== key);
-    for (const part of chunks(stale, CHUNK)) {
-      const { error } = await supabase.from('products').update({ match_key: key }).in('id', part);
-      if (error) throw error;
-    }
-  }
-
   const verdicts = new Map([...byKey.keys()].map((k) => [k, new Map()]));
   for (const part of chunks([...byKey.keys()], 50)) {
     const rows = await loadAll(() =>
@@ -394,6 +386,19 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
   for (const [status, ids] of changes) {
     for (const part of chunks(ids, CHUNK)) {
       const { error } = await supabase.from('products').update({ price_status: status }).in('id', part);
+      if (error) throw error;
+    }
+  }
+
+  // Store the key last, and only once every candidate pair was judged: the UI
+  // reads a missing match_key as "AI is still matching this product".
+  const unanswered = (v) => !v || (!v.confirmed && v.possible == null);
+  const unfinished = new Set(pending.filter((p) => unanswered(verdicts.get(p.key).get(p.listing.id))).map((p) => p.key));
+  for (const [key, { ids }] of byKey) {
+    if (unfinished.has(key)) continue;
+    const stale = ids.filter((id) => productById.get(id).match_key !== key);
+    for (const part of chunks(stale, CHUNK)) {
+      const { error } = await supabase.from('products').update({ match_key: key }).in('id', part);
       if (error) throw error;
     }
   }

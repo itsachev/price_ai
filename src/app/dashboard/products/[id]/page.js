@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { applyPrice, deleteProduct, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
+import MatchPoller from '@/components/MatchPoller';
 import ProductDialog from '@/components/ProductDialog';
 import { DeleteForm, ProductForm } from '@/components/ProductForms';
 import { COMPETITORS } from '@/lib/config';
@@ -84,9 +85,12 @@ export default async function ProductPage({ params, searchParams }) {
     if (Date.parse(listing.captured_at) >= Date.parse(since) && !matches.has(listing.id)) matches.set(listing.id, { ...listing, linked: true });
   }
   const listings = [...matches.values()].sort((a, b) => a.price - b.price);
-  const possible = possibleRes.data
+  // Once the merchant links one suggestion, the rest are noise: keep only the
+  // linked ones, so they can still be undone.
+  let possible = possibleRes.data
     .map((v) => ({ ...v.listing, reason: v.reason, linked: linked.has(v.listing.id) }))
     .sort((a, b) => a.price - b.price);
+  if (possible.some((l) => l.linked)) possible = possible.filter((l) => l.linked);
 
   // Latest KZP day per matched listing: regular price, promo end, store count.
   const latest = new Map();
@@ -125,7 +129,11 @@ export default async function ProductPage({ params, searchParams }) {
 
       <header className="dash__head">
         <div className="dash__title">
-          <span className="badge" data-status={product.price_status}>{dict.status[product.price_status]}</span>
+          {product.match_key ? (
+            <span className="badge" data-status={product.price_status}>{dict.status[product.price_status]}</span>
+          ) : (
+            <span className="badge" data-status="matching">{t.matching}</span>
+          )}
           <h1>{product.name}</h1>
           <p className="muted">
             {[product.brand, product.size, product.sku && `${t.fields.sku} ${product.sku}`].filter(Boolean).join(' · ') || p.noDetails}
@@ -142,6 +150,8 @@ export default async function ProductPage({ params, searchParams }) {
       {t.notices[notice] && (
         <p className="form-message" role="status" data-kind="notice">{t.notices[notice]}</p>
       )}
+
+      {!product.match_key && <MatchPoller />}
 
       {/* Suggestions first: they're what the merchant came to act on. */}
       <section className="pd__ai" aria-labelledby="pd-ai">
@@ -184,14 +194,16 @@ export default async function ProductPage({ params, searchParams }) {
           </div>
         ) : (
           <p className="pd__advice pd__advice--quiet">
-            {best != null ? fill(p.competitive, { chain: bestChain, best: money(best) }) : possible.length ? p.reviewMatches : p.nothing}
+            {best != null
+              ? fill(p.competitive, { chain: bestChain, best: money(best) })
+              : !product.match_key ? p.matching : possible.length ? p.reviewMatches : p.nothing}
           </p>
         )}
 
         {possible.length > 0 && (
           <section className="suggest" aria-labelledby="suggest-title">
-            <h3 id="suggest-title">{t.suggest.title}</h3>
-            <p className="muted">{t.suggest.help}</p>
+            <h3 id="suggest-title">{possible.some((l) => l.linked) ? t.suggest.chosen : t.suggest.title}</h3>
+            {!possible.some((l) => l.linked) && <p className="muted">{t.suggest.help}</p>}
             <ul className="suggest__list">
               {possible.map((l) => (
                 <li key={l.id} className="suggest__item" data-linked={l.linked || undefined}>
