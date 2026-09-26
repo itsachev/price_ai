@@ -13,7 +13,7 @@ export default async function ResetPasswordPage() {
   if (!data?.claims) redirect('/login?next=/reset-password');
 
   return (
-    <AuthShell t={t} title={t.resetTitle} intro={t.resetIntro}>
+    <AuthShell title={t.resetTitle} intro={t.resetIntro}>
       <AuthForm
         action={updatePassword}
         t={t}

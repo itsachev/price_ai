@@ -11,7 +11,6 @@ export default async function SignupPage({ searchParams }) {
 
   return (
     <AuthShell
-      t={t}
       title={t.signUpTitle}
       intro={t.signUpIntro}
       footer={<>{t.haveAccount} <Link href="/login">{t.signIn}</Link></>}
