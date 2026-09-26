@@ -11,9 +11,10 @@
     "themeLight": "Switch to light theme",
     "themeDark": "Switch to dark theme",
     "main": "Main",
-    "features": "Features",
-    "how": "How it works",
-    "menu": "Menu"
+    "menu": "Menu",
+    "reports": "Reports",
+    "settings": "Settings",
+    "account": "Account"
   },
   "dashboard": {
     "title": "Your prices today",
@@ -49,7 +50,6 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page {page} of {pages}",
-    "manage": "Manage products",
     "addFirst": "Add products",
     "suggestion": "1 possible match",
     "suggestions": "{n} possible matches"
@@ -245,7 +245,7 @@
   "auth": {
     "signInTitle": "Welcome back",
     "signInIntro": "Sign in to see where your prices stand this morning.",
-    "signUpTitle": "Create your account",
+    "signUpTitle": "Create account",
     "signUpIntro": "Add your catalog and see how every product compares with the chains.",
     "forgotTitle": "Reset your password",
     "forgotIntro": "Enter your account email and we'll send you a link to choose a new password.",
@@ -270,7 +270,8 @@
     "backToSignIn": "Back to sign in",
     "notices": {
       "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
-      "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox."
+      "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox.",
+      "profileSaved": "Settings saved."
     },
     "errors": {
       "missing": "Enter your email and password.",
@@ -284,29 +285,33 @@
       "link": "That link is invalid or has expired. Request a new one or sign in again.",
       "unknown": "Something went wrong. Please try again.",
       "same_password": "Choose a password different from your current one.",
-      "password_mismatch": "The passwords don't match."
-    }
+      "password_mismatch": "The passwords don't match.",
+      "username": "Choose a username of 2 to 32 characters."
+    },
+    "signUpEyebrow": "Start in minutes",
+    "username": "Username",
+    "usernameHint": "Shown in the header"
   },
   "products": {
-    "title": "Your catalog",
-    "intro": "Add products, correct them or import your whole price list. Re-importing the same file only updates what changed.",
-    "back": "Back to prices",
+    "title": "Your products",
+    "intro": "Every product you sell, with your price and how it compares. Open one to edit it or review possible matches.",
     "addTitle": "Add a product",
     "editTitle": "Edit product",
-    "cancel": "Cancel editing",
     "fields": {
       "name": "Name",
       "brand": "Brand",
-      "size": "Pack size",
+      "size": "Size",
       "sku": "SKU",
-      "price": "Your price (€)"
+      "price": "Your price (€)",
+      "cost": "Cost price (€)"
     },
     "fieldHints": {
       "name": "",
-      "brand": "Optional",
+      "brand": "",
       "size": "e.g. 1 l, 400 g",
-      "sku": "Optional, your code",
-      "price": "e.g. 1,79"
+      "sku": "",
+      "price": "e.g. 1,79",
+      "cost": ""
     },
     "add": "Add product",
     "save": "Save changes",
@@ -315,11 +320,13 @@
     "notices": {
       "added": "Product added. Its competitor prices appear within a minute. Add another or import a list.",
       "saved": "Changes saved.",
-      "deleted": "Product deleted."
+      "deleted": "Product deleted.",
+      "priceApplied": "New price applied. Your status is updated."
     },
     "errors": {
       "name": "Enter a product name.",
       "price": "Enter a price above zero, like 1,79.",
+      "cost": "Enter a cost price like 1,35, or leave it empty.",
       "sku_taken": "Another product already uses this SKU.",
       "no_file": "Choose a CSV file.",
       "too_big": "The file is larger than 4 MB. Split it into smaller files.",
@@ -330,7 +337,7 @@
     "import": {
       "title": "Import a price list",
       "template": "Download template",
-      "help": "A CSV file with a header row: name and price are required, brand, size and sku are optional. Comma or semicolon separators and decimal commas both work, so you can save straight from Excel. Products are matched by SKU, or by name, brand and size.",
+      "help": "A CSV file with a header row: name and price are required, brand, size, sku and cost are optional. Comma or semicolon separators and decimal commas both work, so you can save straight from Excel. Products are matched by SKU, or by name, brand and size.",
       "file": "CSV file",
       "submit": "Import",
       "working": "Importing…",
@@ -338,12 +345,83 @@
       "skipped": "{skipped} rows skipped:",
       "rowError": "Row {row}: {error}"
     },
-    "matchNote": "New and renamed products are matched with competitor prices in the next daily update and show as unmatched until then.",
     "suggest": {
       "title": "Possible matches",
       "help": "We couldn’t confirm these listings are your product, often because the name leaves out a detail such as fat % or pack size. Use the ones that are the same product and their prices count towards your status. Adding the missing detail to the name also lets matching find it on its own.",
       "link": "Use this match",
       "unlink": "Remove match"
+    },
+    "importOpen": "Import CSV",
+    "close": "Close",
+    "search": "Search products",
+    "searchPlaceholder": "Name, brand or SKU",
+    "searchSubmit": "Search",
+    "count": "{n} products",
+    "cols": {
+      "product": "Product",
+      "sku": "SKU",
+      "price": "Your price",
+      "status": "Status"
+    },
+    "empty": "No products yet",
+    "emptyText": "Add your products one by one or import your price list as a CSV file.",
+    "noResults": "No products match “{q}”.",
+    "clearSearch": "Clear search",
+    "page": {
+      "back": "All products",
+      "noDetails": "No brand, size or SKU yet",
+      "edit": "Edit",
+      "aiTitle": "Suggestions",
+      "lower": "Lower your price to {price}",
+      "raise": "Raise your price to {price}",
+      "lowerWhy": "{chain} sells it for {best}. You are {gap} ({pct}) more expensive, so shoppers comparing prices may go there.",
+      "raiseWhy": "You are the cheapest by a wide margin. At this price you still undercut {chain} ({best}) and earn {gain} more on every unit.",
+      "promo": "The cheapest price is a promotion, so it may not last.",
+      "promoUntil": "The cheapest price is a promotion until {date}. Consider changing back after it ends.",
+      "apply": "Apply {price}",
+      "competitive": "Your price is competitive. The cheapest chain, {chain}, sells it for {best}. Nothing to change today.",
+      "reviewMatches": "No confirmed competitor prices yet. Review the possible matches below: each one you accept adds its price.",
+      "nothing": "No suggestions yet. No chain lists this product, or matching hasn’t run. Adding brand and pack size helps matching find it.",
+      "yourPrice": "Your price",
+      "margin": "Your margin",
+      "marginPer": "{amount} per unit",
+      "noCost": "Add your cost price to see it",
+      "marginAt": "Your margin at {price}: {pct} ({amount} per unit).",
+      "belowCost": "Careful: {price} is below your cost price of {cost}, so you would lose {loss} on every unit.",
+      "cheapest": "Cheapest competitor",
+      "gap": "Gap",
+      "chains": "Chains",
+      "listings": "{n} matched listings",
+      "listingsTitle": "Competitor prices",
+      "noListings": "No confirmed competitor listings.",
+      "pending": "Matching is pending. Competitor prices appear here once it runs.",
+      "cols": {
+        "listing": "Listing",
+        "price": "Price",
+        "diff": "You vs them",
+        "source": "Match"
+      },
+      "stores": "{n} stores",
+      "was": "Regular {price}",
+      "until": "Until {date}",
+      "linked": "Linked by you",
+      "confirmed": "AI match, {pct} sure",
+      "seen": "Seen {date}",
+      "historyTitle": "Your price history"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "intro": "Your account details.",
+    "profile": "Profile",
+    "save": "Save",
+    "changePassword": "Change password"
+  },
+  "reports": {
+    "title": "Reports",
+    "intro": "Trends across your catalog and the chains.",
+    "soon": "Reports are coming soon",
+    "soonText": "Weekly price moves, promotion calendars and margin impact will appear here as competitor history builds up.",
+    "back": "Go to dashboard"
   }
 }

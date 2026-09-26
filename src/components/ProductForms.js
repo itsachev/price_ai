@@ -13,7 +13,7 @@ function Message({ kind, children }) {
 }
 
 // Add or edit one product. `t` is dict.products (dictionaries are server-only).
-export function ProductForm({ t, action, deleteAction, product }) {
+export function ProductForm({ t, action, product }) {
   const [state, formAction, pending] = useActionState(action, null);
   const values = state?.values ?? product ?? {};
   const field = (name, props = {}) => (
@@ -33,8 +33,9 @@ export function ProductForm({ t, action, deleteAction, product }) {
         {field('name', { required: true, maxLength: 200 })}
         {field('brand', { maxLength: 100 })}
         {field('size', { maxLength: 50 })}
-        {field('sku', { maxLength: 64 })}
         {field('price', { required: true, inputMode: 'decimal' })}
+        {field('cost', { inputMode: 'decimal' })}
+        {field('sku', { maxLength: 64 })}
       </div>
       {state?.error && <Message kind="error">{t.errors[state.error] ?? t.errors.unknown}</Message>}
       {state?.notice && <Message kind="notice">{t.notices[state.notice]}</Message>}
@@ -42,17 +43,19 @@ export function ProductForm({ t, action, deleteAction, product }) {
         <button className="button button--primary" disabled={pending} aria-busy={pending}>
           {product ? t.save : t.add}
         </button>
-        {product && (
-          <button
-            className="button button--danger"
-            formAction={deleteAction}
-            formNoValidate
-            onClick={(e) => confirm(t.confirmDelete) || e.preventDefault()}
-          >
-            {t.delete}
-          </button>
-        )}
       </div>
+    </form>
+  );
+}
+
+// Delete one product, after the browser's confirm().
+export function DeleteForm({ t, action, id }) {
+  return (
+    <form action={action}>
+      <input type="hidden" name="id" value={id} />
+      <button className="button button--danger" onClick={(e) => confirm(t.confirmDelete) || e.preventDefault()}>
+        {t.delete}
+      </button>
     </form>
   );
 }

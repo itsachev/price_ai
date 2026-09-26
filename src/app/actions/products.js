@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
-import { decodeCsv, parseCatalogCsv, toProduct } from '@/lib/catalog';
+import { decodeCsv, parseCatalogCsv, parsePrice, toProduct } from '@/lib/catalog';
 import { matchConfig, priceStatus, runMatch } from '@/lib/pipeline/match';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -21,7 +21,7 @@ async function merchant() {
   return supabase;
 }
 
-const fields = (formData) => Object.fromEntries(['name', 'brand', 'size', 'sku', 'price'].map((f) => [f, formData.get(f)]));
+const fields = (formData) => Object.fromEntries(['name', 'brand', 'size', 'sku', 'price', 'cost'].map((f) => [f, formData.get(f)]));
 const dbError = (error) => (error.code === '23505' ? 'sku_taken' : 'unknown');
 
 // Matches one saved product against the listings already scraped, after the
@@ -56,7 +56,7 @@ export async function saveProduct(_prev, formData) {
 
   matchInBackground(res.data.id);
   done();
-  if (id) redirect('/dashboard/products?notice=saved');
+  if (id) redirect(`/dashboard/products/${id}?notice=saved`);
   return { notice: 'added' };
 }
 
@@ -98,9 +98,21 @@ export async function importProducts(_prev, formData) {
   };
 }
 
+// Recompute one product's status from the overview after a change that needs no
+// Gemini call (a linked listing, a new price), so the page shows it at once.
+async function refreshStatus(supabase, productId) {
+  const { activeDays, priceTolerance } = matchConfig();
+  const { data, error } = await supabase
+    .rpc('product_overview', { active_days: activeDays })
+    .eq('id', productId)
+    .single();
+  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
+  const status = priceStatus(Number(data.price), data.best_price == null ? [] : [Number(data.best_price)], priceTolerance);
+  if (status !== data.price_status) await supabase.from('products').update({ price_status: status }).eq('id', productId);
+}
+
 // Accept or undo a possible match (a listing Gemini flagged as similar). RLS on
-// product_links only allows the caller's own products. The status is refreshed
-// here from the overview, so the dashboard shows the new gap at once.
+// product_links only allows the caller's own products.
 async function setLink(formData, linked) {
   const supabase = await merchant();
   const productId = Number(formData.get('product_id'));
@@ -109,15 +121,7 @@ async function setLink(formData, linked) {
     ? await supabase.from('product_links').upsert({ product_id: productId, listing_id: listingId })
     : await supabase.from('product_links').delete().eq('product_id', productId).eq('listing_id', listingId);
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
-
-  const { activeDays, priceTolerance } = matchConfig();
-  const { data, error: overviewError } = await supabase
-    .rpc('product_overview', { active_days: activeDays })
-    .eq('id', productId)
-    .single();
-  if (overviewError) throw new Error(`${overviewError.code}: ${overviewError.message}`, { cause: overviewError });
-  const status = priceStatus(Number(data.price), data.best_price == null ? [] : [Number(data.best_price)], priceTolerance);
-  if (status !== data.price_status) await supabase.from('products').update({ price_status: status }).eq('id', productId);
+  await refreshStatus(supabase, productId);
   done();
 }
 
@@ -127,4 +131,18 @@ export async function linkListing(formData) {
 
 export async function unlinkListing(formData) {
   await setLink(formData, false);
+}
+
+// "Apply" on a suggested price. The price is validated like any typed one; the
+// merchant could enter it by hand anyway. The history trigger records the change.
+export async function applyPrice(formData) {
+  const supabase = await merchant();
+  const id = Number(formData.get('id'));
+  const price = parsePrice(formData.get('price'));
+  if (!(price > 0 && price < 1e8)) redirect(`/dashboard/products/${id}`);
+  const { error } = await supabase.from('products').update({ price }).eq('id', id);
+  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
+  await refreshStatus(supabase, id);
+  done();
+  redirect(`/dashboard/products/${id}?notice=priceApplied`);
 }

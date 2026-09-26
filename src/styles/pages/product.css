@@ -1,0 +1,195 @@
+/* Product page (/dashboard/products/<id>): suggestions first, then the numbers,
+   competitor listings and the merchant's own price history. Builds on .dash. */
+.pd__back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  margin-block-end: calc(var(--space-3) * -0.5);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+
+  &:hover { color: var(--text); }
+}
+
+.pd .dash__title {
+  justify-items: start;
+
+  & h1 {
+    font-size: var(--text-h2);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+}
+
+.pd .dash__actions form { display: contents; }
+
+/* Suggestions: the panel the page leads with. */
+.pd__ai {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%),
+    color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: calc(var(--radius) * 1.5);
+
+  & > h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: var(--text-h3);
+  }
+
+  & .suggest { padding-block-start: var(--space-2); }
+}
+
+.pd__ai-tag {
+  padding: 0.15em 0.5em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  color: var(--on-signal);
+  background: var(--signal);
+  border-radius: 0.35em;
+}
+
+.pd__advice {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-inline-start: 4px solid var(--c, var(--accent));
+  border-radius: var(--radius);
+}
+
+.pd__advice--quiet {
+  max-inline-size: none;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.pd__advice-text {
+  display: grid;
+  gap: 0.4rem;
+
+  & p {
+    max-inline-size: 60ch;
+    font-size: var(--text-sm);
+    text-wrap: pretty;
+  }
+}
+
+.pd__advice-text .pd__advice-head {
+  font-size: var(--text-lead);
+  font-weight: 600;
+  color: var(--c);
+}
+
+.pd__advice-note { color: var(--muted); }
+.pd__advice-note--warn { color: var(--status-at-risk); font-weight: 600; }
+
+.pd__advice-act {
+  display: grid;
+  gap: var(--space-1);
+  align-content: center;
+}
+
+.pd__advice-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+
+  & s { color: var(--muted); }
+  & strong { font-size: var(--text-h3); }
+}
+
+@container (width >= 40rem) {
+  .pd__advice:has(.pd__advice-act) {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .pd__advice-act { justify-items: end; }
+}
+
+/* Key numbers */
+.pd__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--space-1);
+  margin: 0;
+
+  & > div {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+    padding: var(--space-2);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  & dt {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  & dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-h3);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & small {
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+}
+
+.pd__gap { color: var(--c, inherit); }
+
+/* The merchant's own price changes, newest first. */
+.pd__history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+
+  & li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem var(--space-2);
+    padding: 0.75rem var(--space-2);
+    border-block-end: 1px solid var(--border);
+
+    &:last-child { border-block-end: 0; }
+  }
+
+  & time { color: var(--muted); }
+
+  & .num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & small {
+    margin-inline-start: 0.6em;
+    font-weight: 400;
+    color: var(--muted);
+  }
+}

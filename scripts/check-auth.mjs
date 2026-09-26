@@ -1,7 +1,7 @@
 // node scripts/check-auth.mjs: self-check for the post-auth redirect guard.
 import assert from 'node:assert/strict';
 import { createChunks, stringToBase64URL } from '@supabase/ssr';
-import { hasSession, safeNext } from '../src/lib/auth.js';
+import { hasSession, safeNext, sessionUser } from '../src/lib/auth.js';
 
 assert.equal(safeNext('/dashboard/products?x=1'), '/dashboard/products?x=1');
 assert.equal(safeNext('/reset-password'), '/reset-password');
@@ -23,4 +23,7 @@ assert.equal(await hasSession(store([{ name: 'sb-ref-auth-token', value: '' }]))
 assert.equal(await hasSession(store([])), false, 'no cookie');
 assert.equal(await hasSession(store([{ name: 'sb-ref-auth-token', value: 'junk' }])), false, 'garbage');
 assert.equal(await hasSession(store([{ name: 'sb-ref-auth-token-code-verifier', value: 'x' }])), false, 'verifier only');
+const user = (u) => sessionUser(store(sessionCookies({ refresh_token: 'r', user: u })));
+assert.deepEqual(await user({ email: 'ana@shop.bg', user_metadata: { username: 'Ana' } }), { name: 'Ana' });
+assert.deepEqual(await user({ email: 'ana@shop.bg' }), { name: 'ana' }, 'no username: email local part');
 console.log('check-auth: ok');

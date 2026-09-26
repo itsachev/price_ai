@@ -77,7 +77,6 @@ export default async function DashboardPage({ searchParams }) {
             {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
             {stale && <strong> · {t.dataStale}</strong>}
           </p>
-          <Link href="/dashboard/products" className="button">{t.manage}</Link>
         </div>
       </header>
 
@@ -139,7 +138,7 @@ export default async function DashboardPage({ searchParams }) {
               {rows.map((r) => (
                 <tr key={r.id} data-status={r.price_status}>
                   <th scope="row" className="dash__product">
-                    <Link href={`/dashboard/products?edit=${r.id}`}>{r.name}</Link>
+                    <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
                     {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
                   </th>
                   <td className="num" data-label={t.cols.yourPrice}>{formatPrice(r.price, lang)}</td>
@@ -154,7 +153,7 @@ export default async function DashboardPage({ searchParams }) {
                         </small>
                       </>
                     ) : r.suggestion_count > 0 ? (
-                      <Link href={`/dashboard/products?edit=${r.id}`} className="dash__suggest">
+                      <Link href={`/dashboard/products/${r.id}`} className="dash__suggest">
                         {r.suggestion_count === 1 ? t.suggestion : fill(t.suggestions, { n: r.suggestion_count })}
                       </Link>
                     ) : (

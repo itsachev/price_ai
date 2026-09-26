@@ -287,7 +287,7 @@
   }
 }
 
-/* Catalog page (/dashboard/products): add or edit form beside the CSV import. */
+/* Products page (/dashboard/products): the list, with add, import and edit in dialogs. */
 .dash__actions {
   display: flex;
   flex-wrap: wrap;
@@ -303,46 +303,50 @@
   &:hover { text-decoration-color: currentColor; }
 }
 
-.catalog__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
-  gap: var(--space-2);
-  align-items: start;
-}
-
-.catalog__card {
-  display: grid;
-  gap: var(--space-2);
-  padding: var(--space-2);
-
-  & > p { max-inline-size: 60ch; text-wrap: pretty; }
-}
-
-.catalog__card-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-1);
-
-  & h2 { font-size: var(--text-h3); }
-}
-
 .catalog__link {
   display: inline-flex;
   align-items: center;
   min-block-size: 44px;
-  font-size: var(--text-sm);
   color: var(--accent);
 }
 
-.catalog__note {
-  max-inline-size: 65ch;
-  font-size: var(--text-sm);
-  text-wrap: pretty;
+/* Search box in the product list head: grows to fill a narrow panel. */
+.catalog__search {
+  display: flex;
+  flex: 1 1 18rem;
+  max-inline-size: 28rem;
+  gap: var(--space-1);
+
+  & input {
+    flex: 1;
+    min-inline-size: 0;
+    min-block-size: 2.75rem;
+    padding-inline: 0.875rem;
+    font: inherit;
+    font-size: var(--text-base); /* 16px+ stops iOS zooming on focus */
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+  }
 }
 
-/* Possible matches: listings Gemini flagged as similar, on the edit page. */
+/* Possible matches: listings Gemini flagged as similar, on the product page. */
+.suggest {
+  display: grid;
+  gap: var(--space-1);
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--border);
+
+  & h3 { font-size: var(--text-lead); }
+  & > p { font-size: var(--text-sm); text-wrap: pretty; }
+}
+
 .dash__suggest {
   display: inline-flex;
   align-items: center;
@@ -395,4 +399,22 @@
     grid-template-columns: 1fr auto auto;
     & form { grid-column: auto; }
   }
+}
+
+/* Settings (/dashboard/settings): one narrow form panel. */
+.settings {
+  display: grid;
+  gap: var(--space-2);
+  max-inline-size: 36rem;
+  padding: var(--space-2);
+
+  & h2 { font-size: var(--text-h3); }
+}
+
+.settings__more a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: var(--text-sm);
+  color: var(--accent);
 }

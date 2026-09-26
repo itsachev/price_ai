@@ -46,7 +46,8 @@
 .lang-switch button,
 .theme-switch button,
 .site-menu__links a,
-.site-menu__account {
+.site-menu__account,
+.account__menu :is(a, button) {
   display: grid;
   place-items: center;
   min-width: 2.75rem;
@@ -79,8 +80,14 @@
 }
 
 .site-menu__links a,
-.site-menu__account {
+.site-menu__account,
+.account__menu :is(a, button) {
   padding-inline: 0.875rem;
+}
+
+.site-menu__links a[aria-current='page'] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .site-menu__account {
@@ -161,6 +168,10 @@
 
   & .site-menu__tools {
     justify-content: space-between;
+  }
+
+  /* Links show only when signed in; divide them from the tools then. */
+  & .site-menu__links + .site-menu__tools {
     padding-block-start: var(--space-1);
     border-block-start: 1px solid var(--border);
   }
@@ -220,7 +231,6 @@
 
     & .site-menu__links {
       flex-direction: row;
-      margin-inline-end: auto;
 
       & a {
         font-size: var(--text-sm);
@@ -228,11 +238,21 @@
       }
     }
 
+    /* Links sit in the middle of the bar; with none (signed out) the tools push right. */
+    & .site-menu__links { margin-inline: auto; }
+
     & .site-menu__tools {
+      margin-inline-start: auto;
       padding: 0 0.5rem 0 0;
       margin-inline-end: 0.25rem;
       border: 0;
       border-inline-end: 1px solid var(--border);
+    }
+
+    & .site-menu__links + .site-menu__tools {
+      margin-inline-start: 0;
+      padding-block-start: 0;
+      border-block-start: 0;
     }
 
     & .site-menu__account {
@@ -240,4 +260,136 @@
       box-shadow: none;
     }
   }
+
+  /* Account: the name button opens a dropdown (a popover anchored under it). */
+  .account .account__toggle { display: flex; }
+
+  .account .account__menu {
+    position: fixed;
+    position-anchor: --account;
+    inset: auto;
+    inset-block-start: anchor(bottom);
+    inset-inline-end: anchor(end);
+    min-inline-size: 14rem;
+    margin: 0.5rem 0 0;
+    padding: 0.375rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+
+    &:not(:popover-open) { display: none; }
+  }
+
+  .account .account__who {
+    padding: 0.5rem 0.625rem 0.625rem;
+    margin-block-end: 0.25rem;
+  }
+
+  /* No anchor positioning: the header is sticky, so a fixed spot under its end works. */
+  @supports not (anchor-name: --a) {
+    .account .account__menu {
+      inset-block-start: 4.5rem;
+      inset-inline-end: max(var(--gutter), (100vw - 80rem) / 2);
+    }
+  }
+}
+
+/* Account block. Phones: part of the menu panel, shown inline under a divider
+   with the name on top. Desktop styles above turn it into a dropdown. */
+.account__toggle {
+  anchor-name: --account;
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2.75rem;
+  max-inline-size: 16rem;
+  padding: 0.25rem 0.625rem 0.25rem 0.25rem;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover,
+  &:has(+ :popover-open) {
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+  }
+
+  & svg {
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: rotate 0.15s;
+  }
+
+  &:has(+ :popover-open) svg { rotate: 180deg; }
+}
+
+.account__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 2rem;
+  block-size: 2rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--on-accent);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--signal)));
+  border-radius: 50%;
+}
+
+.account__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account__menu {
+  display: grid;
+  gap: 0.125rem;
+  position: static;
+  inset: auto;
+  inline-size: auto;
+  margin: 0;
+  padding: var(--space-1) 0 0;
+  overflow: visible;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-block-start: 1px solid var(--border);
+
+  & :is(a, button) {
+    justify-items: start;
+    inline-size: 100%;
+    color: var(--text);
+  }
+
+  & a[aria-current='page'] { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+}
+
+.account__who {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-inline-size: 0;
+  padding: 0.25rem 0.875rem 0.5rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  border-block-end: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account__toggle,
+  .account__toggle svg { transition: none; }
 }

@@ -2,13 +2,14 @@ import Link from 'next/link';
 import { JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import MenuCloser from '@/components/MenuCloser';
+import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
 import { LOCALES } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
 import { setTheme } from './actions/theme';
 import { signOut } from './actions/auth';
-import { hasSession } from '@/lib/auth';
+import { sessionUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import '@/styles/main.css';
 
@@ -27,7 +28,9 @@ export default async function RootLayout({ children }) {
   const cookieStore = await cookies();
   const theme = cookieStore.get('theme')?.value;
   // Nav hint only, no network call, so every page stays fast; the proxy and pages do the real check.
-  const signedIn = await hasSession(cookieStore);
+  const user = await sessionUser(cookieStore);
+  const signedIn = Boolean(user);
+  const userName = user?.name || dict.nav.account;
 
   return (
     <html lang={lang} data-theme={theme} className={`${unbounded.variable} ${jetbrainsMono.variable}`}>
@@ -46,10 +49,16 @@ export default async function RootLayout({ children }) {
               </Link>
               {/* Inline row from 60rem up; below that a native popover opened by the menu button. */}
               <nav id="site-menu" className="site-menu" popover="auto" aria-label={dict.nav.main}>
-                <ul className="site-menu__links">
-                  <li><Link href="/#features">{dict.nav.features}</Link></li>
-                  <li><Link href="/#how">{dict.nav.how}</Link></li>
-                </ul>
+                <SessionSwitch
+                  initial={signedIn}
+                  signedIn={
+                    <ul className="site-menu__links">
+                      <li><NavLink href="/dashboard" exact>{dict.nav.dashboard}</NavLink></li>
+                      <li><NavLink href="/dashboard/products">{dict.nav.products}</NavLink></li>
+                      <li><NavLink href="/dashboard/reports">{dict.nav.reports}</NavLink></li>
+                    </ul>
+                  }
+                />
                 <div className="site-menu__tools">
                   <form action={setLocale} className="lang-switch" aria-label={dict.nav.language}>
                     {LOCALES.map((l) => (
@@ -71,16 +80,32 @@ export default async function RootLayout({ children }) {
                 <SessionSwitch
                   initial={signedIn}
                   signedIn={
-                    <form action={signOut}>
-                      <button className="site-menu__account">{dict.auth.signOut}</button>
-                    </form>
+                    // Desktop: a dropdown under the name button. In the phone menu it shows inline.
+                    <div className="account">
+                      <button type="button" className="account__toggle" popoverTarget="account-menu">
+                        <span className="account__avatar" aria-hidden="true">{userName[0].toUpperCase()}</span>
+                        <span className="account__name">{userName}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                      </button>
+                      <div id="account-menu" className="account__menu" popover="auto">
+                        <p className="account__who">
+                          <span className="account__avatar" aria-hidden="true">{userName[0].toUpperCase()}</span>
+                          {userName}
+                        </p>
+                        <NavLink href="/dashboard/settings">{dict.nav.settings}</NavLink>
+                        <form action={signOut}>
+                          <button>{dict.auth.signOut}</button>
+                        </form>
+                      </div>
+                    </div>
                   }
                   signedOut={<Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>}
                 />
               </nav>
               <SessionSwitch
                 initial={signedIn}
-                signedIn={<Link href="/dashboard" className="button button--signal site-header__cta">{dict.nav.dashboard}</Link>}
+                signedIn={null}
+                signedOut={<Link href="/signup" className="button button--signal site-header__cta">{dict.auth.signUp}</Link>}
               />
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>

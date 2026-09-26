@@ -8,9 +8,16 @@
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) * 2);
   box-shadow: var(--shadow);
+  /* Thin accent strip along the top edge. */
+  background-image: linear-gradient(90deg, var(--accent), var(--signal));
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+
+  &[data-wide] { max-inline-size: 38rem; }
 }
 
 .auth__panel {
+  container: auth / inline-size;
   align-content: center;
   padding: clamp(1.25rem, 5vw, 3rem);
 
@@ -34,5 +41,15 @@
   & a {
     color: var(--accent);
     font-weight: 600;
+  }
+}
+
+/* Paired fields (password + confirm) sit side by side once both fit. */
+@container auth (width >= 26rem) {
+  .auth-form:has(.field--half) {
+    grid-template-columns: 1fr 1fr;
+    align-items: end; /* inputs line up even when one label wraps */
+
+    & > :not(.field--half) { grid-column: 1 / -1; }
   }
 }

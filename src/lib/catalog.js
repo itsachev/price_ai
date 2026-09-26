@@ -10,6 +10,7 @@ const HEADERS = {
   size: ['size', 'pack', 'quantity', 'разфасовка', 'грамаж', 'количество', 'опаковка'],
   sku: ['sku', 'code', 'barcode', 'ean', 'код', 'баркод'],
   price: ['price', 'цена', 'продажна цена'],
+  cost: ['cost', 'cost price', 'purchase price', 'доставна цена', 'доставна', 'себестойност'],
 };
 
 // "1,79", "1.79", "€ 1,79", "1 234,50" → number, or NaN.
@@ -27,6 +28,9 @@ export function toProduct(input) {
   if (!name) return { error: 'name' };
   const price = parsePrice(input.price);
   if (!(price > 0) || price >= 1e8) return { error: 'price' };
+  // Cost is optional; blank means unknown, not zero.
+  const cost = String(input.cost ?? '').trim() ? parsePrice(input.cost) : null;
+  if (cost != null && !(cost >= 0 && cost < 1e8)) return { error: 'cost' };
   return {
     product: {
       name,
@@ -34,6 +38,7 @@ export function toProduct(input) {
       size: text(input.size, 50),
       sku: text(input.sku, 64),
       price,
+      cost,
     },
   };
 }

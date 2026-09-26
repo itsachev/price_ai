@@ -147,6 +147,17 @@ export function priceStatus(price, competitorPrices, tolerance) {
   return 'competitive';
 }
 
+// The price to suggest, from the cheapest confirmed competitor price, or null
+// when there's nothing to change. At risk: match the cheapest. Opportunity:
+// raise to a cent under it, so the merchant earns more and stays the cheapest.
+// ponytail: ignores promo end dates and margins; weigh those once cost prices are stored.
+export function suggestPrice(price, cheapest, tolerance) {
+  const status = priceStatus(price, cheapest == null ? [] : [cheapest], tolerance);
+  if (status === 'at-risk') return cheapest;
+  if (status === 'opportunity') return Math.round((cheapest - 0.01) * 100) / 100;
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Gemini
 // ---------------------------------------------------------------------------

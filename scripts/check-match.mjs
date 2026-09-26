@@ -1,6 +1,6 @@
 // node scripts/check-match.mjs: self-check for match narrowing and price status.
 import assert from 'node:assert/strict';
-import { analyze, parseSize, translit, matchKey, buildIndex, findCandidates, priceStatus } from '../src/lib/pipeline/match.js';
+import { analyze, parseSize, translit, matchKey, buildIndex, findCandidates, priceStatus, suggestPrice } from '../src/lib/pipeline/match.js';
 
 assert.equal(translit('Верея 3,5%'), 'vereya 3.5%');
 assert.deepEqual(parseSize(translit('ОЛИО 1 Л РЕТ')), { unit: 'ml', amount: 1000 });
@@ -29,4 +29,8 @@ assert.equal(priceStatus(2, [], 0.03), 'unmatched');
 assert.equal(priceStatus(2, [2.01, 2.5], 0.03), 'competitive');
 assert.equal(priceStatus(2.2, [2.0, 2.5], 0.03), 'at-risk');
 assert.equal(priceStatus(1.8, [2.0, 2.5], 0.03), 'opportunity');
+assert.equal(suggestPrice(2.2, 2.0, 0.03), 2.0, 'at risk: match the cheapest');
+assert.equal(suggestPrice(1.8, 2.0, 0.03), 1.99, 'opportunity: a cent under the cheapest');
+assert.equal(suggestPrice(2, 2.01, 0.03), null, 'competitive');
+assert.equal(suggestPrice(2, null, 0.03), null, 'unmatched');
 console.log('match ok');

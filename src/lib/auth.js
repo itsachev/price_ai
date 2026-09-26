@@ -15,16 +15,24 @@ export const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
 // Header hint with no network call: a session cookie that holds a refresh token.
 // The access token inside expires hourly and only gets refreshed on proxy routes,
 // so checking its expiry showed signed-in visitors "Sign in" on marketing pages.
+// Returns { name } (the signup username, else the email's local part) or null.
 // ponytail: a revoked session or deleted user still reads as signed in here until
 // the first proxy route they open, where the proxy clears the dead cookie.
-export async function hasSession(cookieStore) {
+export async function sessionUser(cookieStore) {
   const first = cookieStore.getAll().find((c) => SESSION_COOKIE.test(c.name) && /(token|\.0)$/.test(c.name));
-  if (!first?.value) return false;
+  if (!first?.value) return null;
   try {
     let raw = await combineChunks(first.name.replace(/\.0$/, ''), (name) => cookieStore.get(name)?.value);
     if (raw?.startsWith('base64-')) raw = stringFromBase64URL(raw.slice('base64-'.length));
-    return Boolean(JSON.parse(raw).refresh_token);
+    const session = JSON.parse(raw);
+    if (!session.refresh_token) return null;
+    const user = session.user ?? {};
+    return { name: user.user_metadata?.username || user.email?.split('@')[0] || '' };
   } catch {
-    return false;
+    return null;
   }
+}
+
+export async function hasSession(cookieStore) {
+  return Boolean(await sessionUser(cookieStore));
 }
