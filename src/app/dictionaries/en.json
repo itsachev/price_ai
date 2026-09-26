@@ -43,12 +43,14 @@
     "chain": "1 chain",
     "noMatch": "No match yet",
     "empty": "No products yet",
-    "emptyText": "Your catalog will appear here once products are added.",
+    "emptyText": "Add your products one by one or import your price list as a CSV file.",
     "emptyFilter": "No products with this status.",
     "pagination": "Pages",
     "prev": "Previous",
     "next": "Next",
-    "page": "Page {page} of {pages}"
+    "page": "Page {page} of {pages}",
+    "manage": "Manage products",
+    "addFirst": "Add products"
   },
   "status": {
     "competitive": "Competitive",
@@ -291,5 +293,58 @@
       "same_password": "Choose a password different from your current one.",
       "password_mismatch": "The passwords don't match."
     }
+  },
+  "products": {
+    "title": "Your catalog",
+    "intro": "Add products, correct them or import your whole price list. Re-importing the same file only updates what changed.",
+    "back": "Back to prices",
+    "addTitle": "Add a product",
+    "editTitle": "Edit product",
+    "cancel": "Cancel editing",
+    "fields": {
+      "name": "Name",
+      "brand": "Brand",
+      "size": "Pack size",
+      "sku": "SKU",
+      "price": "Your price (€)"
+    },
+    "fieldHints": {
+      "name": "",
+      "brand": "Optional",
+      "size": "e.g. 1 l, 400 g",
+      "sku": "Optional, your code",
+      "price": "e.g. 1,79"
+    },
+    "add": "Add product",
+    "save": "Save changes",
+    "delete": "Delete",
+    "confirmDelete": "Delete this product and its price history?",
+    "notices": {
+      "added": "Product added. Add another or import a list.",
+      "saved": "Changes saved.",
+      "deleted": "Product deleted."
+    },
+    "errors": {
+      "name": "Enter a product name.",
+      "price": "Enter a price above zero, like 1,79.",
+      "sku_taken": "Another product already uses this SKU.",
+      "no_file": "Choose a CSV file.",
+      "too_big": "The file is larger than 4 MB. Split it into smaller files.",
+      "columns": "The file needs a header row with these columns: {cols}.",
+      "empty": "No product in the file could be imported.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "import": {
+      "title": "Import a price list",
+      "template": "Download template",
+      "help": "A CSV file with a header row: name and price are required, brand, size and sku are optional. Comma or semicolon separators and decimal commas both work, so you can save straight from Excel. Products are matched by SKU, or by name, brand and size.",
+      "file": "CSV file",
+      "submit": "Import",
+      "working": "Importing…",
+      "result": "{inserted} added, {updated} updated, {unchanged} unchanged.",
+      "skipped": "{skipped} rows skipped:",
+      "rowError": "Row {row}: {error}"
+    },
+    "matchNote": "New and renamed products are matched with competitor prices in the next daily update and show as unmatched until then."
   }
 }

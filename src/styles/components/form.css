@@ -113,7 +113,8 @@
   color: var(--accent);
 }
 
-.auth-form__message {
+.auth-form__message,
+.form-message {
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   font-size: var(--text-sm);
@@ -123,4 +124,40 @@
   &[data-kind='error'] {
     background: color-mix(in srgb, var(--status-at-risk) 12%, transparent);
   }
+}
+
+.form-message__rows {
+  margin-block-start: 0.5rem;
+  padding-inline-start: 1.25rem;
+  font-size: var(--text-xs);
+}
+
+/* Product and import forms: fields flow into as many columns as fit. */
+.product-form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.product-form__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-2);
+
+  & [data-field='name'] { grid-column: 1 / -1; }
+}
+
+.product-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+
+  & .button:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.field input[type='file'] {
+  padding-block: 0.6rem;
+  cursor: pointer;
 }

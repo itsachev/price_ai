@@ -286,3 +286,58 @@
     }
   }
 }
+
+/* Catalog page (/dashboard/products): add or edit form beside the CSV import. */
+.dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dash__product a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 0.2em;
+
+  &:hover { text-decoration-color: currentColor; }
+}
+
+.catalog__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.catalog__card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+
+  & > p { max-inline-size: 60ch; text-wrap: pretty; }
+}
+
+.catalog__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+
+  & h2 { font-size: var(--text-h3); }
+}
+
+.catalog__link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+
+.catalog__note {
+  max-inline-size: 65ch;
+  font-size: var(--text-sm);
+  text-wrap: pretty;
+}

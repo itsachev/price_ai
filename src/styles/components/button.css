@@ -50,3 +50,15 @@
 .button:hover span {
   translate: 0.2em 0;
 }
+
+/* Destructive action (delete): outlined, turns solid on hover. */
+.button--danger {
+  color: var(--status-at-risk);
+  box-shadow: inset 0 0 0 1px currentColor;
+
+  &:hover {
+    color: var(--on-accent);
+    background: var(--status-at-risk);
+    box-shadow: none;
+  }
+}

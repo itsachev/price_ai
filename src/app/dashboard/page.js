@@ -72,10 +72,13 @@ export default async function DashboardPage({ searchParams }) {
           <h1>{t.title}</h1>
           <p className="muted">{t.intro}</p>
         </div>
-        <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
-          {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
-          {stale && <strong> · {t.dataStale}</strong>}
-        </p>
+        <div className="dash__actions">
+          <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
+            {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
+            {stale && <strong> · {t.dataStale}</strong>}
+          </p>
+          <Link href="/dashboard/products" className="button">{t.manage}</Link>
+        </div>
       </header>
 
       <nav className="dash__tiles" aria-label={t.summary}>
@@ -115,6 +118,7 @@ export default async function DashboardPage({ searchParams }) {
               <>
                 <h3>{t.empty}</h3>
                 <p className="muted">{t.emptyText}</p>
+                <Link href="/dashboard/products" className="button button--primary">{t.addFirst}</Link>
               </>
             ) : (
               <p className="muted">{t.emptyFilter}</p>
@@ -135,7 +139,7 @@ export default async function DashboardPage({ searchParams }) {
               {rows.map((r) => (
                 <tr key={r.id} data-status={r.price_status}>
                   <th scope="row" className="dash__product">
-                    {r.name}
+                    <Link href={`/dashboard/products?edit=${r.id}`}>{r.name}</Link>
                     {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
                   </th>
                   <td className="num" data-label={t.cols.yourPrice}>{formatPrice(r.price, lang)}</td>
