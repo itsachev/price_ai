@@ -9,3 +9,8 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* Placeholders sit a step below the typed text; the input keeps 16px so iOS doesn't zoom. */
+::placeholder {
+  font-size: var(--text-sm);
+}
