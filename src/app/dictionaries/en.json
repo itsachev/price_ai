@@ -20,8 +20,8 @@
     "title": "Your prices today",
     "intro": "How your catalog compares with competitor prices collected daily.",
     "dataAsOf": "Competitor prices as of {date}",
-    "dataStale": "Out of date",
     "noData": "No competitor data yet",
+    "staleBanner": "These competitor prices are from {date}. The daily update hasn’t run since, so check them before you change a price.",
     "summary": "Summary",
     "hints": {
       "at-risk": "More than {pct} above the cheapest chain",
@@ -30,17 +30,19 @@
       "unmatched": "No chain sells it yet, or matching is pending"
     },
     "products": "Products",
-    "filter": "Filter by status",
-    "all": "All",
-    "bestAt": "Best price {price} · {chain}",
+    "showing": "Showing {n} of {total}.",
+    "showAll": "Show all",
     "cols": {
       "product": "Product",
       "yourPrice": "Your price",
       "cheapest": "Market best",
       "gap": "Δ vs. market",
+      "suggested": "Suggested",
       "status": "Status"
     },
     "promo": "Promo",
+    "lowerTo": "Lower to {price}",
+    "raiseTo": "Raise to {price}",
     "chains": "{n} chains",
     "chain": "1 chain",
     "noMatch": "No match yet",
@@ -350,7 +352,8 @@
       "help": "We couldn’t confirm these listings are your product, often because the name leaves out a detail such as fat % or pack size. Use the ones that are the same product and their prices count towards your status. Adding the missing detail to the name also lets matching find it on its own.",
       "link": "Use this match",
       "unlink": "Remove match",
-      "chosen": "Your chosen match"
+      "chosen": "Your chosen match",
+      "linked": "Your match"
     },
     "importOpen": "Import CSV",
     "close": "Close",
@@ -378,12 +381,12 @@
       "marginPer": "{amount} per unit",
       "noCost": "Add your cost price to see it",
       "marginAt": "Your margin at {price}: {pct} ({amount} per unit).",
-      "belowCost": "Careful: {price} is below your cost price of {cost}, so you would lose {loss} on every unit.",
+      "belowCostTitle": "Below your cost.",
+      "belowCost": "At {price} you would lose {loss} on every unit (cost {cost}).",
       "cheapest": "Cheapest competitor",
       "gap": "Gap",
-      "chains": "Chains",
-      "listings": "{n} matched listings",
       "listingsTitle": "Competitor prices",
+      "chainsListings": "{chains} chains · {n} matched listings",
       "noListings": "No confirmed competitor listings.",
       "pending": "Matching is pending. Competitor prices appear here once it runs.",
       "cols": {

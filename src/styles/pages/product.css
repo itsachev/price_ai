@@ -33,7 +33,7 @@
   padding: var(--space-2);
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%),
-    color-mix(in srgb, var(--surface) 92%, transparent);
+    var(--surface);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   border-radius: calc(var(--radius) * 1.5);
 
@@ -59,6 +59,7 @@
 
 .pd__advice {
   display: grid;
+  grid-template-areas: "text" "warn" "act";
   gap: var(--space-2);
   padding: var(--space-2);
   background: var(--surface);
@@ -75,6 +76,7 @@
 }
 
 .pd__advice-text {
+  grid-area: text;
   display: grid;
   gap: 0.4rem;
 
@@ -92,19 +94,49 @@
 }
 
 .pd__advice-note { color: var(--muted); }
-.pd__advice-note--warn { color: var(--status-at-risk); font-weight: 600; }
+
+/* Selling below cost: the one way a suggestion could lose money, so it sits
+   right by the Apply button and can't be missed. */
+.pd__warn {
+  grid-area: warn;
+  display: flex;
+  gap: 0.6rem;
+  max-inline-size: 60ch;
+  padding: 0.75rem 1rem;
+  font-size: var(--text-sm);
+  background: color-mix(in srgb, var(--status-at-risk) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--status-at-risk) 40%, var(--border));
+  border-radius: var(--radius);
+
+  & svg {
+    flex: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    fill: none;
+    stroke: var(--status-at-risk);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  & strong { color: var(--status-at-risk); }
+}
 
 .pd__advice-act {
+  grid-area: act;
   display: grid;
   gap: var(--space-1);
   align-content: center;
+
+  & .button {
+    inline-size: 100%;
+    min-block-size: 3rem;
+  }
 }
 
 .pd__advice-price {
   display: flex;
   align-items: baseline;
   gap: 0.6em;
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 
   & s { color: var(--muted); }
@@ -114,16 +146,17 @@
 @container (width >= 40rem) {
   .pd__advice:has(.pd__advice-act) {
     grid-template-columns: 1fr auto;
+    grid-template-areas: "text act" "warn act";
     align-items: center;
   }
 
   .pd__advice-act { justify-items: end; }
 }
 
-/* Key numbers */
+/* Key numbers: 2×2 on phones, one row from 44rem. */
 .pd__stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-1);
   margin: 0;
 
@@ -132,24 +165,19 @@
     align-content: start;
     gap: 0.25rem;
     padding: var(--space-2);
-    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
 
   & dt {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--muted);
   }
 
   & dd {
     margin: 0;
-    font-family: var(--font-mono);
     font-size: var(--text-h3);
-    font-weight: 600;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
@@ -157,6 +185,10 @@
     font-size: var(--text-xs);
     color: var(--muted);
   }
+}
+
+@container dash (width >= 44rem) {
+  .pd__stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .pd__gap { color: var(--c, inherit); }
@@ -182,7 +214,6 @@
   & time { color: var(--muted); }
 
   & .num {
-    font-family: var(--font-mono);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }

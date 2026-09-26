@@ -174,10 +174,10 @@ export default async function ProductPage({ params, searchParams }) {
           </p>
         </div>
         <div className="dash__actions">
-          <ProductDialog key={product.updated_at} label={p.edit} title={t.editTitle} closeLabel={t.close} variant="primary">
+          <ProductDialog key={product.updated_at} label={p.edit} title={t.editTitle} closeLabel={t.close}>
             <ProductForm t={t} action={saveProduct} product={product} />
           </ProductDialog>
-          <ProductDialog label={t.delete} title={t.delete} closeLabel={t.close} variant="danger">
+          <ProductDialog label={t.delete} title={t.delete} closeLabel={t.close} variant="danger-quiet">
             <DeleteForm t={t} action={deleteProduct} id={product.id} />
           </ProductDialog>
         </div>
@@ -204,11 +204,9 @@ export default async function ProductPage({ params, searchParams }) {
                   ? fill(p.lowerWhy, { chain: bestChain, best: money(best), gap: money(price - best), pct: formatPercent(Number(o.gap_ratio), lang, 'auto') })
                   : fill(p.raiseWhy, { chain: bestChain, best: money(best), gain: money(suggested - price) })}
               </p>
-              {atSuggested && (
-                <p className={atSuggested.amount < 0 ? 'pd__advice-note pd__advice-note--warn' : 'pd__advice-note'}>
-                  {atSuggested.amount < 0
-                    ? fill(p.belowCost, { price: money(suggested), cost: money(cost), loss: money(-atSuggested.amount) })
-                    : fill(p.marginAt, { price: money(suggested), pct: atSuggested.pct, amount: money(atSuggested.amount) })}
+              {atSuggested && atSuggested.amount >= 0 && (
+                <p className="pd__advice-note">
+                  {fill(p.marginAt, { price: money(suggested), pct: atSuggested.pct, amount: money(atSuggested.amount) })}
                 </p>
               )}
               {o.best_on_promo && (
@@ -217,6 +215,15 @@ export default async function ProductPage({ params, searchParams }) {
                 </p>
               )}
             </div>
+            {atSuggested && atSuggested.amount < 0 && (
+              <p className="pd__warn" role="note">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3zM12 10v5M12 18v.01" /></svg>
+                <span>
+                  <strong>{p.belowCostTitle}</strong>{' '}
+                  {fill(p.belowCost, { price: money(suggested), cost: money(cost), loss: money(-atSuggested.amount) })}
+                </span>
+              </p>
+            )}
             <div className="pd__advice-act">
               <p className="pd__advice-price num">
                 <s>{money(price)}</s> <strong>{money(suggested)}</strong>
@@ -255,7 +262,8 @@ export default async function ProductPage({ params, searchParams }) {
                   <form action={l.linked ? unlinkListing : linkListing}>
                     <input type="hidden" name="product_id" value={product.id} />
                     <input type="hidden" name="listing_id" value={l.id} />
-                    <button className={l.linked ? 'button' : 'button button--primary'}>
+                    {l.linked && <span className="suggest__linked">✓ {t.suggest.linked}</span>}
+                    <button className={l.linked ? 'button button--quiet' : 'button'}>
                       {l.linked ? t.suggest.unlink : t.suggest.link}
                     </button>
                   </form>
@@ -272,11 +280,6 @@ export default async function ProductPage({ params, searchParams }) {
           <dd className="num">{money(price)}</dd>
         </div>
         <div>
-          <dt>{p.margin}</dt>
-          <dd className="num">{current ? current.pct : '—'}</dd>
-          <small>{current ? fill(p.marginPer, { amount: money(current.amount) }) : p.noCost}</small>
-        </div>
-        <div>
           <dt>{p.cheapest}</dt>
           <dd className="num">{best != null ? money(best) : '—'}</dd>
           {best != null && <small>{bestChain}{o.best_on_promo && ` · ${dict.dashboard.promo}`}</small>}
@@ -289,9 +292,9 @@ export default async function ProductPage({ params, searchParams }) {
           {o.gap_ratio != null && <small>{formatPercent(Number(o.gap_ratio), lang)}</small>}
         </div>
         <div>
-          <dt>{p.chains}</dt>
-          <dd className="num">{o.chain_count ?? 0}</dd>
-          <small>{fill(p.listings, { n: listings.length })}</small>
+          <dt>{p.margin}</dt>
+          <dd className="num">{current ? current.pct : '—'}</dd>
+          <small>{current ? fill(p.marginPer, { amount: money(current.amount) }) : p.noCost}</small>
         </div>
       </dl>
 
@@ -309,6 +312,11 @@ export default async function ProductPage({ params, searchParams }) {
       <section className="dash__panel" aria-labelledby="pd-listings">
         <div className="dash__panel-head">
           <h2 id="pd-listings">{p.listingsTitle}</h2>
+          {listings.length > 0 && (
+            <p className="muted">
+              {fill(p.chainsListings, { chains: o.chain_count ?? 0, n: listings.length })}
+            </p>
+          )}
         </div>
         {listings.length === 0 ? (
           <div className="dash__empty">

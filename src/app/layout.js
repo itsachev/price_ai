@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { JetBrains_Mono, Unbounded } from 'next/font/google';
+import { Inter, JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import AiBackground from '@/components/AiBackground';
 import MenuCloser from '@/components/MenuCloser';
@@ -14,7 +14,9 @@ import { sessionUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import '@/styles/main.css';
 
-// Variable fonts: one file per subset covers every weight.
+// Variable fonts: one file per subset covers every weight. Inter sets the UI
+// and body text (tabular figures for prices); Unbounded only the headings and logo.
+const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 const unbounded = Unbounded({ subsets: ['latin', 'cyrillic'], variable: '--font-unbounded' });
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin', 'cyrillic'], variable: '--font-jetbrains-mono' });
 
@@ -34,7 +36,7 @@ export default async function RootLayout({ children }) {
   const userName = user?.name || dict.nav.account;
 
   return (
-    <html lang={lang} data-theme={theme} className={`${unbounded.variable} ${jetbrainsMono.variable}`}>
+    <html lang={lang} data-theme={theme} className={`${inter.variable} ${unbounded.variable} ${jetbrainsMono.variable}`}>
       <body>
         {/* Decorative AI backdrop: WebGL shader over a pure-CSS fallback. */}
         <AiBackground />

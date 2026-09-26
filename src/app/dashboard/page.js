@@ -7,11 +7,14 @@ import { ImportForm, ProductForm } from '@/components/ProductForms';
 import ProductSearch from '@/components/ProductSearch';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
-import { matchConfig } from '@/lib/pipeline/match';
+import { matchConfig, suggestPrice } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../dictionaries';
 
 const PAGE_SIZE = 50;
+// Tiles lead with the statuses that cost money; the quiet ones need no action.
+const TILE_ORDER = ['at-risk', 'opportunity', 'competitive', 'unmatched'];
+const QUIET = new Set(['competitive', 'unmatched']);
 // KZP publishes yesterday's prices each morning; older than this means the daily job missed runs.
 const STALE_DAYS = 2;
 const isStale = (date) => Date.now() - Date.parse(date) > (STALE_DAYS + 1) * 86_400_000;
@@ -87,32 +90,40 @@ export default async function DashboardPage({ searchParams }) {
     new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(dataDate));
   const pct = formatPercent(priceTolerance, lang, 'auto');
 
+  // Add and Import: in the header once there are products, in the empty state before.
+  const addImport = (
+    <>
+      <ProductDialog label={tp.importOpen} title={tp.import.title} closeLabel={tp.close}>
+        <p className="muted">
+          {tp.import.help}{' '}
+          <Link href="/catalog-template.csv" download className="catalog__link">{tp.import.template}</Link>
+        </p>
+        <ImportForm t={tp} action={importProducts} />
+      </ProductDialog>
+      <ProductDialog label={tp.add} title={tp.addTitle} closeLabel={tp.close} variant="primary">
+        <ProductForm key={added} t={tp} action={saveProduct} />
+      </ProductDialog>
+    </>
+  );
+
   return (
     <section className="dash">
       <header className="dash__head">
         <div className="dash__title">
           <h1>{t.title}</h1>
-          <p className="muted">{t.intro}</p>
-        </div>
-        <div className="dash__actions">
-          <ProductDialog label={tp.importOpen} title={tp.import.title} closeLabel={tp.close}>
-            <p className="muted">
-              {tp.import.help}{' '}
-              <Link href="/catalog-template.csv" download className="catalog__link">{tp.import.template}</Link>
-            </p>
-            <ImportForm t={tp} action={importProducts} />
-          </ProductDialog>
-          <ProductDialog label={tp.add} title={tp.addTitle} closeLabel={tp.close} variant="primary">
-            <ProductForm key={added} t={tp} action={saveProduct} />
-          </ProductDialog>
           <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
             {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
-            {stale && <strong> · {t.dataStale}</strong>}
           </p>
         </div>
+        {total > 0 && <div className="dash__actions">{addImport}</div>}
       </header>
 
       {rows.some((r) => !r.match_key) && <MatchPoller />}
+
+      {/* Repricing from an old feed is the costly mistake, so staleness gets its own line. */}
+      {stale && (
+        <p className="dash__alert" role="status">{fill(t.staleBanner, { date: dateLabel })}</p>
+      )}
 
       {moves > 0 && (
         <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
@@ -125,13 +136,15 @@ export default async function DashboardPage({ searchParams }) {
         <p className="form-message" role="status" data-kind="notice">{tp.notices[notice]}</p>
       )}
 
+      {/* The status filter: each tile toggles ?status=. */}
       <nav className="dash__tiles" aria-label={t.summary}>
-        {PRICE_STATUSES.map((s) => (
+        {TILE_ORDER.map((s) => (
           <Link
             key={s}
             href={dashboardHref({ status: status === s ? null : s, q })}
             className="dash__tile"
             data-status={s}
+            data-quiet={QUIET.has(s) || undefined}
             aria-current={status === s ? 'page' : undefined}
           >
             <span className="dash__tile-label">{dict.status[s]}</span>
@@ -143,20 +156,16 @@ export default async function DashboardPage({ searchParams }) {
 
       <div className="dash__panel">
         <div className="dash__panel-head">
-          <h2>{t.products}</h2>
+          <h2>{status ? dict.status[status] : t.products}</h2>
+          {(status || q) && (
+            <p className="dash__showing">
+              {fill(t.showing, { n: rowsRes.count ?? 0, total })}{' '}
+              <Link href={dashboardHref()}>{t.showAll}</Link>
+            </p>
+          )}
           <ProductSearch action="/dashboard" defaultValue={q} placeholder={tp.searchPlaceholder} label={tp.search}>
             {status && <input type="hidden" name="status" value={status} />}
           </ProductSearch>
-          <nav className="dash__chips" aria-label={t.filter}>
-            <Link href={dashboardHref({ q })} className="dash__chip" aria-current={!status ? 'page' : undefined}>
-              {t.all} <span>{total}</span>
-            </Link>
-            {PRICE_STATUSES.map((s) => (
-              <Link key={s} href={dashboardHref({ status: s, q })} className="dash__chip" aria-current={status === s ? 'page' : undefined}>
-                {dict.status[s]} <span>{counts[s]}</span>
-              </Link>
-            ))}
-          </nav>
         </div>
 
         {rows.length === 0 ? (
@@ -165,6 +174,7 @@ export default async function DashboardPage({ searchParams }) {
               <>
                 <h3>{t.empty}</h3>
                 <p className="muted">{t.emptyText}</p>
+                <div className="dash__actions">{addImport}</div>
               </>
             ) : q ? (
               <>
@@ -183,54 +193,66 @@ export default async function DashboardPage({ searchParams }) {
                 <th scope="col" className="num">{t.cols.yourPrice}</th>
                 <th scope="col">{t.cols.cheapest}</th>
                 <th scope="col" className="num">{t.cols.gap}</th>
+                <th scope="col">{t.cols.suggested}</th>
                 <th scope="col">{t.cols.status}</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined}>
-                  <th scope="row" className="dash__product">
-                    <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
-                    {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
-                    {r.best_price != null && (
-                      <small>
-                        {fill(t.bestAt, {
-                          price: formatPrice(r.best_price, lang),
-                          chain: COMPETITORS[r.best_competitor] ?? r.best_competitor,
-                        })}
-                      </small>
-                    )}
-                  </th>
-                  <td className="num" data-label={t.cols.yourPrice}>{formatPrice(r.price, lang)}</td>
-                  <td data-label={t.cols.cheapest}>
-                    {r.best_price != null ? (
-                      <span className="muted">{formatPrice(r.best_price, lang)}</span>
-                    ) : r.suggestion_count > 0 ? (
-                      <Link href={`/dashboard/products/${r.id}`} className="dash__suggest">
-                        {r.suggestion_count === 1 ? t.suggestion : fill(t.suggestions, { n: r.suggestion_count })}
-                      </Link>
-                    ) : (
-                      <span className="muted">{t.noMatch}</span>
-                    )}
-                  </td>
-                  <td className="num" data-label={t.cols.gap}>
-                    {r.gap != null ? (
-                      <span className="tracker__delta" data-dir={r.gap > 0 ? 'up' : r.gap < 0 ? 'down' : undefined}>
-                        {formatPercent(Number(r.gap_ratio), lang)}
-                      </span>
-                    ) : (
-                      <span className="muted">—</span>
-                    )}
-                  </td>
-                  <td className="dash__status">
-                    {r.match_key ? (
-                      <span className="badge" data-status={r.price_status}>{dict.status[r.price_status]}</span>
-                    ) : (
-                      <span className="badge" data-status="matching">{tp.matching}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {rows.map((r) => {
+                const best = r.best_price == null ? null : Number(r.best_price);
+                const suggested = r.match_key ? suggestPrice(Number(r.price), best, priceTolerance) : null;
+                return (
+                  <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined}>
+                    <th scope="row" className="dash__product">
+                      <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
+                      {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}
+                    </th>
+                    <td className="num" data-label={t.cols.yourPrice}>{formatPrice(r.price, lang)}</td>
+                    <td data-label={t.cols.cheapest}>
+                      {best != null ? (
+                        <>
+                          {formatPrice(best, lang)}
+                          <small>
+                            {COMPETITORS[r.best_competitor] ?? r.best_competitor}
+                            {r.best_on_promo && ` · ${t.promo}`}
+                          </small>
+                        </>
+                      ) : r.suggestion_count > 0 ? (
+                        <Link href={`/dashboard/products/${r.id}`} className="dash__suggest">
+                          {r.suggestion_count === 1 ? t.suggestion : fill(t.suggestions, { n: r.suggestion_count })}
+                        </Link>
+                      ) : (
+                        <span className="muted">{t.noMatch}</span>
+                      )}
+                    </td>
+                    <td className="num" data-label={t.cols.gap}>
+                      {r.gap != null ? (
+                        <span className="tracker__delta" data-dir={r.gap > 0 ? 'up' : r.gap < 0 ? 'down' : undefined}>
+                          {formatPercent(Number(r.gap_ratio), lang)}
+                        </span>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
+                    </td>
+                    <td data-label={t.cols.suggested}>
+                      {suggested != null ? (
+                        <span className="dash__advice">
+                          {fill(suggested < Number(r.price) ? t.lowerTo : t.raiseTo, { price: formatPrice(suggested, lang) })}
+                        </span>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
+                    </td>
+                    <td className="dash__status">
+                      {r.match_key ? (
+                        <span className="badge" data-status={r.price_status}>{dict.status[r.price_status]}</span>
+                      ) : (
+                        <span className="badge" data-status="matching">{tp.matching}</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
