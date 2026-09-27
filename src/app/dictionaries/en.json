@@ -58,7 +58,7 @@
     "movesToday": "{n} price moves at the chains",
     "movesUndercut": "{n} now cheaper than you",
     "bulk": {
-      "open": "Apply {n} suggestions",
+      "open": "Review and apply",
       "title": "Apply suggested prices",
       "help": "Each ticked product gets its suggested price, worked out from today’s competitor prices. Prices below your cost start unticked.",
       "best": "best {price} at {chain}",
@@ -80,7 +80,23 @@
       "submit": "Download CSV"
     },
     "held": "Held by your margin rule",
-    "dismissed": "Dismissed"
+    "dismissed": "Dismissed",
+    "advice": {
+      "kicker": "Suggested prices · from {date}",
+      "titleOne": "1 price to change today",
+      "title": "{n} prices to change today",
+      "cutsOne": "1 cut",
+      "cuts": "{n} cuts",
+      "cutsHint": "to be the cheapest again",
+      "raisesOne": "1 raise",
+      "raises": "{n} raises",
+      "raisesHint": "+{amount} if you sell one of each",
+      "belowCost": "{n} below your cost",
+      "belowCostHint": "left unticked in the review",
+      "more": "{n} more in the review",
+      "held": "{n} held by your margin rule",
+      "dismissed": "{n} set aside with Not now"
+    }
   },
   "status": {
     "competitive": "Competitive",

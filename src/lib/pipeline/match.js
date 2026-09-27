@@ -156,9 +156,14 @@ export function findCandidates(product, index, { candidatesPerChain, minScore })
  * the merchant's `undercut` rule (pricing_rules), so a price that sits on the
  * target is competitive, not an opportunity.
  */
+// An undercut as big as the cheapest price (€10 under a €2 loaf) can't be meant
+// for that product, so it matches the cheapest instead of racing toward a cent.
+const undercutFor = (cheapest, undercut) => (undercut < cheapest ? undercut : 0);
+
 export function priceStatus(price, competitorPrices, tolerance, undercut = 0) {
   if (competitorPrices.length === 0) return 'unmatched';
-  const target = Math.max(Math.min(...competitorPrices) - undercut, 0.01);
+  const cheapest = Math.min(...competitorPrices);
+  const target = cheapest - undercutFor(cheapest, undercut);
   if (price > target * (1 + tolerance)) return 'at-risk';
   if (price < target * (1 - tolerance)) return 'opportunity';
   return 'competitive';
@@ -175,7 +180,7 @@ export function priceStatus(price, competitorPrices, tolerance, undercut = 0) {
 const cents = (n) => Math.round(n * 100) / 100;
 
 export function suggestPrice(price, cheapest, tolerance, { rules = {}, cost = null } = {}) {
-  const undercut = rules.undercut ?? 0;
+  const undercut = cheapest == null ? 0 : undercutFor(cheapest, rules.undercut ?? 0);
   const status = priceStatus(price, cheapest == null ? [] : [cheapest], tolerance, undercut);
   if (status !== 'at-risk' && status !== 'opportunity') return null;
   let target = cents(cheapest - (status === 'opportunity' ? Math.max(undercut, 0.01) : undercut));

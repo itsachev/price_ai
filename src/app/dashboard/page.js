@@ -22,6 +22,8 @@ const STALE_DAYS = 2;
 const isStale = (date) => Date.now() - Date.parse(date) > (STALE_DAYS + 1) * 86_400_000;
 // The export dialog's default start: a week of changes.
 const EXPORT_DAYS = 7;
+// Suggestions previewed on the dashboard card; the rest are in the review dialog.
+const ADVICE_PREVIEW = 3;
 const daysAgo = (n) => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
 
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
@@ -110,7 +112,7 @@ export default async function DashboardPage({ searchParams }) {
   const suggestionById = new Map(suggestions.map((s) => [s.id, s]));
   const ready = suggestions.filter((s) => !s.held && !s.dismissed);
   const bulkApply = ready.length > 0 && (
-    <ProductDialog key={applied ?? 'bulk'} label={fill(tb.open, { n: ready.length })} title={tb.title} closeLabel={tp.close} variant="signal">
+    <ProductDialog key={applied ?? 'bulk'} label={tb.open} title={tb.title} closeLabel={tp.close} variant="signal">
       <p className="muted">{tb.help}</p>
       <form action={applySuggestions} className="bulk">
         <ul className="bulk__list">
@@ -156,6 +158,76 @@ export default async function DashboardPage({ searchParams }) {
     </ProductDialog>
   );
 
+  // The suggestions card: what the changes are (cuts to win back the cheapest
+  // spot, raises that earn more), what they're worth, and the most urgent few,
+  // with the review dialog one click away.
+  const ta = t.advice;
+  const cuts = ready.filter((s) => s.suggested < s.price);
+  const raises = ready.filter((s) => s.suggested > s.price);
+  const gain = raises.reduce((sum, s) => sum + s.suggested - s.price, 0);
+  const belowCost = ready.filter((s) => s.cost != null && s.suggested < s.cost).length;
+  const heldCount = suggestions.filter((s) => s.held).length;
+  const dismissedCount = suggestions.filter((s) => s.dismissed && !s.held).length;
+  const plural = (n, one, many) => fill(n === 1 ? one : many, { n });
+  const advice = ready.length > 0 && (
+    <section className="advice" aria-labelledby="advice-title">
+      <div className="advice__head">
+        <div className="advice__title">
+          <p className="advice__kicker">{fill(ta.kicker, { date: dateLabel ?? '' })}</p>
+          <h2 id="advice-title">{plural(ready.length, ta.titleOne, ta.title)}</h2>
+        </div>
+        {bulkApply}
+      </div>
+      <ul className="advice__stats">
+        {cuts.length > 0 && (
+          <li data-status="at-risk">
+            <strong>{plural(cuts.length, ta.cutsOne, ta.cuts)}</strong>
+            <span>{ta.cutsHint}</span>
+          </li>
+        )}
+        {raises.length > 0 && (
+          <li data-status="opportunity">
+            <strong>{plural(raises.length, ta.raisesOne, ta.raises)}</strong>
+            <span>{fill(ta.raisesHint, { amount: formatPrice(gain, lang) })}</span>
+          </li>
+        )}
+        {belowCost > 0 && (
+          <li data-warn>
+            <strong>{fill(ta.belowCost, { n: belowCost })}</strong>
+            <span>{ta.belowCostHint}</span>
+          </li>
+        )}
+      </ul>
+      <ol className="advice__list">
+        {ready.slice(0, ADVICE_PREVIEW).map((s) => (
+          <li key={s.id}>
+            <Link href={`/dashboard/products/${s.id}`} className="advice__row" data-status={s.status}>
+              <span className="advice__name">
+                {s.name}
+                <small>
+                  {fill(tb.best, { price: formatPrice(s.best, lang), chain: COMPETITORS[s.competitor] ?? s.competitor })}
+                </small>
+              </span>
+              <span className="advice__prices">
+                <s>{formatPrice(s.price, lang)}</s>
+                <span aria-hidden="true">→</span>
+                <strong>{formatPrice(s.suggested, lang)}</strong>
+                <small>{formatPercent((s.suggested - s.price) / s.price, lang)}</small>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+      {(ready.length > ADVICE_PREVIEW || heldCount > 0 || dismissedCount > 0) && (
+        <p className="advice__foot">
+          {ready.length > ADVICE_PREVIEW && <span>{fill(ta.more, { n: ready.length - ADVICE_PREVIEW })}</span>}
+          {heldCount > 0 && <Link href="/dashboard/settings#rules">{fill(ta.held, { n: heldCount })}</Link>}
+          {dismissedCount > 0 && <span>{fill(ta.dismissed, { n: dismissedCount })}</span>}
+        </p>
+      )}
+    </section>
+  );
+
   // Export: the prices changed here, as a CSV for the till or POS.
   const te = t.export;
   const exportPrices = (
@@ -198,7 +270,7 @@ export default async function DashboardPage({ searchParams }) {
             {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
           </p>
         </div>
-        {total > 0 && <div className="dash__actions">{bulkApply}{exportPrices}{addImport}</div>}
+        {total > 0 && <div className="dash__actions">{exportPrices}{addImport}</div>}
       </header>
 
       {rows.some((r) => !r.match_key) && <MatchPoller />}
@@ -207,6 +279,8 @@ export default async function DashboardPage({ searchParams }) {
       {stale && (
         <p className="dash__alert" role="status">{fill(t.staleBanner, { date: dateLabel })}</p>
       )}
+
+      {advice}
 
       {moves > 0 && (
         <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
