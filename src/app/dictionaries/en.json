@@ -56,7 +56,30 @@
     "suggestion": "1 possible match",
     "suggestions": "{n} possible matches",
     "movesToday": "{n} price moves at the chains",
-    "movesUndercut": "{n} now cheaper than you"
+    "movesUndercut": "{n} now cheaper than you",
+    "bulk": {
+      "open": "Apply {n} suggestions",
+      "title": "Apply suggested prices",
+      "help": "Each ticked product gets its suggested price, worked out from today’s competitor prices. Prices below your cost start unticked.",
+      "best": "best {price} at {chain}",
+      "margin": "Margin {pct}",
+      "belowCost": "Below your cost of {cost}",
+      "submit": "Apply ticked prices",
+      "applied": "{n} new prices applied. Update them in your till or POS too.",
+      "download": "Download them as CSV",
+      "limits": {
+        "step": "Capped by your step rule",
+        "margin": "Kept at your minimum margin"
+      }
+    },
+    "export": {
+      "open": "Export prices",
+      "title": "Export changed prices",
+      "help": "Download every product whose price you changed in PriceAI since a date, as a CSV file with the same columns as the import. Load it into your till or POS so your shelf prices match.",
+      "since": "Changed since",
+      "submit": "Download CSV"
+    },
+    "held": "Held by your margin rule"
   },
   "status": {
     "competitive": "Competitive",
@@ -408,7 +431,13 @@
         "current": "Current price",
         "delta": "Δ vs. market",
         "label": "Line chart of your price and the market average by week. Your price is now {yours}, the market average {market}."
-      }
+      },
+      "limits": {
+        "step": "Your pricing rules allow a {pct} change per step, so this is one step of the way.",
+        "margin": "Kept at your {pct} minimum margin."
+      },
+      "held": "{chain} sells it for {best}, but lowering your price would take your margin below your {pct} minimum, so there’s no suggestion.",
+      "editRules": "Pricing rules"
     },
     "matching": "AI matching…"
   },
@@ -417,7 +446,31 @@
     "intro": "Your account details.",
     "profile": "Profile",
     "save": "Save",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "rules": {
+      "title": "Pricing rules",
+      "intro": "Every suggested price, on the dashboard and on each product, follows these rules. Leave a field empty to switch that rule off.",
+      "fields": {
+        "min_margin": "Minimum margin (%)",
+        "undercut": "Go under the cheapest chain by (€)",
+        "max_change": "Largest change in one step (%)"
+      },
+      "hints": {
+        "min_margin": "Never suggest a price with a lower gross margin. Needs a cost price on the product.",
+        "undercut": "0 or empty matches the cheapest price. When raising, it’s at least one cent under.",
+        "max_change": "Big moves are split into steps, so shoppers don’t see a sudden jump."
+      },
+      "save": "Save rules",
+      "notices": {
+        "saved": "Rules saved. Suggestions are updated."
+      },
+      "errors": {
+        "min_margin": "Enter a margin from 0 to 95.",
+        "undercut": "Enter an amount from 0 to 100, like 0,05.",
+        "max_change": "Enter a percentage from 1 to 100.",
+        "unknown": "Something went wrong. Please try again."
+      }
+    }
   },
   "reports": {
     "title": "Reports",

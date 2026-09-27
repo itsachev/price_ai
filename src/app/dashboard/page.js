@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { importProducts, saveProduct } from '@/app/actions/products';
+import { applySuggestions, importProducts, saveProduct } from '@/app/actions/products';
 import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
 import ProductDialog from '@/components/ProductDialog';
@@ -8,8 +8,9 @@ import { ImportForm, ProductForm } from '@/components/ProductForms';
 import ProductSearch from '@/components/ProductSearch';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
-import { matchConfig, suggestPrice } from '@/lib/pipeline/match';
+import { matchConfig } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
+import { loadSuggestions } from '@/lib/suggestions';
 import { getDictionary, getLocale } from '../dictionaries';
 
 const PAGE_SIZE = 10;
@@ -19,6 +20,9 @@ const QUIET = new Set(['competitive', 'unmatched']);
 // KZP publishes yesterday's prices each morning; older than this means the daily job missed runs.
 const STALE_DAYS = 2;
 const isStale = (date) => Date.now() - Date.parse(date) > (STALE_DAYS + 1) * 86_400_000;
+// The export dialog's default start: a week of changes.
+const EXPORT_DAYS = 7;
+const daysAgo = (n) => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
 
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
@@ -56,6 +60,7 @@ export default async function DashboardPage({ searchParams }) {
   // Strip what PostgREST's or() filter syntax would read as operators.
   const q = String(params.q ?? '').replace(/[,()*%\\]/g, ' ').trim().slice(0, 100);
   const added = /^\d+$/.test(params.added ?? '') ? Number(params.added) : null;
+  const applied = /^\d+$/.test(params.applied ?? '') ? Number(params.applied) : null;
   const notice = added ? 'added' : params.notice;
   const { activeDays, priceTolerance } = matchConfig();
 
@@ -71,7 +76,8 @@ export default async function DashboardPage({ searchParams }) {
   const countQuery = (s) =>
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('price_status', s);
 
-  const [rowsRes, addedRes, latestRes, movesRes, ...countRes] = await Promise.all([
+  const [suggestions, rowsRes, addedRes, latestRes, movesRes, ...countRes] = await Promise.all([
+    loadSuggestions(supabase),
     rowsQuery,
     // A just-added product goes first, wherever it sorts.
     added ? supabase.rpc('product_overview', { active_days: activeDays }).eq('id', added).maybeSingle() : { data: null },
@@ -96,6 +102,76 @@ export default async function DashboardPage({ searchParams }) {
   const dateLabel = dataDate &&
     new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(dataDate));
   const pct = formatPercent(priceTolerance, lang, 'auto');
+  const today = daysAgo(0);
+
+  // Bulk apply: every suggested price in one reviewed step. A price below cost
+  // starts unticked, so a margin loss is never applied by default.
+  const tb = t.bulk;
+  const suggestionById = new Map(suggestions.map((s) => [s.id, s]));
+  const ready = suggestions.filter((s) => !s.held);
+  const bulkApply = ready.length > 0 && (
+    <ProductDialog key={applied ?? 'bulk'} label={fill(tb.open, { n: ready.length })} title={tb.title} closeLabel={tp.close} variant="signal">
+      <p className="muted">{tb.help}</p>
+      <form action={applySuggestions} className="bulk">
+        <ul className="bulk__list">
+          {ready.map((s) => {
+            const belowCost = s.cost != null && s.suggested < s.cost;
+            return (
+              <li key={s.id}>
+                <label className="bulk__row" data-status={s.status}>
+                  <input type="checkbox" name="id" value={s.id} defaultChecked={!belowCost} />
+                  <span className="bulk__name">
+                    {s.name}
+                    <small>
+                      {[s.detail, fill(tb.best, { price: formatPrice(s.best, lang), chain: COMPETITORS[s.competitor] ?? s.competitor })]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </small>
+                  </span>
+                  <span className="bulk__prices">
+                    <s>{formatPrice(s.price, lang)}</s>
+                    <span aria-hidden="true">→</span>
+                    <strong>{formatPrice(s.suggested, lang)}</strong>
+                    <small>
+                      {formatPercent((s.suggested - s.price) / s.price, lang)}
+                    </small>
+                  </span>
+                  {s.limit && <small className="bulk__margin">{tb.limits[s.limit]}</small>}
+                  {s.cost != null && (
+                    <small className="bulk__margin" data-warn={belowCost || undefined}>
+                      {belowCost
+                        ? fill(tb.belowCost, { cost: formatPrice(s.cost, lang) })
+                        : fill(tb.margin, { pct: formatPercent((s.suggested - s.cost) / s.suggested, lang, 'auto') })}
+                    </small>
+                  )}
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="product-form__actions">
+          <button className="button button--primary"><ButtonLabel>{tb.submit}</ButtonLabel></button>
+        </div>
+      </form>
+    </ProductDialog>
+  );
+
+  // Export: the prices changed here, as a CSV for the till or POS.
+  const te = t.export;
+  const exportPrices = (
+    <ProductDialog label={te.open} title={te.title} closeLabel={tp.close} variant="quiet">
+      <p className="muted">{te.help}</p>
+      <form method="get" action="/dashboard/export" className="product-form">
+        <label className="field">
+          <span>{te.since}</span>
+          <input type="date" name="since" defaultValue={daysAgo(EXPORT_DAYS)} max={today} required />
+        </label>
+        <div className="product-form__actions">
+          <button className="button button--primary"><ButtonLabel>{te.submit}</ButtonLabel></button>
+        </div>
+      </form>
+    </ProductDialog>
+  );
 
   // Add and Import: in the header once there are products, in the empty state before.
   const addImport = (
@@ -122,7 +198,7 @@ export default async function DashboardPage({ searchParams }) {
             {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
           </p>
         </div>
-        {total > 0 && <div className="dash__actions">{addImport}</div>}
+        {total > 0 && <div className="dash__actions">{bulkApply}{exportPrices}{addImport}</div>}
       </header>
 
       {rows.some((r) => !r.match_key) && <MatchPoller />}
@@ -137,6 +213,15 @@ export default async function DashboardPage({ searchParams }) {
           {fill(t.movesToday, { n: moves })}
           {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
         </Link>
+      )}
+
+      {applied != null && (
+        <p className="form-message" role="status" data-kind="notice">
+          {fill(t.bulk.applied, { n: applied })}{' '}
+          {applied > 0 && (
+            <Link href={`/dashboard/export?since=${today}`} download prefetch={false} className="catalog__link">{t.bulk.download}</Link>
+          )}
+        </p>
       )}
 
       {tp.notices[notice] && (
@@ -207,7 +292,7 @@ export default async function DashboardPage({ searchParams }) {
             <tbody>
               {rows.map((r) => {
                 const best = r.best_price == null ? null : Number(r.best_price);
-                const suggested = r.match_key ? suggestPrice(Number(r.price), best, priceTolerance) : null;
+                const s = r.match_key ? suggestionById.get(r.id) : null;
                 return (
                   <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined}>
                     <th scope="row" className="dash__product">
@@ -242,9 +327,11 @@ export default async function DashboardPage({ searchParams }) {
                       )}
                     </td>
                     <td data-label={t.cols.suggested}>
-                      {suggested != null ? (
+                      {s?.held ? (
+                        <span className="muted">{t.held}</span>
+                      ) : s ? (
                         <span className="dash__advice">
-                          {fill(suggested < Number(r.price) ? t.lowerTo : t.raiseTo, { price: formatPrice(suggested, lang) })}
+                          {fill(s.suggested < s.price ? t.lowerTo : t.raiseTo, { price: formatPrice(s.suggested, lang) })}
                         </span>
                       ) : (
                         <span className="muted">—</span>

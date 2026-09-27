@@ -160,15 +160,40 @@ export function priceStatus(price, competitorPrices, tolerance) {
   return 'competitive';
 }
 
-// The price to suggest, from the cheapest confirmed competitor price, or null
-// when there's nothing to change. At risk: match the cheapest. Opportunity:
-// raise to a cent under it, so the merchant earns more and stays the cheapest.
-// ponytail: ignores promo end dates and margins; weigh those once cost prices are stored.
-export function suggestPrice(price, cheapest, tolerance) {
+// The price to suggest from the cheapest confirmed competitor price, shaped by
+// the merchant's pricing rules, or null when there's nothing to change.
+// At risk: match the cheapest, less `undercut`. Opportunity: raise to `undercut`
+// (at least a cent) under it, so the merchant earns more and stays the cheapest.
+// Then `maxChange` caps one step (a ratio of today's price) and `minMargin`
+// sets a floor over `cost`. Returns { price, limit }: limit names the rule that
+// held the price back ('step' or 'margin'); when the margin floor leaves no room
+// to lower at all, price is today's price, so there's nothing to apply.
+const cents = (n) => Math.round(n * 100) / 100;
+
+export function suggestPrice(price, cheapest, tolerance, { rules = {}, cost = null } = {}) {
   const status = priceStatus(price, cheapest == null ? [] : [cheapest], tolerance);
-  if (status === 'at-risk') return cheapest;
-  if (status === 'opportunity') return Math.round((cheapest - 0.01) * 100) / 100;
-  return null;
+  if (status !== 'at-risk' && status !== 'opportunity') return null;
+  const undercut = rules.undercut ?? 0;
+  let target = cents(cheapest - (status === 'opportunity' ? Math.max(undercut, 0.01) : undercut));
+  let limit = null;
+  if (rules.maxChange != null) {
+    const step = cents(price * rules.maxChange);
+    if (Math.abs(target - price) > step) {
+      target = cents(price + Math.sign(target - price) * step);
+      limit = 'step';
+    }
+  }
+  if (rules.minMargin != null && cost != null) {
+    const floor = Math.ceil((cost / (1 - rules.minMargin)) * 100 - 1e-9) / 100;
+    if (target < floor) {
+      target = floor;
+      limit = 'margin';
+    }
+  }
+  // A rule never turns a cut into a rise, or a rise into a cut.
+  target = status === 'at-risk' ? Math.min(target, price) : Math.max(target, price);
+  if (target === price && !limit) return null;
+  return target > 0 ? { price: target, limit } : null;
 }
 
 // ---------------------------------------------------------------------------

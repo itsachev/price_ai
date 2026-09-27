@@ -7,9 +7,12 @@ import { decodeCsv, parseCatalogCsv, parsePrice, toProduct } from '@/lib/catalog
 import { matchConfig, priceStatus, runMatch, splitSize } from '@/lib/pipeline/match';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { loadSuggestions } from '@/lib/suggestions';
 
 // Rows per import_products call; keeps each request well under PostgREST's body limit.
 const IMPORT_BATCH = 500;
+// apply_price calls in flight at once during a bulk apply.
+const APPLY_CONCURRENCY = 10;
 // Keep in step with serverActions.bodySizeLimit in next.config.mjs.
 const MAX_CSV_BYTES = 4 * 1024 * 1024;
 
@@ -174,4 +177,36 @@ export async function applyPrice(formData) {
   await refreshStatus(supabase, id);
   done();
   redirect(`/dashboard/products/${id}?notice=priceApplied`);
+}
+
+// Bulk apply from the dashboard: the ticked products get their suggested price.
+// Only ids come from the form; the prices are recomputed from today's data, so a
+// stale dialog can't write a stale price. Each change goes through apply_price
+// (history tagged 'apply'), then statuses are set in one update per status.
+// ponytail: one RPC per product; add a set-based apply_prices(items) when bulk runs reach thousands.
+export async function applySuggestions(formData) {
+  const ids = formData.getAll('id').map(Number).filter(Number.isSafeInteger);
+  if (!ids.length) redirect('/dashboard');
+  const supabase = await merchant();
+  const rows = (await loadSuggestions(supabase, ids)).filter((r) => !r.held);
+
+  const failed = [];
+  const applied = [];
+  for (let i = 0; i < rows.length; i += APPLY_CONCURRENCY) {
+    const chunk = rows.slice(i, i + APPLY_CONCURRENCY);
+    const results = await Promise.all(
+      chunk.map((r) => supabase.rpc('apply_price', { product_id: r.id, new_price: r.suggested })),
+    );
+    results.forEach(({ error }, j) => (error ? failed : applied).push(error ?? chunk[j]));
+  }
+
+  const byStatus = Map.groupBy(applied, (r) => r.next);
+  for (const [status, group] of byStatus) {
+    const { error } = await supabase.from('products').update({ price_status: status }).in('id', group.map((r) => r.id));
+    if (error) failed.push(error);
+  }
+
+  done();
+  if (failed.length) throw new Error(`${failed[0].code}: ${failed[0].message}`, { cause: failed[0] });
+  redirect(`/dashboard?applied=${applied.length}`);
 }

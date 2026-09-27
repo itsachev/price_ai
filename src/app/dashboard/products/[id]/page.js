@@ -11,6 +11,7 @@ import { COMPETITORS } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig, suggestPrice } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
+import { loadRules } from '@/lib/suggestions';
 import { getDictionary, getLocale } from '../../../dictionaries';
 
 // One product: what to do about its price first (the suggestion and possible
@@ -68,7 +69,8 @@ export default async function ProductPage({ params, searchParams }) {
           .gte('listing.captured_at', since)
       : { data: [] };
 
-  const [overviewRes, confirmedRes, possibleRes, linksRes, ownHistoryRes] = await Promise.all([
+  const [rules, overviewRes, confirmedRes, possibleRes, linksRes, ownHistoryRes] = await Promise.all([
+    loadRules(supabase),
     supabase.rpc('product_overview', { active_days: activeDays }).eq('id', id).maybeSingle(),
     verdicts(true),
     verdicts(false),
@@ -140,7 +142,15 @@ export default async function ProductPage({ params, searchParams }) {
   const price = Number(product.price);
   const best = o.best_price == null ? null : Number(o.best_price);
   const bestChain = COMPETITORS[o.best_competitor] ?? o.best_competitor;
-  const suggested = suggestPrice(price, best, priceTolerance);
+  const cost = product.cost == null ? null : Number(product.cost);
+  const suggestion = suggestPrice(price, best, priceTolerance, { rules, cost });
+  // The margin rule left no room to lower: nothing to apply, but say why.
+  const held = suggestion?.price === price;
+  const suggested = suggestion && !held ? suggestion.price : null;
+  const ruleValues = {
+    step: rules.maxChange != null && formatPercent(rules.maxChange, lang, 'auto'),
+    margin: rules.minMargin != null && formatPercent(rules.minMargin, lang, 'auto'),
+  };
   const bestListing = listings.find((l) => l.competitor_key === o.best_competitor && Number(l.price) === best);
   const promoEnds = bestListing && latest.get(bestListing.id)?.promo_ends_on;
 
@@ -148,7 +158,6 @@ export default async function ProductPage({ params, searchParams }) {
     new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', opts).format(new Date(value));
   const money = (value) => formatPrice(value, lang);
   // Gross margin on the selling price; null until the merchant enters a cost.
-  const cost = product.cost == null ? null : Number(product.cost);
   const margin = (at) => (cost == null ? null : { amount: at - cost, pct: formatPercent((at - cost) / at, lang, 'auto') });
   const current = margin(price);
   const atSuggested = suggested != null && margin(suggested);
@@ -210,6 +219,12 @@ export default async function ProductPage({ params, searchParams }) {
                   {fill(p.marginAt, { price: money(suggested), pct: atSuggested.pct, amount: money(atSuggested.amount) })}
                 </p>
               )}
+              {suggestion.limit && (
+                <p className="pd__advice-note">
+                  {fill(p.limits[suggestion.limit], { pct: ruleValues[suggestion.limit] })}{' '}
+                  <Link href="/dashboard/settings#rules">{p.editRules}</Link>
+                </p>
+              )}
               {o.best_on_promo && (
                 <p className="pd__advice-note">
                   {promoEnds ? fill(p.promoUntil, { date: date(promoEnds) }) : p.promo}
@@ -238,7 +253,12 @@ export default async function ProductPage({ params, searchParams }) {
           </div>
         ) : (
           <p className="pd__advice pd__advice--quiet">
-            {best != null
+            {held ? (
+              <>
+                {fill(p.held, { chain: bestChain, best: money(best), pct: ruleValues.margin })}{' '}
+                <Link href="/dashboard/settings#rules">{p.editRules}</Link>
+              </>
+            ) : best != null
               ? fill(p.competitive, { chain: bestChain, best: money(best) })
               : !product.match_key ? p.matching : possible.length ? p.reviewMatches : p.nothing}
           </p>
