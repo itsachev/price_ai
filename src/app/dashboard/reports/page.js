@@ -13,6 +13,8 @@ import { getDictionary, getLocale } from '../../dictionaries';
 const TOP = 5;
 // Price index chart: one point a week, back this many weeks from the newest snapshot.
 const TREND_WEEKS = 26;
+// "Your price changes": the merchant's own changes over this many days.
+const CHANGE_DAYS = 30;
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
 function check(...results) {
@@ -39,7 +41,7 @@ export default async function ReportsPage() {
       .order('urgency', { ascending: false, nullsFirst: false })
       .limit(TOP);
 
-  const [movesRes, riskRes, oppRes, snapRes] = await Promise.all([
+  const [movesRes, riskRes, oppRes, snapRes, changesRes] = await Promise.all([
     supabase.rpc('price_moves').select('kind'),
     top('at-risk'),
     top('opportunity'),
@@ -48,8 +50,22 @@ export default async function ReportsPage() {
       .select('data_date, price_index, at_risk, opportunity, competitive, unmatched')
       .order('data_date', { ascending: false })
       .limit(TREND_WEEKS * 7),
+    supabase.rpc('price_change_summary', { period_days: CHANGE_DAYS }),
   ]);
-  check(movesRes, riskRes, oppRes, snapRes);
+  check(movesRes, riskRes, oppRes, snapRes, changesRes);
+
+  // Price changes per source, and rises / cuts over all sources (averages weighted by count).
+  const bySource = Object.fromEntries(changesRes.data.map((r) => [r.source, r]));
+  const sum = (key) => changesRes.data.reduce((n, r) => n + r[key], 0);
+  const weighted = (avg, count) => sum(count) && changesRes.data.reduce((n, r) => n + Number(r[avg] ?? 0) * r[count], 0) / sum(count);
+  const applied = bySource.apply;
+  const changes = {
+    total: sum('changes'),
+    rises: sum('rises'),
+    cuts: sum('cuts'),
+    avgRise: weighted('avg_rise', 'rises'),
+    avgCut: weighted('avg_cut', 'cuts'),
+  };
 
   const moves = movesRes.data.length;
   const undercut = movesRes.data.filter((m) => m.kind === 'undercut').length;
@@ -110,6 +126,36 @@ export default async function ReportsPage() {
           share={(v) => formatPercent(v, lang, 'auto')}
         />
       )}
+
+      <section className="stack" aria-labelledby="rp-changes">
+        <div>
+          <h2 id="rp-changes">{fill(t.changes.title, { days: CHANGE_DAYS })}</h2>
+          <p className="muted">
+            {changes.total
+              ? fill(t.changes.bySource, Object.fromEntries(['apply', 'manual', 'csv'].map((s) => [s, bySource[s]?.changes ?? 0])))
+              : fill(t.changes.none, { days: CHANGE_DAYS })}
+          </p>
+        </div>
+        {changes.total > 0 && (
+          <dl className="stat-grid">
+            <div>
+              <dt>{t.changes.applied}</dt>
+              <dd>{applied?.changes ?? 0}</dd>
+              <small>{applied ? fill(t.changes.competitiveNow, { n: applied.competitive_now, of: applied.products }) : t.changes.noneApplied}</small>
+            </div>
+            <div>
+              <dt>{t.changes.rises}</dt>
+              <dd>{changes.rises}</dd>
+              {changes.rises > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgRise, lang) })}</small>}
+            </div>
+            <div>
+              <dt>{t.changes.cuts}</dt>
+              <dd>{changes.cuts}</dd>
+              {changes.cuts > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgCut, lang) })}</small>}
+            </div>
+          </dl>
+        )}
+      </section>
 
       <div className="reports">
         {[

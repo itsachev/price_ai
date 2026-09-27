@@ -439,6 +439,17 @@
       "since": "{change} since {start}",
       "label": "Stacked columns of your products by price status per week. This week: {risk} at risk, {opportunity} opportunity, {competitive} competitive, {unmatched} unmatched."
     },
+    "changes": {
+      "title": "Your price changes · last {days} days",
+      "bySource": "{apply} from suggestions · {manual} by hand · {csv} from CSV imports",
+      "none": "You haven’t changed a price in the last {days} days.",
+      "applied": "Suggestions applied",
+      "competitiveNow": "{n} of {of} products now competitive",
+      "noneApplied": "Apply a suggested price on a product page",
+      "rises": "Price rises",
+      "cuts": "Price cuts",
+      "average": "{pct} on average"
+    },
     "indexStarting":"Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
     "noMoves": "No price moves at the chains in the latest daily prices",
     "topRisk": "Top 5 at risk",

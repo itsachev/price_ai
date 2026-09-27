@@ -11,6 +11,7 @@
 @import './components/scan.css';
 @import './components/tracker.css';
 @import './components/chart.css';
+@import './components/stat-grid.css';
 @import './components/footer.css';
 @import './components/form.css';
 @import './components/modal.css';

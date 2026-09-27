@@ -274,7 +274,7 @@ export default async function ProductPage({ params, searchParams }) {
         )}
       </section>
 
-      <dl className="pd__stats">
+      <dl className="stat-grid">
         <div>
           <dt>{p.yourPrice}</dt>
           <dd className="num">{money(price)}</dd>

@@ -28,7 +28,7 @@
 /* Sentence-case field labels (table heads, stats, tiles). */
 .dash__table thead th,
 .dash__tile-label,
-.pd__stats dt {
+.stat-grid dt {
   font-size: var(--text-sm);
   font-weight: 600;
   letter-spacing: 0;

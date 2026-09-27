@@ -1,0 +1,39 @@
+/* Key-number tiles (product page, Reports): 2×2 on phones, one row from 44rem
+   of the .dash container, three across when there are three. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+  margin: 0;
+
+  & > div {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+    padding: var(--space-2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  & dt {
+    color: var(--muted);
+  }
+
+  & dd {
+    margin: 0;
+    font-size: var(--text-h3);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & small {
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+}
+
+@container dash (width >= 44rem) {
+  .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stat-grid:has(> :nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

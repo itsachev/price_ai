@@ -107,9 +107,13 @@ for (const [i, picked] of categories.entries()) {
   must(await supabase.from('product_links').insert(picked.map((r) => ({ product_id: row.id, listing_id: r.listing.id }))));
 
   // The merchant's own price: a few rises over the months, ending at today's price.
-  const own = [[DAYS, 0.9], [80, 0.94], [45, 0.97], [15, 1]].map(([ago, factor]) => (
-    { product_id: row.id, price: cents(price * factor * rand(0.99, 1.01)), recorded_at: `${day(newest, -ago)}T09:00:00Z` }
-  ));
+  // Every other product's latest change came from an applied suggestion (Reports' price changes).
+  const own = [[DAYS, 0.9], [80, 0.94], [45, 0.97], [15, 1]].map(([ago, factor]) => ({
+    product_id: row.id,
+    price: cents(price * factor * rand(0.99, 1.01)),
+    recorded_at: `${day(newest, -ago)}T09:00:00Z`,
+    source: ago === 15 && i % 2 === 0 ? 'apply' : 'manual',
+  }));
   ownHistory.push(...own);
   seeded.push({ listingIds: picked.map((r) => r.listing.id), own });
 
