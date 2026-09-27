@@ -28,8 +28,12 @@
   --bg-hot: light-dark(#2563eb, var(--signal));
   --grid-line: color-mix(in srgb, #2563eb 10%, transparent);
 
-  /* Titles: ink easing into the accent. Edges: the accent-to-signal strip on cards and overlays. */
-  --title-gradient: linear-gradient(100deg, var(--text) 30%, color-mix(in srgb, var(--accent) 80%, var(--text)) 75%, var(--accent));
+  /* Titles: a vivid blue, violet and sky sweep, deep enough on paper to keep
+     contrast. Edges: the accent-to-signal strip on cards and overlays. */
+  --title-gradient: linear-gradient(100deg,
+    light-dark(#1d4ed8, #7aa9ff),
+    light-dark(#6d28d9, #c4b5fd) 55%,
+    light-dark(#0369a1, #7dd3fc));
   --edge-gradient: linear-gradient(90deg, var(--accent), var(--signal));
 
   --status-competitive: light-dark(#1d4ed8, #7aa9ff);
