@@ -1,4 +1,4 @@
-/* Product price tracker: counts, category chips and a table that turns into
+/* Product price tracker: counts and a table that turns into
    stacked cards when the tracker itself is narrow. */
 .tracker {
   container-type: inline-size;
@@ -48,54 +48,6 @@
     line-height: 1;
     color: var(--c);
   }
-}
-
-/* Category chips: radio buttons, filtered with :has() below, no JS. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  padding: var(--space-1) var(--space-2);
-  border: 0;
-
-  & label {
-    display: grid;
-    place-items: center;
-    min-block-size: 2.75rem;
-    padding-inline: 1rem;
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    color: var(--muted);
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-
-    &:hover {
-      color: var(--text);
-    }
-
-    &:has(:checked) {
-      color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 14%, transparent);
-    }
-
-    &:has(:focus-visible) {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-  }
-
-  & input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-}
-
-.tracker:has(input[value='dairy']:checked) tbody tr:not([data-cat='dairy']),
-.tracker:has(input[value='bakery']:checked) tbody tr:not([data-cat='bakery']),
-.tracker:has(input[value='pantry']:checked) tbody tr:not([data-cat='pantry']) {
-  display: none;
 }
 
 .tracker table {

@@ -82,6 +82,37 @@
   }
 }
 
+/* The rest of the hero follows the headline in: copy rises in order, the scan
+   panel lifts in beside it. CSS only, so first paint never waits on JS. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__copy > :not(.hero__title) {
+    animation: hero-in 0.8s var(--d, 0s) cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero__copy > .lead { --d: 0.3s; }
+  .hero__copy > .actions { --d: 0.42s; }
+  .hero__copy > .trust { --d: 0.54s; }
+
+  .hero .scan {
+    animation: hero-panel 1s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+}
+
+@keyframes hero-panel {
+  from {
+    opacity: 0;
+    translate: 0 2rem;
+    scale: 0.96;
+  }
+}
+
 .trust {
   display: flex;
   flex-wrap: wrap;
@@ -269,10 +300,18 @@
   align-content: start;
   gap: var(--space-2);
   padding: var(--space-3);
+  --c2: var(--status-competitive);
   border-block-start: 3px solid var(--c);
+  /* Light spilling down from the coloured top edge, a second hue pooling in the
+     far corner, and a faint diagonal sheen over the card surface. */
+  background:
+    radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--c) 22%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 100% 100%, color-mix(in srgb, var(--c2) 12%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--c) 6%, transparent), transparent 45%),
+    color-mix(in srgb, var(--surface) 88%, transparent);
 
-  &[data-status='at-risk'] { --c: var(--status-at-risk); }
-  &[data-status='opportunity'] { --c: var(--status-opportunity); }
+  &[data-status='at-risk'] { --c: var(--status-at-risk); --c2: var(--status-opportunity); }
+  &[data-status='opportunity'] { --c: var(--status-opportunity); --c2: var(--status-competitive); }
 
   & h3 {
     font-size: var(--text-base);
@@ -415,8 +454,61 @@
     max-inline-size: 20ch;
   }
 
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--on-band) 12%, transparent);
+
+  /* Faint grid that fades out from the centre, echoing the dashboard. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(color-mix(in srgb, var(--on-band) 7%, transparent) 1px, transparent 1px) 0 0 / 2.5rem 2.5rem,
+      linear-gradient(90deg, color-mix(in srgb, var(--on-band) 7%, transparent) 1px, transparent 1px) 0 0 / 2.5rem 2.5rem;
+    mask: radial-gradient(ellipse at center, #000 20%, transparent 75%);
+  }
+
   & p {
     max-inline-size: 50ch;
     color: color-mix(in srgb, var(--on-band) 75%, transparent);
+    text-wrap: pretty;
+  }
+
+  & .actions {
+    justify-content: center;
+  }
+}
+
+/* Secondary action on the dark band: outline in the band's own ink. */
+.cta__ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--on-band);
+  --btn-glow: var(--on-band);
+  --btn-ring: color-mix(in srgb, var(--on-band) 30%, transparent);
+}
+
+.cta__points {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--on-band) 70%, transparent);
+
+  & li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+
+    &::before {
+      content: '✓';
+      color: var(--signal);
+      font-weight: 700;
+    }
   }
 }

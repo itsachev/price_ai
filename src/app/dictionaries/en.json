@@ -119,14 +119,6 @@
         {
           "title": "Price history",
           "text": "Every run is kept, so you can see how your price and the market moved over weeks and months."
-        },
-        {
-          "title": "Portfolio reports",
-          "text": "Your top at-risk products, your best opportunities and match coverage per chain, at a glance."
-        },
-        {
-          "title": "Made for Bulgaria",
-          "text": "The whole app works in English and Bulgarian, and every price is shown in euro."
         }
       ]
     },
@@ -137,8 +129,6 @@
       "card": "Product price tracker",
       "live": "Live data from {count} chains",
       "total": "Total products",
-      "filter": "Filter by category",
-      "all": "All",
       "categories": {
         "dairy": "Dairy",
         "bakery": "Bakery",
@@ -217,7 +207,15 @@
     "final": {
       "eyebrow": "Start today",
       "title": "Know where you stand against the market",
-      "text": "Open the dashboard and filter by the products that need attention."
+      "text": "Create an account, add your products or import your price list and see how every price compares with the chains.",
+      "signup": "Create account",
+      "signupHover": "Takes a minute",
+      "login": "I already have an account",
+      "points": [
+        "Import a CSV price list",
+        "Fresh prices every morning",
+        "Alerts when a chain undercuts you"
+      ]
     },
     "status": {
       "competitive": {

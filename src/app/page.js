@@ -1,8 +1,10 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import ButtonLabel from '@/components/ButtonLabel';
 import PriceTrend from '@/components/PriceTrend';
 import Reveal from '@/components/Reveal';
+import { hasSession } from '@/lib/auth';
 import { COMPETITORS, PRICE_STATUSES, SITE_URL } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { getDictionary, getLocale } from './dictionaries';
@@ -20,7 +22,6 @@ const ROWS = [
   { name: 'Яйца M, 10 бр.', cat: 'dairy', yours: 4.99, best: 4.2, status: 'at-risk' },
   { name: 'Брашно тип 500, 1 кг', cat: 'pantry', yours: 1.19, best: null, status: 'unmatched' },
 ];
-const CATEGORIES = ['dairy', 'bakery', 'pantry'];
 
 // Six months, April to September 2026.
 const TREND = { yours: [1.29, 1.29, 1.32, 1.35, 1.35, 1.38], market: [1.35, 1.34, 1.33, 1.34, 1.36, 1.3] };
@@ -32,8 +33,6 @@ const ICONS = [
   'M4 6h16M4 12h10M4 18h6', // statuses
   'M12 3v4M12 17v4M3 12h4M17 12h4M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0', // daily scan
   'M4 19V5M4 19h16M8 15l4-4 3 3 5-6', // history
-  'M6 3h9l3 3v15H6zM9 11h6M9 15h6', // reports
-  'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3c3 3 3 15 0 18', // EN/BG + EUR
 ];
 
 const delta = (row) => (row.best ? (row.yours - row.best) / row.best : null);
@@ -47,6 +46,8 @@ export default async function HomePage() {
   const price = (v) => formatPrice(v, lang);
   const pct = (v) => formatPercent(v, lang);
   const chainCount = Object.keys(COMPETITORS).length;
+  // Cookie read only, no network call (the root layout already does the same).
+  const signedIn = await hasSession(await cookies());
 
   const market = SCAN.rivals.reduce((sum, [, p]) => sum + p, 0) / SCAN.rivals.length;
   const count = (s) => ROWS.filter((r) => r.status === s).length;
@@ -212,15 +213,6 @@ export default async function HomePage() {
               <div key={s} data-status={s}><dt>{home.status[s].name}</dt><dd>{count(s)}</dd></div>
             ))}
           </dl>
-          <fieldset className="chips">
-            <legend className="visually-hidden">{home.tracker.filter}</legend>
-            {['all', ...CATEGORIES].map((c) => (
-              <label key={c}>
-                <input type="radio" name="cat" value={c} defaultChecked={c === 'all'} />
-                {c === 'all' ? home.tracker.all : home.tracker.categories[c]}
-              </label>
-            ))}
-          </fieldset>
           <table>
             <thead>
               <tr>
@@ -231,7 +223,7 @@ export default async function HomePage() {
               {ROWS.map((r) => {
                 const d = delta(r);
                 return (
-                  <tr key={r.name} data-cat={r.cat}>
+                  <tr key={r.name}>
                     <th scope="row">
                       {r.name}
                       <small>{home.tracker.categories[r.cat]}</small>
@@ -356,10 +348,24 @@ export default async function HomePage() {
         <h2>{home.final.title}</h2>
         <p>{home.final.text}</p>
         <div className="actions">
-          <Link href="/dashboard" className="button button--signal">
-            <ButtonLabel>{home.cta}</ButtonLabel> <span aria-hidden="true">→</span>
-          </Link>
+          {signedIn ? (
+            <Link href="/dashboard" className="button button--signal">
+              <ButtonLabel>{home.cta}</ButtonLabel> <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <>
+              <Link href="/signup" className="button button--signal">
+                <ButtonLabel hover={home.final.signupHover}>{home.final.signup}</ButtonLabel> <span aria-hidden="true">→</span>
+              </Link>
+              <Link href="/login" className="button cta__ghost">
+                <ButtonLabel>{home.final.login}</ButtonLabel>
+              </Link>
+            </>
+          )}
         </div>
+        <ul className="cta__points">
+          {home.final.points.map((p) => <li key={p}>{p}</li>)}
+        </ul>
       </section>
     </Reveal>
   );
