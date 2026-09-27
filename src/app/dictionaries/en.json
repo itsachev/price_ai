@@ -433,7 +433,13 @@
       "delta": "vs. market",
       "label": "Line chart of your price index by week. Your index is now {yours}, the market is {market}."
     },
-    "indexStarting": "Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
+    "mix": {
+      "title": "Status mix",
+      "subtitle": "Weekly · share of your products in each price status",
+      "since": "{change} since {start}",
+      "label": "Stacked columns of your products by price status per week. This week: {risk} at risk, {opportunity} opportunity, {competitive} competitive, {unmatched} unmatched."
+    },
+    "indexStarting":"Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
     "noMoves": "No price moves at the chains in the latest daily prices",
     "topRisk": "Top 5 at risk",
     "topOpportunity": "Top 5 opportunities",

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import PriceTrend from '@/components/PriceTrend';
+import StatusMix from '@/components/StatusMix';
 import { formatPercent } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
@@ -44,8 +45,7 @@ export default async function ReportsPage() {
     top('opportunity'),
     supabase
       .from('merchant_snapshots')
-      .select('data_date, price_index')
-      .not('price_index', 'is', null)
+      .select('data_date, price_index, at_risk, opportunity, competitive, unmatched')
       .order('data_date', { ascending: false })
       .limit(TREND_WEEKS * 7),
   ]);
@@ -63,10 +63,13 @@ export default async function ReportsPage() {
     if (week < TREND_WEEKS && !weekly.has(week)) weekly.set(week, s);
   }
   const points = [...weekly.values()].reverse();
-  const index = points.map((s) => Number(s.price_index));
+  const indexPoints = points.filter((s) => s.price_index != null);
+  const index = indexPoints.map((s) => Number(s.price_index));
+  const mix = points.map((s) => ({ 'at-risk': s.at_risk, opportunity: s.opportunity, competitive: s.competitive, unmatched: s.unmatched }));
   const date = (value, opts) => new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', opts).format(new Date(value));
-  const indexLabels = points.map((s, i) =>
-    i === 0 || s.data_date.slice(0, 7) !== points[i - 1].data_date.slice(0, 7) ? date(s.data_date, { month: 'short', timeZone: 'UTC' }) : '');
+  // Month name under the first point of each month.
+  const monthLabels = (list) => list.map((s, i) =>
+    i === 0 || s.data_date.slice(0, 7) !== list[i - 1].data_date.slice(0, 7) ? date(s.data_date, { month: 'short', timeZone: 'UTC' }) : '');
   const number = (v) => new Intl.NumberFormat(lang === 'bg' ? 'bg-BG' : 'en-IE', { maximumFractionDigits: 1 }).format(v);
 
   return (
@@ -88,12 +91,24 @@ export default async function ReportsPage() {
           t={t.index}
           yours={index}
           market={index.map(() => 100)}
-          xLabels={indexLabels}
+          xLabels={monthLabels(indexPoints)}
           money={number}
           pct={(v) => formatPercent(v, lang)}
         />
       ) : (
         index.length === 1 && <p className="muted">{fill(t.indexStarting, { index: number(index[0]) })}</p>
+      )}
+
+      {mix.length > 1 && (
+        <StatusMix
+          t={t.mix}
+          names={dict.status}
+          weeks={mix}
+          xLabels={monthLabels(points)}
+          start={date(points[0].data_date, { day: 'numeric', month: 'short', timeZone: 'UTC' })}
+          pct={(v) => formatPercent(v, lang)}
+          share={(v) => formatPercent(v, lang, 'auto')}
+        />
       )}
 
       <div className="reports">
