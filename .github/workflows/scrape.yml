@@ -1,7 +1,7 @@
 # Daily data job: scrape the KZP feed, then match products and refresh statuses.
 # Needs repo secrets NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and
 # GEMINI_API_KEY. Optional repo variables override the match settings
-# (GEMINI_MODEL, GEMINI_RPM, MATCH_*); unset ones fall back to the code defaults.
+# (GEMINI_MODEL, GEMINI_RPM, MATCH_*, NOTIFY_*); unset ones fall back to the code defaults.
 name: Daily scrape and match
 
 on:
@@ -30,6 +30,8 @@ jobs:
       MATCH_MIN_CONFIDENCE: ${{ vars.MATCH_MIN_CONFIDENCE }}
       MATCH_PRICE_TOLERANCE: ${{ vars.MATCH_PRICE_TOLERANCE }}
       MATCH_ACTIVE_DAYS: ${{ vars.MATCH_ACTIVE_DAYS }}
+      NOTIFY_MIN_CHANGE: ${{ vars.NOTIFY_MIN_CHANGE }}
+      NOTIFY_KEEP_DAYS: ${{ vars.NOTIFY_KEEP_DAYS }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

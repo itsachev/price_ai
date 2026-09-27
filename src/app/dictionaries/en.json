@@ -450,11 +450,26 @@
       "cuts": "Price cuts",
       "average": "{pct} on average"
     },
-    "indexStarting":"Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
+    "indexStarting": "Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
     "noMoves": "No price moves at the chains in the latest daily prices",
     "topRisk": "Top 5 at risk",
     "topOpportunity": "Top 5 opportunities",
     "noneRisk": "Nothing at risk. None of your prices is above the cheapest chain.",
     "noneOpportunity": "No opportunities right now. None of your prices is well below the cheapest chain."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "seeAll": "See all",
+    "empty": "Nothing new yet. When a chain undercuts you, starts or ends a promo, or stops listing one of your products, it shows up here each morning.",
+    "intro": "What changed at the chains for your products, newest first. New notifications arrive each morning with the daily prices.",
+    "kinds": {
+      "undercut": "{chain} undercut you on {product}: {old} → {new}",
+      "raised-above": "{chain} raised {product} above your price: {old} → {new}",
+      "promo-start": "{chain} started a promo on {product}: {old} → {new}",
+      "promo-end": "{chain} ended its promo on {product}: {old} → {new}",
+      "delisted": "{chain} no longer lists {product}",
+      "matched": "Matching finished for {n} products. Their prices are now compared.",
+      "matchedOne": "Matching finished for 1 product. Its price is now compared."
+    }
   }
 }

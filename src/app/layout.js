@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Inter, JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
@@ -5,6 +6,7 @@ import AiBackground from '@/components/AiBackground';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
+import Notifications from '@/components/Notifications';
 import { LOCALES, SITE_URL } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
@@ -127,6 +129,17 @@ export default async function RootLayout({ children }) {
                   signedOut={<Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>}
                 />
               </nav>
+              {/* Streams in after the page; the placeholder keeps the bar from shifting. */}
+              <SessionSwitch
+                initial={signedIn}
+                signedIn={
+                  signedIn && (
+                    <Suspense fallback={<span className="bell" aria-hidden="true" />}>
+                      <Notifications dict={dict} lang={lang} />
+                    </Suspense>
+                  )
+                }
+              />
               <SessionSwitch
                 initial={signedIn}
                 signedIn={null}

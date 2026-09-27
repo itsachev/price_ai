@@ -1,6 +1,6 @@
 // npm run match: match every merchant product to competitor listings with
 // Gemini (cached, batched, throttled), refresh price statuses and record each
-// merchant's daily snapshot for Reports. Stopping when Gemini is out of quota
+// merchant's daily snapshot for Reports and their notifications. Stopping when Gemini is out of quota
 // or overloaded is not a failure: the next run resumes from the verdict cache.
 import { createAdminClient } from '../src/lib/supabase/admin.js';
 import { matchConfig, runMatch } from '../src/lib/pipeline/match.js';
@@ -15,3 +15,11 @@ console.log('statuses:', r.counts);
 const { data, error } = await supabase.rpc('record_snapshots', { active_days: config.activeDays });
 if (error) throw new Error(`record_snapshots: ${error.code} ${error.message}`, { cause: error });
 console.log(`snapshots: ${data} merchants`);
+
+const notified = await supabase.rpc('record_notifications', {
+  matched: r.matched,
+  min_change: config.notifyMinChange,
+  keep_days: config.notifyKeepDays,
+});
+if (notified.error) throw new Error(`record_notifications: ${notified.error.code} ${notified.error.message}`, { cause: notified.error });
+console.log(`notifications: ${notified.data} written`);

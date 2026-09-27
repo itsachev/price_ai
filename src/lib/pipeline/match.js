@@ -33,6 +33,10 @@ export const matchConfig = () => ({
   priceTolerance: Number(env('MATCH_PRICE_TOLERANCE', 0.03)),
   // Listings not seen by a scrape for this long count as delisted.
   activeDays: Number(env('MATCH_ACTIVE_DAYS', 7)),
+  // Notifications: promo starts/ends smaller than this ratio are skipped; rows
+  // older than NOTIFY_KEEP_DAYS are dropped.
+  notifyMinChange: Number(env('NOTIFY_MIN_CHANGE', 0.02)),
+  notifyKeepDays: Number(env('NOTIFY_KEEP_DAYS', 90)),
 });
 
 // ---------------------------------------------------------------------------
@@ -403,14 +407,16 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
   // reads a missing match_key as "AI is still matching this product".
   const unanswered = (v) => !v || (!v.confirmed && v.possible == null);
   const unfinished = new Set(pending.filter((p) => unanswered(verdicts.get(p.key).get(p.listing.id))).map((p) => p.key));
+  const matched = []; // products matched for the first time (or again after a rename)
   for (const [key, { ids }] of byKey) {
     if (unfinished.has(key)) continue;
     const stale = ids.filter((id) => productById.get(id).match_key !== key);
+    matched.push(...stale.filter((id) => productById.get(id).match_key == null));
     for (const part of chunks(stale, CHUNK)) {
       const { error } = await supabase.from('products').update({ match_key: key }).in('id', part);
       if (error) throw error;
     }
   }
 
-  return { products: products.length, pending: pending.length, judged, requests, stopped, counts };
+  return { products: products.length, pending: pending.length, judged, requests, stopped, counts, matched };
 }
