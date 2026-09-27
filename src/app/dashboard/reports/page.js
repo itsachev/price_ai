@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import PriceTrend from '@/components/PriceTrend';
-import StatusMix from '@/components/StatusMix';
 import { formatPercent } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
@@ -53,7 +52,7 @@ export default async function ReportsPage() {
     top('opportunity'),
     supabase
       .from('merchant_snapshots')
-      .select('data_date, price_index, at_risk, opportunity, competitive, unmatched')
+      .select('data_date, price_index')
       .order('data_date', { ascending: false })
       .limit(TREND_WEEKS * 7),
     supabase.rpc('price_change_summary', { period_days: CHANGE_DAYS }),
@@ -87,7 +86,6 @@ export default async function ReportsPage() {
   const points = [...weekly.values()].reverse();
   const indexPoints = points.filter((s) => s.price_index != null);
   const index = indexPoints.map((s) => Number(s.price_index));
-  const mix = points.map((s) => ({ 'at-risk': s.at_risk, opportunity: s.opportunity, competitive: s.competitive, unmatched: s.unmatched }));
   const date = (value, opts) => new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', opts).format(new Date(value));
   // Month name under the first point of each month.
   const monthLabels = (list) => list.map((s, i) =>
@@ -119,18 +117,6 @@ export default async function ReportsPage() {
         />
       ) : (
         index.length === 1 && <p className="muted">{fill(t.indexStarting, { index: number(index[0]) })}</p>
-      )}
-
-      {mix.length > 1 && (
-        <StatusMix
-          t={t.mix}
-          names={dict.status}
-          weeks={mix}
-          xLabels={monthLabels(points)}
-          start={date(points[0].data_date, { day: 'numeric', month: 'short', timeZone: 'UTC' })}
-          pct={(v) => formatPercent(v, lang)}
-          share={(v) => formatPercent(v, lang, 'auto')}
-        />
       )}
 
       <section className="stack" aria-labelledby="rp-changes">

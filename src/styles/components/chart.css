@@ -163,66 +163,6 @@
   }
 }
 
-/* Status mix: stacked weekly columns, at risk at the bottom. Shares sum to
-   100%, so each column fills the plot. */
-.mix {
-  & [data-status='at-risk'] { --c: var(--status-at-risk); }
-  & [data-status='opportunity'] { --c: var(--status-opportunity); }
-  & [data-status='competitive'] { --c: var(--status-competitive); }
-  & [data-status='unmatched'] { --c: var(--status-unmatched); }
-
-  & .chart__legend span::before {
-    inline-size: 0.75rem;
-    aspect-ratio: 1;
-    border: 0;
-    border-radius: 2px;
-    background: var(--c);
-  }
-
-  & .chart__foot div {
-    flex-direction: column;
-  }
-}
-
-.mix__area,
-.mix__x {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: clamp(1px, 0.4vw, 4px);
-}
-
-.mix__area {
-  block-size: clamp(9rem, 24vw, 13rem);
-  margin-block: 0.5rem;
-}
-
-.mix__col {
-  display: flex;
-  flex-direction: column-reverse;
-  overflow: hidden;
-  border-radius: 2px;
-
-  & span {
-    block-size: var(--h);
-    background: var(--c);
-  }
-}
-
-.chart__x.mix__x {
-  margin-inline-start: 0;
-
-  & li {
-    inline-size: auto;
-  }
-}
-
-.chart__foot .mix__since {
-  font-size: var(--text-sm);
-  font-weight: 400;
-  color: var(--muted);
-}
-
 /* Draw the price line as the chart scrolls into view. Scroll-driven, so no JS;
    browsers without support simply show the finished line. */
 @supports (animation-timeline: view()) {

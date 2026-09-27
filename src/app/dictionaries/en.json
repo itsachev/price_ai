@@ -433,12 +433,6 @@
       "delta": "vs. market",
       "label": "Line chart of your price index by week. Your index is now {yours}, the market is {market}."
     },
-    "mix": {
-      "title": "Status mix",
-      "subtitle": "Weekly · share of your products in each price status",
-      "since": "{change} since {start}",
-      "label": "Stacked columns of your products by price status per week. This week: {risk} at risk, {opportunity} opportunity, {competitive} competitive, {unmatched} unmatched."
-    },
     "changes": {
       "title": "Your price changes · last {days} days",
       "bySource": "{apply} from suggestions · {manual} by hand · {csv} from CSV imports",
