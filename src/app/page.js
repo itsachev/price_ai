@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import Link from 'next/link';
 import PriceTrend from '@/components/PriceTrend';
 import Reveal from '@/components/Reveal';
@@ -68,9 +69,11 @@ export default async function HomePage() {
           <h1 className="hero__title">
             {titleLines.map((line, i) => {
               const words = line.map((w, j) => (
-                <span key={j} className="word-mask">
-                  <span className="word" style={{ '--i': lineStart[i] + j }}>{w}</span>{' '}
-                </span>
+                <Fragment key={j}>
+                  <span className="word-mask">
+                    <span className="word" style={{ '--i': lineStart[i] + j }}>{w}</span>
+                  </span>{' '}
+                </Fragment>
               ));
               return i === titleLines.length - 1 ? <em key={i}>{words}</em> : <span key={i} className="line">{words}</span>;
             })}
