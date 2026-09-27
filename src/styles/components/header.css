@@ -77,6 +77,12 @@
   color: var(--accent);
 }
 
+/* A pill like the bar: square corners poke past the bar's curve at its end.
+   .button.* because button.css loads later and sets its own radius. */
+.button.site-header__cta {
+  border-radius: 999px;
+}
+
 .site-header__cta {
   padding-inline: clamp(0.875rem, 2vw, 1.25rem);
   font-size: var(--text-sm);
