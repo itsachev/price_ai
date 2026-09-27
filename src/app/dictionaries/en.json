@@ -423,7 +423,17 @@
   },
   "reports": {
     "title": "Reports",
-    "intro": "Your catalog at a glance: what moved at the chains and where to look first.",
+    "intro": "How your prices are trending, what moved at the chains and where to look first.",
+    "index": {
+      "title": "Price index",
+      "subtitle": "Weekly · 100 = the chains’ average price for your products",
+      "yours": "Your index",
+      "market": "Market",
+      "current": "Index now",
+      "delta": "vs. market",
+      "label": "Line chart of your price index by week. Your index is now {yours}, the market is {market}."
+    },
+    "indexStarting": "Your price index is {index} today (100 = the chains’ average price). The chart fills in with each new day of prices.",
     "noMoves": "No price moves at the chains in the latest daily prices",
     "topRisk": "Top 5 at risk",
     "topOpportunity": "Top 5 opportunities",

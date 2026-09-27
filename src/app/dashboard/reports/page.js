@@ -1,14 +1,17 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import PriceTrend from '@/components/PriceTrend';
 import { formatPercent } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../../dictionaries';
 
-// Reports: summaries, not another product list (that's the dashboard). For now
-// the day's price moves at the chains and the top 5 at risk / opportunities.
-// ponytail: stats over time (price index, actions taken and their outcome) come next.
+// Reports: how the catalog does over time, plus short summaries that point back
+// to the dashboard (price moves, top 5 at risk / opportunities). Trends read the
+// daily merchant_snapshots the match job writes, never recomputed history.
 const TOP = 5;
+// Price index chart: one point a week, back this many weeks from the newest snapshot.
+const TREND_WEEKS = 26;
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
 function check(...results) {
@@ -35,15 +38,36 @@ export default async function ReportsPage() {
       .order('urgency', { ascending: false, nullsFirst: false })
       .limit(TOP);
 
-  const [movesRes, riskRes, oppRes] = await Promise.all([
+  const [movesRes, riskRes, oppRes, snapRes] = await Promise.all([
     supabase.rpc('price_moves').select('kind'),
     top('at-risk'),
     top('opportunity'),
+    supabase
+      .from('merchant_snapshots')
+      .select('data_date, price_index')
+      .not('price_index', 'is', null)
+      .order('data_date', { ascending: false })
+      .limit(TREND_WEEKS * 7),
   ]);
-  check(movesRes, riskRes, oppRes);
+  check(movesRes, riskRes, oppRes, snapRes);
 
   const moves = movesRes.data.length;
   const undercut = movesRes.data.filter((m) => m.kind === 'undercut').length;
+
+  // Newest snapshot of each 7-day bucket counted back from the newest one, so a
+  // day the job skipped only shifts that week's point.
+  const weekly = new Map();
+  const newest = snapRes.data[0] && Date.parse(snapRes.data[0].data_date);
+  for (const s of snapRes.data) {
+    const week = Math.floor((newest - Date.parse(s.data_date)) / (7 * 864e5));
+    if (week < TREND_WEEKS && !weekly.has(week)) weekly.set(week, s);
+  }
+  const points = [...weekly.values()].reverse();
+  const index = points.map((s) => Number(s.price_index));
+  const date = (value, opts) => new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', opts).format(new Date(value));
+  const indexLabels = points.map((s, i) =>
+    i === 0 || s.data_date.slice(0, 7) !== points[i - 1].data_date.slice(0, 7) ? date(s.data_date, { month: 'short', timeZone: 'UTC' }) : '');
+  const number = (v) => new Intl.NumberFormat(lang === 'bg' ? 'bg-BG' : 'en-IE', { maximumFractionDigits: 1 }).format(v);
 
   return (
     <section className="dash">
@@ -58,6 +82,19 @@ export default async function ReportsPage() {
         {moves > 0 ? fill(dict.dashboard.movesToday, { n: moves }) : t.noMoves}
         {undercut > 0 && <strong>{fill(dict.dashboard.movesUndercut, { n: undercut })}</strong>}
       </p>
+
+      {index.length > 1 ? (
+        <PriceTrend
+          t={t.index}
+          yours={index}
+          market={index.map(() => 100)}
+          xLabels={indexLabels}
+          money={number}
+          pct={(v) => formatPercent(v, lang)}
+        />
+      ) : (
+        index.length === 1 && <p className="muted">{fill(t.indexStarting, { index: number(index[0]) })}</p>
+      )}
 
       <div className="reports">
         {[

@@ -162,13 +162,14 @@ export async function unlinkListing(formData) {
 }
 
 // "Apply" on a suggested price. The price is validated like any typed one; the
-// merchant could enter it by hand anyway. The history trigger records the change.
+// merchant could enter it by hand anyway. apply_price tags the history row
+// 'apply', so Reports can tell suggestions taken from manual edits.
 export async function applyPrice(formData) {
   const supabase = await merchant();
   const id = Number(formData.get('id'));
   const price = parsePrice(formData.get('price'));
   if (!(price > 0 && price < 1e8)) redirect(`/dashboard/products/${id}`);
-  const { error } = await supabase.from('products').update({ price }).eq('id', id);
+  const { error } = await supabase.rpc('apply_price', { product_id: id, new_price: price });
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
   await refreshStatus(supabase, id);
   done();

@@ -4,9 +4,12 @@
 // category, plus ~4 months of made-up daily competitor prices and merchant
 // price changes before the newest real feed date. The last fake day is set up
 // so the newest real day produces every kind of price move.
+// It also writes a daily merchant snapshot per fake day (over the 10 test
+// products only), so the Reports price index chart has months to show.
 // Everything it writes is marked, so --clean removes exactly that: products by
-// the DEMO- SKU prefix (their history and links cascade), competitor history by
-// the FAKE_CAPTURED sentinel. Real listings and real history are never touched.
+// the DEMO- SKU prefix (their history and links cascade), competitor history and
+// snapshots by the FAKE_CAPTURED sentinel. Real listings, history and snapshots
+// are never touched.
 import { createAdminClient } from '../src/lib/supabase/admin.js';
 import { matchConfig, matchKey, priceStatus } from '../src/lib/pipeline/match.js';
 
@@ -36,6 +39,7 @@ if (!user) throw new Error(`no account ${email}`);
 // Clean first either way, so a rerun replaces the old test data instead of stacking.
 must(await supabase.from('products').delete().eq('owner_id', user.id).like('sku', `${SKU}%`));
 must(await supabase.from('competitor_listing_price_history').delete().eq('captured_at', FAKE_CAPTURED));
+must(await supabase.from('merchant_snapshots').delete().eq('owner_id', user.id).eq('created_at', FAKE_CAPTURED));
 console.log('Removed earlier test data');
 if (clean) process.exit(0);
 
@@ -66,18 +70,26 @@ for (let from = 0; ; from += 1000) {
   if (page.length < 1000) break;
 }
 const byCategory = Map.groupBy(listings, (h) => h.listing.category_code);
-const categories = shuffle(
-  [...byCategory.values()].filter((rows) => new Set(rows.map((r) => r.listing.competitor_key)).size >= 2)
-).slice(0, PRODUCTS);
-if (categories.length < PRODUCTS) throw new Error(`only ${categories.length} categories sold by 2+ chains`);
+// One listing per chain, up to 3 chains, priced within 25% of each other, so
+// they look like the same product (a category mixes cheap and premium ones).
+function pick(rows) {
+  for (const anchor of shuffle(rows)) {
+    const near = rows.filter((r) =>
+      r.listing.competitor_key !== anchor.listing.competitor_key && Math.abs(r.price / anchor.price - 1) <= 0.25);
+    const picked = [anchor, ...new Map(shuffle(near).map((r) => [r.listing.competitor_key, r])).values()].slice(0, 3);
+    if (picked.length >= 2) return picked;
+  }
+  return null;
+}
+const categories = shuffle([...byCategory.values()]).map(pick).filter(Boolean).slice(0, PRODUCTS);
+if (categories.length < PRODUCTS) throw new Error(`only ${categories.length} categories sold by 2+ chains at similar prices`);
 
 const { priceTolerance } = matchConfig();
 const history = [];
 const ownHistory = [];
+const seeded = []; // { listingIds, own } per product, for the snapshots
 
-for (const [i, rows] of categories.entries()) {
-  // One listing per chain, up to 3 chains.
-  const picked = [...new Map(shuffle(rows).map((r) => [r.listing.competitor_key, r])).values()].slice(0, 3);
+for (const [i, picked] of categories.entries()) {
   const cheapest = picked.reduce((a, b) => (Number(b.price) < Number(a.price) ? b : a));
   const low = Number(cheapest.price);
   const scenario = SCENARIOS[i];
@@ -95,9 +107,11 @@ for (const [i, rows] of categories.entries()) {
   must(await supabase.from('product_links').insert(picked.map((r) => ({ product_id: row.id, listing_id: r.listing.id }))));
 
   // The merchant's own price: a few rises over the months, ending at today's price.
-  for (const [ago, factor] of [[DAYS, 0.9], [80, 0.94], [45, 0.97], [15, 1]]) {
-    ownHistory.push({ product_id: row.id, price: cents(price * factor * rand(0.99, 1.01)), recorded_at: `${day(newest, -ago)}T09:00:00Z` });
-  }
+  const own = [[DAYS, 0.9], [80, 0.94], [45, 0.97], [15, 1]].map(([ago, factor]) => (
+    { product_id: row.id, price: cents(price * factor * rand(0.99, 1.01)), recorded_at: `${day(newest, -ago)}T09:00:00Z` }
+  ));
+  ownHistory.push(...own);
+  seeded.push({ listingIds: picked.map((r) => r.listing.id), own });
 
   for (const r of picked) {
     const cur = Number(r.price);
@@ -136,8 +150,42 @@ for (const [i, rows] of categories.entries()) {
   console.log(`${scenario.padEnd(12)} ${price.toFixed(2)}  ${title} (${picked.length} chains)`);
 }
 
+// Real feed days older than the newest win: fake rows for them are skipped.
+// ponytail: the snapshots below still use the fake price on those few days.
 for (let from = 0; from < history.length; from += 500) {
-  must(await supabase.from('competitor_listing_price_history').insert(history.slice(from, from + 500)));
+  must(await supabase.from('competitor_listing_price_history')
+    .upsert(history.slice(from, from + 500), { onConflict: 'listing_id,data_date', ignoreDuplicates: true }));
 }
 must(await supabase.from('product_price_history').insert(ownHistory));
-console.log(`Seeded ${PRODUCTS} products for ${email}, ${history.length} competitor price rows up to ${day(newest, -1)}`);
+
+// Snapshots for the fake days, computed like record_snapshots but over the test
+// products only. Real snapshots on the same day win (ignoreDuplicates).
+const priceOn = new Map(history.map((h) => [`${h.listing_id}|${h.data_date}`, h.price]));
+const snapshots = [];
+for (let ago = DAYS; ago >= 1; ago--) {
+  const d = day(newest, -ago);
+  const counts = { 'at-risk': 0, opportunity: 0, competitive: 0, unmatched: 0 };
+  let logSum = 0;
+  for (const s of seeded) {
+    const ownPrice = (s.own.findLast((h) => h.recorded_at.slice(0, 10) <= d) ?? s.own[0]).price;
+    const prices = s.listingIds.map((id) => priceOn.get(`${id}|${d}`));
+    counts[priceStatus(ownPrice, prices, priceTolerance)]++;
+    logSum += Math.log(ownPrice / (prices.reduce((a, b) => a + b, 0) / prices.length));
+  }
+  snapshots.push({
+    owner_id: user.id,
+    data_date: d,
+    products: seeded.length,
+    at_risk: counts['at-risk'],
+    opportunity: counts.opportunity,
+    competitive: counts.competitive,
+    unmatched: counts.unmatched,
+    price_index: Math.round(10000 * Math.exp(logSum / seeded.length)) / 100,
+    index_products: seeded.length,
+    avg_margin: null,
+    margin_products: 0,
+    created_at: FAKE_CAPTURED,
+  });
+}
+must(await supabase.from('merchant_snapshots').upsert(snapshots, { onConflict: 'owner_id,data_date', ignoreDuplicates: true }));
+console.log(`Seeded ${PRODUCTS} products for ${email}, ${history.length} competitor price rows and ${snapshots.length} snapshots up to ${day(newest, -1)}`);
