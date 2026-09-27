@@ -5,7 +5,7 @@ import AiBackground from '@/components/AiBackground';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
-import { LOCALES } from '@/lib/config';
+import { LOCALES, SITE_URL } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
 import { setTheme } from './actions/theme';
@@ -21,9 +21,36 @@ const unbounded = Unbounded({ subsets: ['latin', 'cyrillic'], variable: '--font-
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin', 'cyrillic'], variable: '--font-jetbrains-mono' });
 
 export async function generateMetadata() {
-  const dict = await getDictionary(await getLocale());
-  return { title: 'PriceAI', description: dict.meta.description };
+  const lang = await getLocale();
+  const dict = await getDictionary(lang);
+  const title = `PriceAI · ${dict.home.eyebrow}`;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: title, template: '%s · PriceAI' },
+    description: dict.meta.description,
+    applicationName: 'PriceAI',
+    // ponytail: one URL serves both languages (cookie locale), so no hreflang alternates.
+    // Add them if locales ever get their own URLs.
+    openGraph: {
+      type: 'website',
+      siteName: 'PriceAI',
+      title,
+      description: dict.meta.description,
+      locale: lang === 'bg' ? 'bg_BG' : 'en_US',
+      url: '/',
+    },
+    twitter: { card: 'summary_large_image' },
+    formatDetection: { telephone: false },
+  };
 }
+
+// Matches --bg in src/styles/base/tokens.css.
+export const viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f6fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0f1a' },
+  ],
+};
 
 export default async function RootLayout({ children }) {
   const lang = await getLocale();

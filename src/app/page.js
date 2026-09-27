@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import Link from 'next/link';
 import PriceTrend from '@/components/PriceTrend';
 import Reveal from '@/components/Reveal';
-import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
+import { COMPETITORS, PRICE_STATUSES, SITE_URL } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { getDictionary, getLocale } from './dictionaries';
 
@@ -38,9 +38,11 @@ const ICONS = [
 const delta = (row) => (row.best ? (row.yours - row.best) / row.best : null);
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
+export const metadata = { alternates: { canonical: '/' } };
+
 export default async function HomePage() {
   const lang = await getLocale();
-  const { home } = await getDictionary(lang);
+  const { home, meta } = await getDictionary(lang);
   const price = (v) => formatPrice(v, lang);
   const pct = (v) => formatPercent(v, lang);
   const chainCount = Object.keys(COMPETITORS).length;
@@ -57,8 +59,27 @@ export default async function HomePage() {
   const titleLines = home.title.map((line) => line.split(' '));
   const lineStart = titleLines.map((_, i) => titleLines.slice(0, i).flat().length);
 
+  // Structured data for search results. `<` is escaped so the JSON can't close the script tag.
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'Organization', '@id': `${SITE_URL}/#org`, name: 'PriceAI', url: SITE_URL },
+      {
+        '@type': 'WebSite', '@id': `${SITE_URL}/#site`, name: 'PriceAI', url: SITE_URL,
+        inLanguage: lang, publisher: { '@id': `${SITE_URL}/#org` },
+      },
+      {
+        '@type': 'SoftwareApplication', name: 'PriceAI', url: SITE_URL,
+        applicationCategory: 'BusinessApplication', operatingSystem: 'Web',
+        description: meta.description, inLanguage: lang, areaServed: 'BG',
+        publisher: { '@id': `${SITE_URL}/#org` },
+      },
+    ],
+  }).replace(/</g, '\\u003c');
+
   return (
     <Reveal className="home">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       {/* Hero: no JS reveal here, so first paint is never held back. */}
       <section className="hero">
         <div className="hero__copy stack">

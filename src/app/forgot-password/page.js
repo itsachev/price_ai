@@ -4,6 +4,12 @@ import AuthShell from '@/components/AuthShell';
 import { requestPasswordReset } from '../actions/auth';
 import { getDictionary, getLocale } from '../dictionaries';
 
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.auth.forgotTitle };
+}
+
+
 export default async function ForgotPasswordPage() {
   const { auth: t } = await getDictionary(await getLocale());
 

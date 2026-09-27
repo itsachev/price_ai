@@ -23,6 +23,12 @@ function check(...results) {
   }
 }
 
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.nav.reports };
+}
+
+
 export default async function ReportsPage() {
   const lang = await getLocale();
   const dict = await getDictionary(lang);

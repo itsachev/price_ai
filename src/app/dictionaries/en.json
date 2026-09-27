@@ -1,7 +1,7 @@
 {
   "loading": "Loading…",
   "meta": {
-    "description": "Track your grocery prices against Bulgarian retail chains."
+    "description": "PriceAI compares your grocery prices with Bulgarian retail chains every day, matches products with AI and tells you where to raise, lower or hold."
   },
   "nav": {
     "dashboard": "Dashboard",

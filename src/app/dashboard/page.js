@@ -34,6 +34,12 @@ function dashboardHref({ status, q, page = 1 } = {}) {
 // Matching runs in the background after a save, never here, so saving stays
 // instant; a product with no match_key is still being matched and the page
 // polls until it lands.
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.nav.dashboard };
+}
+
+
 export default async function DashboardPage({ searchParams }) {
   const lang = await getLocale();
   const dict = await getDictionary(lang);

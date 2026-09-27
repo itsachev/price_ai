@@ -5,6 +5,12 @@ import { signIn } from '../actions/auth';
 import { safeNext } from '@/lib/auth';
 import { getDictionary, getLocale } from '../dictionaries';
 
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.auth.signIn, alternates: { canonical: '/login' } };
+}
+
+
 export default async function LoginPage({ searchParams }) {
   const { auth: t } = await getDictionary(await getLocale());
   const { error, next } = await searchParams;

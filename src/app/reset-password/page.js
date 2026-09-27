@@ -6,6 +6,12 @@ import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../dictionaries';
 
 // Reached from the reset email via /auth/callback, which signs the user in first.
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.auth.resetTitle };
+}
+
+
 export default async function ResetPasswordPage() {
   const { auth: t } = await getDictionary(await getLocale());
   const supabase = await createClient();

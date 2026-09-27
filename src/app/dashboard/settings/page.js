@@ -6,6 +6,12 @@ import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../../dictionaries';
 
 // Account settings: the display name for now. Email is the login and stays read-only.
+export async function generateMetadata() {
+  const dict = await getDictionary(await getLocale());
+  return { title: dict.nav.settings };
+}
+
+
 export default async function SettingsPage() {
   const dict = await getDictionary(await getLocale());
   const t = dict.settings;
