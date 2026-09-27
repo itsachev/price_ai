@@ -108,7 +108,10 @@
 }
 
 .dash__tile {
+  /* Subgrid: label, number and hint share rows across tiles, so they line up. */
   display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
   align-content: start;
   gap: 0.25rem;
   padding: clamp(0.75rem, 2vw, var(--space-2));
@@ -155,10 +158,6 @@
   font-weight: 700;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-
-  [data-quiet] > & {
-    font-size: var(--text-h2);
-  }
 }
 
 .dash__tile-hint {
