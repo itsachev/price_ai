@@ -577,24 +577,226 @@
   }
 }
 
-/* Settings (/dashboard/settings): one narrow form panel. */
+/* Settings (/dashboard/settings): a section index (wrapping pills on phones,
+   a sticky side list from 60rem), then sections of description beside a form
+   card once the body is wide enough (container query). */
 .settings {
   display: grid;
-  gap: var(--space-2);
-  max-inline-size: 36rem;
-  padding: var(--space-2);
+  gap: var(--space-3);
 
-  & h2 {
-    font-size: var(--text-h3);
+  @media (min-width: 60rem) {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    align-items: start;
   }
 }
 
-.settings__more a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
+.settings__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+
+  & a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+
+    &:hover {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    position: sticky;
+    inset-block-start: 6rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-inline-start: var(--space-1);
+    border-inline-start: 1px solid var(--border);
+
+    & a {
+      background: none;
+      border-color: transparent;
+      border-radius: var(--radius);
+      padding-inline: var(--space-1);
+
+      &:hover {
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+.settings__body {
+  container: settings / inline-size;
+  display: grid;
+}
+
+.settings__section {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-block-start: 1px solid var(--border);
+  scroll-margin-block-start: 6rem;
+
+  &:first-child {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  @container settings (min-width: 46rem) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--space-3);
+  }
+}
+
+.settings__intro {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+
+  & h2 {
+    font-size: var(--text-h3);
+    text-wrap: balance;
+  }
+
+  & p {
+    max-inline-size: 42ch;
+    text-wrap: pretty;
+  }
+
+  @container settings (min-width: 46rem) {
+    position: sticky;
+    inset-block-start: 6rem;
+  }
+}
+
+/* Current pricing rules at a glance: a dot that lights up when a rule is on. */
+.settings__rules {
+  display: grid;
+  gap: 0.25rem;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
   font-size: var(--text-sm);
-  color: var(--accent);
+
+  & li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem var(--space-1);
+    padding: 0.5rem 0.75rem;
+    background: color-mix(in srgb, var(--text) 3%, transparent);
+    border-radius: var(--radius);
+
+    &::before {
+      content: '';
+      inline-size: 0.5rem;
+      block-size: 0.5rem;
+      border-radius: 50%;
+      background: var(--border);
+    }
+
+    &[data-on]::before {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+  }
+
+  & span {
+    color: var(--muted);
+  }
+
+  & strong {
+    margin-inline-start: auto;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & li:not([data-on]) strong {
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--muted);
+  }
+}
+
+.settings__card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+
+  @container settings (min-width: 46rem) {
+    padding: var(--space-3);
+  }
+
+  /* Save button: full width on phones, its own size at the end once the card is wide. */
+  @container (min-width: 28rem) {
+    & .auth-form > .button {
+      inline-size: auto;
+      justify-self: end;
+      padding-inline: var(--space-3);
+    }
+  }
+}
+
+/* Avatar, name and email above the profile form; label and action rows. */
+.settings__identity,
+.settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+
+  & > div {
+    display: grid;
+    flex: 1 1 12rem;
+    min-inline-size: 0;
+    gap: 0.125rem;
+  }
+
+  & strong {
+    font-weight: 600;
+  }
+
+  & .muted {
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+}
+
+.settings__identity {
+  padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--border);
+}
+
+.settings__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 3rem;
+  block-size: 3rem;
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--on-accent);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--signal)));
+  border-radius: 50%;
 }
 
 /* Dashboard link to the day's price moves; red edge when a chain undercut the merchant. */

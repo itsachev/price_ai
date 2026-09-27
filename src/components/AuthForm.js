@@ -24,7 +24,7 @@ function PasswordInput({ t, ...input }) {
 }
 
 // One form for every auth page. `t` is dict.auth (dictionaries are server-only),
-// `fields` are <input> props plus a label (and `half` to pair two side by side), `hidden` becomes hidden inputs and
+// `fields` are <input> props plus a label (`half` pairs two side by side, `unit` shows a suffix like %), `hidden` becomes hidden inputs and
 // `children` render under the fields (e.g. the "forgot password" link).
 export default function AuthForm({ action, t, fields, submit, hidden = {}, initialError, children }) {
   const [state, formAction, pending] = useActionState(action, initialError ? { error: initialError } : null);
@@ -35,7 +35,7 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, initi
       {Object.entries(hidden).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      {fields.map(({ label, hint, half, ...input }) => {
+      {fields.map(({ label, hint, half, unit, ...input }) => {
         const props = { required: true, ...input, defaultValue: state?.[input.name] ?? input.defaultValue };
         return (
           <label key={input.name} className={half ? 'field field--half' : 'field'}>
@@ -43,7 +43,15 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, initi
               {label}
               {hint && <small>{hint}</small>}
             </span>
-            {input.type === 'password' ? <PasswordInput t={t} {...props} /> : <input {...props} />}
+            {input.type === 'password' ? (
+              <PasswordInput t={t} {...props} />
+            ) : unit ? (
+              <span className="field__unit" data-unit={unit}>
+                <input {...props} />
+              </span>
+            ) : (
+              <input {...props} />
+            )}
           </label>
         );
       })}

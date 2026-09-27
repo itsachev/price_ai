@@ -443,7 +443,7 @@
   },
   "settings": {
     "title": "Settings",
-    "intro": "Your account details.",
+    "intro": "Your account and the rules behind every suggested price.",
     "profile": "Profile",
     "save": "Save",
     "changePassword": "Change password",
@@ -451,9 +451,9 @@
       "title": "Pricing rules",
       "intro": "Every suggested price, on the dashboard and on each product, follows these rules. Leave a field empty to switch that rule off.",
       "fields": {
-        "min_margin": "Minimum margin (%)",
-        "undercut": "Go under the cheapest chain by (€)",
-        "max_change": "Largest change in one step (%)"
+        "min_margin": "Minimum margin",
+        "undercut": "Go under the cheapest chain by",
+        "max_change": "Largest change in one step"
       },
       "hints": {
         "min_margin": "Never suggest a price with a lower gross margin. Needs a cost price on the product.",
@@ -469,8 +469,20 @@
         "undercut": "Enter an amount from 0 to 100, like 0,05.",
         "max_change": "Enter a percentage from 1 to 100.",
         "unknown": "Something went wrong. Please try again."
+      },
+      "current": "Current rules",
+      "off": "Off",
+      "short": {
+        "min_margin": "Minimum margin",
+        "undercut": "Under cheapest",
+        "max_change": "Largest step"
       }
-    }
+    },
+    "profileIntro": "The name shown in the header. You sign in with your email.",
+    "emailHint": "Used to sign in. Can’t be changed here.",
+    "security": "Security",
+    "securityIntro": "Keep your account safe.",
+    "passwordHint": "Set a new password for signing in."
   },
   "reports": {
     "title": "Reports",

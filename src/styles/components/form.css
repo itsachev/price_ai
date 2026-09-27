@@ -86,6 +86,28 @@
   }
 }
 
+/* Input with a unit suffix (%, €) inside its end edge. */
+.field__unit {
+  position: relative;
+  display: grid;
+
+  & input {
+    padding-inline-end: 2.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &::after {
+    content: attr(data-unit);
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.875rem;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    pointer-events: none;
+  }
+}
+
 .field input:read-only {
   color: var(--muted);
   background: color-mix(in srgb, var(--text) 4%, transparent);
