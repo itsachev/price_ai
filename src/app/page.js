@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
+import ButtonLabel from '@/components/ButtonLabel';
 import PriceTrend from '@/components/PriceTrend';
 import Reveal from '@/components/Reveal';
 import { COMPETITORS, PRICE_STATUSES, SITE_URL } from '@/lib/config';
@@ -102,9 +103,9 @@ export default async function HomePage() {
           <p className="lead">{fill(home.lead, { count: chainCount })}</p>
           <div className="actions">
             <Link href="/dashboard" className="button button--primary">
-              {home.cta} <span aria-hidden="true">→</span>
+              <ButtonLabel>{home.cta}</ButtonLabel> <span aria-hidden="true">→</span>
             </Link>
-            <a href="#how" className="button">{home.ctaSecondary}</a>
+            <a href="#how" className="button"><ButtonLabel>{home.ctaSecondary}</ButtonLabel></a>
           </div>
           <ul className="trust">
             {home.trust.map((t) => <li key={t}>{t}</li>)}
@@ -356,7 +357,7 @@ export default async function HomePage() {
         <p>{home.final.text}</p>
         <div className="actions">
           <Link href="/dashboard" className="button button--signal">
-            {home.cta} <span aria-hidden="true">→</span>
+            <ButtonLabel>{home.cta}</ButtonLabel> <span aria-hidden="true">→</span>
           </Link>
         </div>
       </section>

@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Inter, JetBrains_Mono, Unbounded } from 'next/font/google';
 import SmoothScroll from '@/components/SmoothScroll';
 import AiBackground from '@/components/AiBackground';
+import ButtonLabel from '@/components/ButtonLabel';
+import ButtonSpotlight from '@/components/ButtonSpotlight';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
@@ -69,9 +71,10 @@ export default async function RootLayout({ children }) {
       <body>
         {/* Decorative AI backdrop: WebGL shader over a pure-CSS fallback. */}
         <AiBackground />
+        <ButtonSpotlight />
         <SmoothScroll>
           <header className="site-header">
-            <div className="container site-header__inner">
+            <div className="container site-header__inner" data-spotlight>
               <Link href="/" className="brand">
                 Price<span>AI</span>
               </Link>
@@ -81,8 +84,8 @@ export default async function RootLayout({ children }) {
                   initial={signedIn}
                   signedIn={
                     <ul className="site-menu__links">
-                      <li><NavLink href="/dashboard" exact>{dict.nav.dashboard}</NavLink></li>
-                      <li><NavLink href="/dashboard/reports">{dict.nav.reports}</NavLink></li>
+                      <li><NavLink href="/dashboard" exact><ButtonLabel>{dict.nav.dashboard}</ButtonLabel></NavLink></li>
+                      <li><NavLink href="/dashboard/reports"><ButtonLabel>{dict.nav.reports}</ButtonLabel></NavLink></li>
                     </ul>
                   }
                 />
@@ -119,14 +122,14 @@ export default async function RootLayout({ children }) {
                           <span className="account__avatar" aria-hidden="true">{userName[0].toUpperCase()}</span>
                           {userName}
                         </p>
-                        <NavLink href="/dashboard/settings">{dict.nav.settings}</NavLink>
+                        <NavLink href="/dashboard/settings">{dict.nav.account}</NavLink>
                         <form action={signOut}>
                           <button>{dict.auth.signOut}</button>
                         </form>
                       </div>
                     </div>
                   }
-                  signedOut={<Link href="/login" className="site-menu__account">{dict.auth.signIn}</Link>}
+                  signedOut={<Link href="/login" className="site-menu__account"><ButtonLabel>{dict.auth.signIn}</ButtonLabel></Link>}
                 />
               </nav>
               {/* Streams in after the page; the placeholder keeps the bar from shifting. */}
@@ -143,7 +146,7 @@ export default async function RootLayout({ children }) {
               <SessionSwitch
                 initial={signedIn}
                 signedIn={null}
-                signedOut={<Link href="/signup" className="button button--signal site-header__cta">{dict.auth.signUp}</Link>}
+                signedOut={<Link href="/signup" className="button button--signal site-header__cta"><ButtonLabel>{dict.auth.signUp}</ButtonLabel></Link>}
               />
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>

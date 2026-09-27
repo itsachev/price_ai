@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { importProducts, saveProduct } from '@/app/actions/products';
+import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
 import ProductDialog from '@/components/ProductDialog';
 import { ImportForm, ProductForm } from '@/components/ProductForms';
@@ -185,7 +186,7 @@ export default async function DashboardPage({ searchParams }) {
             ) : q ? (
               <>
                 <p className="muted">{fill(tp.noResults, { q })}</p>
-                <Link href={dashboardHref({ status })} className="button">{tp.clearSearch}</Link>
+                <Link href={dashboardHref({ status })} className="button"><ButtonLabel>{tp.clearSearch}</ButtonLabel></Link>
               </>
             ) : (
               <p className="muted">{t.emptyFilter}</p>

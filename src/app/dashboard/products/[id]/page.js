@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { applyPrice, deleteProduct, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
+import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
 import PageTone from '@/components/PageTone';
 import PriceTrend from '@/components/PriceTrend';
@@ -231,7 +232,7 @@ export default async function ProductPage({ params, searchParams }) {
               <form action={applyPrice}>
                 <input type="hidden" name="id" value={product.id} />
                 <input type="hidden" name="price" value={suggested} />
-                <button className="button button--primary">{fill(p.apply, { price: money(suggested) })}</button>
+                <button className="button button--primary"><ButtonLabel>{fill(p.apply, { price: money(suggested) })}</ButtonLabel></button>
               </form>
             </div>
           </div>
@@ -264,7 +265,7 @@ export default async function ProductPage({ params, searchParams }) {
                     <input type="hidden" name="listing_id" value={l.id} />
                     {l.linked && <span className="suggest__linked">✓ {t.suggest.linked}</span>}
                     <button className={l.linked ? 'button button--quiet' : 'button'}>
-                      {l.linked ? t.suggest.unlink : t.suggest.link}
+                      <ButtonLabel>{l.linked ? t.suggest.unlink : t.suggest.link}</ButtonLabel>
                     </button>
                   </form>
                 </li>

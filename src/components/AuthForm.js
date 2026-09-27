@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import ButtonLabel from './ButtonLabel';
 
 // Password input with a show/hide toggle. The value survives the type switch
 // because the input stays uncontrolled.
@@ -53,7 +54,7 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, initi
         </p>
       )}
       <button className="button button--primary" disabled={pending} aria-busy={pending}>
-        {submit}
+        <ButtonLabel>{submit}</ButtonLabel>
       </button>
     </form>
   );

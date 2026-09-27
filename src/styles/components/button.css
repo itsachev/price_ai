@@ -1,84 +1,149 @@
+/* Buttons: a spotlight glow that follows the pointer (ButtonSpotlight feeds
+   --x/--y) plus a label that rolls up to a copy of itself (ButtonLabel).
+   Each action only sets the four --btn-* colors below. */
+
+/* Registered so the glow's strength can fade in and out. */
+@property --spot {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
 .button {
+  --btn-bg: var(--surface);
+  --btn-fg: var(--text);
+  --btn-glow: var(--accent);
+  --btn-ring: var(--border);
+  --btn-spot: 18%;
+
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5em;
   min-height: 2.75rem;
   padding-inline: 1.25rem;
+  border: 0;
   border-radius: var(--radius);
   text-decoration: none;
-  box-shadow: inset 0 0 0 1px var(--border);
   font: inherit; /* <button> doesn't inherit type by default */
   font-weight: 600;
-  color: inherit;
-  background: none;
-  border: 0;
+  color: var(--btn-fg);
+  background:
+    radial-gradient(7rem circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--btn-glow) var(--spot), transparent), transparent 70%),
+    var(--btn-bg);
+  box-shadow: inset 0 0 0 1px var(--btn-ring);
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
-}
+  transition: --spot 0.3s, color 0.2s, scale 0.15s;
 
-.button:hover {
-  box-shadow: inset 0 0 0 1px var(--muted);
-}
+  /* Glow ring on the border, centred on the pointer. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: radial-gradient(5rem circle at var(--x, 50%) var(--y, 50%), var(--btn-glow), transparent 70%);
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
 
-.button--primary {
-  color: var(--on-accent);
-  background: var(--accent);
-  box-shadow: none;
-}
+  &:active:not(:disabled) { scale: 0.97; }
 
-.button--primary:hover {
-  background: color-mix(in srgb, var(--accent) 85%, var(--text));
-  box-shadow: none;
-}
+  /* Keyboard focus gets the same treatment as hover. */
+  &:focus-visible:not(:disabled) { --spot: var(--btn-spot); }
+  &:focus-visible:not(:disabled)::before { opacity: 1; }
 
-.button--signal {
-  color: var(--on-signal);
-  background: var(--signal);
-  box-shadow: none;
-
-  &:hover {
-    background: color-mix(in srgb, var(--signal) 85%, var(--on-band));
-    box-shadow: none;
+  @media (hover: hover) {
+    &:hover:not(:disabled) { --spot: var(--btn-spot); }
+    &:hover:not(:disabled)::before { opacity: 1; }
   }
 }
 
-.button span {
+/* Rolling label: the text slides up and its copy (data-roll) follows. */
+.button__label {
+  display: grid;
+  overflow: clip;
+  line-height: 1.3;
+
+  & > span {
+    position: relative;
+    transition: translate 0.35s cubic-bezier(0.6, 0, 0.2, 1);
+
+    &::after {
+      content: attr(data-roll) / '';
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: 100%;
+    }
+  }
+}
+
+.button:focus-visible:not(:disabled) .button__label > span { translate: 0 -100%; }
+
+@media (hover: hover) {
+  .button:hover:not(:disabled) .button__label > span { translate: 0 -100%; }
+}
+
+/* Decorative arrow after the label nudges right. */
+.button > [aria-hidden] {
   transition: translate 0.2s;
 }
 
-.button:hover span {
+.button:hover > [aria-hidden] {
   translate: 0.2em 0;
 }
 
-/* Destructive action (delete): outlined, turns solid on hover. */
-.button--danger {
-  color: var(--status-at-risk);
-  box-shadow: inset 0 0 0 1px currentColor;
-
-  &:hover {
-    color: var(--on-accent);
-    background: var(--status-at-risk);
-    box-shadow: none;
-  }
+.button--primary {
+  --btn-bg: var(--accent);
+  --btn-fg: var(--on-accent);
+  --btn-glow: var(--signal);
+  --btn-ring: transparent;
+  --btn-spot: 45%;
 }
 
-/* Tertiary actions (Undo, Delete in a page header): text only, so the page's
-   one primary action stays the loudest thing on screen. */
+.button--signal {
+  --btn-bg: var(--signal);
+  --btn-fg: var(--on-signal);
+  --btn-glow: #fff;
+  --btn-ring: transparent;
+  --btn-spot: 60%;
+}
+
+/* Destructive action (confirm delete): solid red. */
+.button--danger {
+  --btn-bg: var(--status-at-risk);
+  --btn-fg: var(--on-accent);
+  --btn-glow: color-mix(in srgb, var(--status-at-risk) 40%, #fff);
+  --btn-ring: transparent;
+  --btn-spot: 50%;
+}
+
+/* Tertiary actions (Unlink, Delete in a page header): no fill at rest, so the
+   page's one primary action stays the loudest thing on screen. */
 .button--quiet,
 .button--danger-quiet {
-  box-shadow: none;
-  color: var(--muted);
+  --btn-bg: transparent;
+  --btn-fg: var(--muted);
+  --btn-glow: currentColor;
+  --btn-ring: transparent;
+  --btn-spot: 14%;
 
-  &:hover {
-    color: var(--text);
-    background: color-mix(in srgb, currentColor 8%, transparent);
-    box-shadow: none;
-  }
+  &:hover { --btn-fg: var(--text); }
 }
 
 .button--danger-quiet {
-  color: var(--status-at-risk);
+  --btn-fg: var(--status-at-risk);
 
-  &:hover { color: var(--status-at-risk); }
+  &:hover { --btn-fg: var(--status-at-risk); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button::before,
+  .button * { transition: none; }
 }

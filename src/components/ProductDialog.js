@@ -2,6 +2,7 @@
 
 import { useId, useRef } from 'react';
 import { revealIn } from '@/lib/reveal';
+import ButtonLabel from './ButtonLabel';
 
 // Native modal <dialog> behind its own trigger button: focus trap, Esc and the
 // backdrop come from the browser, and it opens instantly with no server trip.
@@ -22,7 +23,7 @@ export default function ProductDialog({ label, title, closeLabel, variant, child
   return (
     <>
       <button type="button" className={variant ? `button button--${variant}` : 'button'} onClick={open}>
-        {label}
+        <ButtonLabel>{label}</ButtonLabel>
       </button>
       <dialog ref={ref} className="modal" aria-labelledby={titleId} closedby="any" data-lenis-prevent>
         <div className="modal__head">

@@ -5,6 +5,12 @@
   margin: 0;
 }
 
+/* Always reserve the scrollbar's space, so the layout doesn't jump sideways
+   between short and long pages or when a modal locks scrolling. */
+html {
+  scrollbar-gutter: stable;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

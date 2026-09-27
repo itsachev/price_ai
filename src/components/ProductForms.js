@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
+import ButtonLabel from './ButtonLabel';
 
 const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 
@@ -48,7 +49,7 @@ export function ProductForm({ t, action, product }) {
       {state?.notice && <Message kind="notice">{t.notices[state.notice]}</Message>}
       <div className="product-form__actions">
         <button className="button button--primary" disabled={pending} aria-busy={pending}>
-          {product ? t.save : t.add}
+          <ButtonLabel>{product ? t.save : t.add}</ButtonLabel>
         </button>
       </div>
     </form>
@@ -62,7 +63,7 @@ export function DeleteForm({ t, action, id }) {
       <p>{t.confirmDelete}</p>
       <input type="hidden" name="id" value={id} />
       <div className="product-form__actions">
-        <button className="button button--danger">{t.delete}</button>
+        <button className="button button--danger"><ButtonLabel>{t.delete}</ButtonLabel></button>
       </div>
     </form>
   );
@@ -102,7 +103,7 @@ export function ImportForm({ t, action }) {
       )}
       <div className="product-form__actions">
         <button className="button button--primary" disabled={pending} aria-busy={pending}>
-          {pending ? t.import.working : t.import.submit}
+          <ButtonLabel>{pending ? t.import.working : t.import.submit}</ButtonLabel>
         </button>
       </div>
     </form>
