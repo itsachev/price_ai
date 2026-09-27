@@ -151,12 +151,16 @@ export function findCandidates(product, index, { candidatesPerChain, minScore })
   });
 }
 
-/** Merchant price vs the cheapest confirmed competitor price. */
-export function priceStatus(price, competitorPrices, tolerance) {
+/**
+ * Merchant price vs their target: the cheapest confirmed competitor price, less
+ * the merchant's `undercut` rule (pricing_rules), so a price that sits on the
+ * target is competitive, not an opportunity.
+ */
+export function priceStatus(price, competitorPrices, tolerance, undercut = 0) {
   if (competitorPrices.length === 0) return 'unmatched';
-  const cheapest = Math.min(...competitorPrices);
-  if (price > cheapest * (1 + tolerance)) return 'at-risk';
-  if (price < cheapest * (1 - tolerance)) return 'opportunity';
+  const target = Math.max(Math.min(...competitorPrices) - undercut, 0.01);
+  if (price > target * (1 + tolerance)) return 'at-risk';
+  if (price < target * (1 - tolerance)) return 'opportunity';
   return 'competitive';
 }
 
@@ -171,9 +175,9 @@ export function priceStatus(price, competitorPrices, tolerance) {
 const cents = (n) => Math.round(n * 100) / 100;
 
 export function suggestPrice(price, cheapest, tolerance, { rules = {}, cost = null } = {}) {
-  const status = priceStatus(price, cheapest == null ? [] : [cheapest], tolerance);
-  if (status !== 'at-risk' && status !== 'opportunity') return null;
   const undercut = rules.undercut ?? 0;
+  const status = priceStatus(price, cheapest == null ? [] : [cheapest], tolerance, undercut);
+  if (status !== 'at-risk' && status !== 'opportunity') return null;
   let target = cents(cheapest - (status === 'opportunity' ? Math.max(undercut, 0.01) : undercut));
   let limit = null;
   if (rules.maxChange != null) {
@@ -308,7 +312,7 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
     supabase.from('competitor_listings').select('id, competitor_key, title, category_code, price').gte('captured_at', since).order('id'),
   );
   const products = await loadAll(() => {
-    const q = supabase.from('products').select('id, name, brand, size, category_code, price, match_key, price_status');
+    const q = supabase.from('products').select('id, owner_id, name, brand, size, category_code, price, match_key, price_status');
     return (productIds ? q.in('id', productIds) : q).order('id');
   });
   const productById = new Map(products.map((p) => [p.id, p]));
@@ -403,7 +407,15 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
     log(`request ${requests}: ${rows.filter((r) => r.confirmed).length}/${rows.length} confirmed`);
   }
 
-  // Price statuses from confirmed or linked, still-listed matches.
+  // Price statuses from confirmed or linked, still-listed matches, against each
+  // merchant's undercut rule.
+  const owners = [...new Set(products.map((p) => p.owner_id))];
+  const undercuts = new Map();
+  for (const part of chunks(owners, 200)) {
+    const { data, error } = await supabase.from('pricing_rules').select('owner_id, undercut').in('owner_id', part);
+    if (error) throw error;
+    for (const r of data) undercuts.set(r.owner_id, Number(r.undercut));
+  }
   const changes = new Map();
   const counts = {};
   for (const [key, { ids }] of byKey) {
@@ -413,7 +425,7 @@ export async function runMatch(supabase, { config = matchConfig(), judge, log = 
       const prices = [...new Set([...confirmed, ...(links.get(id) ?? [])])]
         .filter((listingId) => activeById.has(listingId))
         .map((listingId) => Number(activeById.get(listingId).price));
-      const status = priceStatus(Number(p.price), prices, config.priceTolerance);
+      const status = priceStatus(Number(p.price), prices, config.priceTolerance, undercuts.get(p.owner_id) ?? 0);
       counts[status] = (counts[status] ?? 0) + 1;
       if (status !== p.price_status) {
         if (!changes.has(status)) changes.set(status, []);

@@ -108,7 +108,7 @@ export default async function DashboardPage({ searchParams }) {
   // starts unticked, so a margin loss is never applied by default.
   const tb = t.bulk;
   const suggestionById = new Map(suggestions.map((s) => [s.id, s]));
-  const ready = suggestions.filter((s) => !s.held);
+  const ready = suggestions.filter((s) => !s.held && !s.dismissed);
   const bulkApply = ready.length > 0 && (
     <ProductDialog key={applied ?? 'bulk'} label={fill(tb.open, { n: ready.length })} title={tb.title} closeLabel={tp.close} variant="signal">
       <p className="muted">{tb.help}</p>
@@ -327,8 +327,8 @@ export default async function DashboardPage({ searchParams }) {
                       )}
                     </td>
                     <td data-label={t.cols.suggested}>
-                      {s?.held ? (
-                        <span className="muted">{t.held}</span>
+                      {s?.held || s?.dismissed ? (
+                        <span className="muted">{s.held ? t.held : t.dismissed}</span>
                       ) : s ? (
                         <span className="dash__advice">
                           {fill(s.suggested < s.price ? t.lowerTo : t.raiseTo, { price: formatPrice(s.suggested, lang) })}

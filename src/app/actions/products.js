@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { after } from 'next/server';
 import { decodeCsv, parseCatalogCsv, parsePrice, toProduct } from '@/lib/catalog';
-import { matchConfig, priceStatus, runMatch, splitSize } from '@/lib/pipeline/match';
+import { runMatch, splitSize } from '@/lib/pipeline/match';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { loadSuggestions } from '@/lib/suggestions';
+import { loadSuggestions, refreshStatuses } from '@/lib/suggestions';
 
 // Rows per import_products call; keeps each request well under PostgREST's body limit.
 const IMPORT_BATCH = 500;
@@ -101,19 +101,6 @@ export async function importProducts(_prev, formData) {
   };
 }
 
-// Recompute one product's status from the overview after a change that needs no
-// Gemini call (a linked listing, a new price), so the page shows it at once.
-async function refreshStatus(supabase, productId) {
-  const { activeDays, priceTolerance } = matchConfig();
-  const { data, error } = await supabase
-    .rpc('product_overview', { active_days: activeDays })
-    .eq('id', productId)
-    .single();
-  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
-  const status = priceStatus(Number(data.price), data.best_price == null ? [] : [Number(data.best_price)], priceTolerance);
-  if (status !== data.price_status) await supabase.from('products').update({ price_status: status }).eq('id', productId);
-}
-
 // Accept or undo a possible match (a listing Gemini flagged as similar). RLS on
 // product_links only allows the caller's own products.
 async function setLink(formData, linked) {
@@ -125,7 +112,7 @@ async function setLink(formData, linked) {
     ? await supabase.from('product_links').upsert({ product_id: productId, listing_id: listingId })
     : await supabase.from('product_links').delete().eq('product_id', productId).eq('listing_id', listingId);
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
-  await refreshStatus(supabase, productId);
+  await refreshStatuses(supabase, productId);
   if (linked) matchInBackground(productId);
   done();
 }
@@ -174,9 +161,21 @@ export async function applyPrice(formData) {
   if (!(price > 0 && price < 1e8)) redirect(`/dashboard/products/${id}`);
   const { error } = await supabase.rpc('apply_price', { product_id: id, new_price: price });
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
-  await refreshStatus(supabase, id);
+  await refreshStatuses(supabase, id);
   done();
   redirect(`/dashboard/products/${id}?notice=priceApplied`);
+}
+
+// "Not now" on a suggestion: remember the dismissed price (empty = show it again).
+// It only hides that exact price, so a market or rule change brings a new one back.
+export async function dismissSuggestion(formData) {
+  const supabase = await merchant();
+  const id = Number(formData.get('id'));
+  const price = parsePrice(formData.get('price'));
+  const { error } = await supabase.from('products').update({ dismissed_price: price > 0 ? price : null }).eq('id', id);
+  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
+  done();
+  redirect(`/dashboard/products/${id}`);
 }
 
 // Bulk apply from the dashboard: the ticked products get their suggested price.
@@ -188,7 +187,7 @@ export async function applySuggestions(formData) {
   const ids = formData.getAll('id').map(Number).filter(Number.isSafeInteger);
   if (!ids.length) redirect('/dashboard');
   const supabase = await merchant();
-  const rows = (await loadSuggestions(supabase, ids)).filter((r) => !r.held);
+  const rows = (await loadSuggestions(supabase, ids)).filter((r) => !r.held && !r.dismissed);
 
   const failed = [];
   const applied = [];

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { parsePrice } from '@/lib/catalog';
 import { createClient } from '@/lib/supabase/server';
+import { refreshStatuses } from '@/lib/suggestions';
 
 const FIELDS = ['min_margin', 'undercut', 'max_change'];
 // Valid range per field as the merchant types it: percents for the ratios, euros for undercut.
@@ -36,6 +37,8 @@ export async function savePricingRules(_prev, formData) {
     updated_at: new Date().toISOString(),
   });
   if (error) return { ...values, error: 'unknown' };
+  // The undercut rule moves the target every status is measured against.
+  await refreshStatuses(supabase);
   revalidatePath('/dashboard', 'layout');
   return { ...values, notice: 'saved' };
 }

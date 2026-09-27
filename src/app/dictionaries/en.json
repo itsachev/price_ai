@@ -79,7 +79,8 @@
       "since": "Changed since",
       "submit": "Download CSV"
     },
-    "held": "Held by your margin rule"
+    "held": "Held by your margin rule",
+    "dismissed": "Dismissed"
   },
   "status": {
     "competitive": "Competitive",
@@ -437,7 +438,10 @@
         "margin": "Kept at your {pct} minimum margin."
       },
       "held": "{chain} sells it for {best}, but lowering your price would take your margin below your {pct} minimum, so there’s no suggestion.",
-      "editRules": "Pricing rules"
+      "editRules": "Pricing rules",
+      "dismiss": "Not now",
+      "dismissed": "You dismissed the move to {price}. It comes back when prices or your rules change.",
+      "undo": "Show it again"
     },
     "matching": "AI matching…"
   },
@@ -457,7 +461,7 @@
       },
       "hints": {
         "min_margin": "Never suggest a price with a lower gross margin. Needs a cost price on the product.",
-        "undercut": "0 or empty matches the cheapest price. When raising, it’s at least one cent under.",
+        "undercut": "0 or empty matches the cheapest price. When raising, it’s at least one cent under. A price on this target counts as competitive.",
         "max_change": "Big moves are split into steps, so shoppers don’t see a sudden jump."
       },
       "save": "Save rules",

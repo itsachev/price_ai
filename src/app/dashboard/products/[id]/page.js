@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { applyPrice, deleteProduct, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
+import { applyPrice, deleteProduct, dismissSuggestion, linkListing, saveProduct, unlinkListing } from '@/app/actions/products';
 import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
 import PageTone from '@/components/PageTone';
@@ -51,7 +51,7 @@ export default async function ProductPage({ params, searchParams }) {
 
   const productRes = await supabase
     .from('products')
-    .select('id, name, brand, size, sku, price, cost, price_status, match_key, updated_at')
+    .select('id, name, brand, size, sku, price, cost, price_status, match_key, dismissed_price, updated_at')
     .eq('id', id)
     .maybeSingle();
   check(productRes);
@@ -146,7 +146,10 @@ export default async function ProductPage({ params, searchParams }) {
   const suggestion = suggestPrice(price, best, priceTolerance, { rules, cost });
   // The margin rule left no room to lower: nothing to apply, but say why.
   const held = suggestion?.price === price;
-  const suggested = suggestion && !held ? suggestion.price : null;
+  const open = suggestion && !held ? suggestion.price : null;
+  // "Not now" hides this exact price only (0014); a new suggestion shows again.
+  const dismissed = open != null && Number(product.dismissed_price) === open;
+  const suggested = dismissed ? null : open;
   const ruleValues = {
     step: rules.maxChange != null && formatPercent(rules.maxChange, lang, 'auto'),
     margin: rules.minMargin != null && formatPercent(rules.minMargin, lang, 'auto'),
@@ -249,11 +252,24 @@ export default async function ProductPage({ params, searchParams }) {
                 <input type="hidden" name="price" value={suggested} />
                 <button className="button button--primary"><ButtonLabel>{fill(p.apply, { price: money(suggested) })}</ButtonLabel></button>
               </form>
+              <form action={dismissSuggestion}>
+                <input type="hidden" name="id" value={product.id} />
+                <input type="hidden" name="price" value={suggested} />
+                <button className="button button--quiet"><ButtonLabel>{p.dismiss}</ButtonLabel></button>
+              </form>
             </div>
           </div>
         ) : (
-          <p className="pd__advice pd__advice--quiet">
-            {held ? (
+          <div className="pd__advice pd__advice--quiet">
+            {dismissed ? (
+              <div className="pd__dismissed">
+                <span>{fill(p.dismissed, { price: money(open) })}</span>
+                <form action={dismissSuggestion}>
+                  <input type="hidden" name="id" value={product.id} />
+                  <button className="button button--quiet"><ButtonLabel>{p.undo}</ButtonLabel></button>
+                </form>
+              </div>
+            ) : held ? (
               <>
                 {fill(p.held, { chain: bestChain, best: money(best), pct: ruleValues.margin })}{' '}
                 <Link href="/dashboard/settings#rules">{p.editRules}</Link>
@@ -261,7 +277,7 @@ export default async function ProductPage({ params, searchParams }) {
             ) : best != null
               ? fill(p.competitive, { chain: bestChain, best: money(best) })
               : !product.match_key ? p.matching : possible.length ? p.reviewMatches : p.nothing}
-          </p>
+          </div>
         )}
 
         {possible.length > 0 && (

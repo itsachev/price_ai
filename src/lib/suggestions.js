@@ -20,16 +20,17 @@ export async function loadSuggestions(supabase, ids) {
   const [rules, rows, costRes] = await Promise.all([
     loadRules(supabase),
     rowsQuery,
-    supabase.from('products').select('id, cost').in('price_status', OPEN).not('cost', 'is', null),
+    supabase.from('products').select('id, cost, dismissed_price').in('price_status', OPEN).or('cost.not.is.null,dismissed_price.not.is.null'),
   ]);
   for (const res of [rows, costRes]) {
     if (res.error) throw new Error(`${res.error.code}: ${res.error.message}`, { cause: res.error });
   }
-  const costs = new Map(costRes.data.map((c) => [c.id, Number(c.cost)]));
+  const extras = new Map(costRes.data.map((c) => [c.id, c]));
   return rows.data.flatMap((r) => {
     const price = Number(r.price);
     const best = Number(r.best_price);
-    const cost = costs.get(r.id) ?? null;
+    const extra = extras.get(r.id);
+    const cost = extra?.cost == null ? null : Number(extra.cost);
     const s = suggestPrice(price, best, priceTolerance, { rules, cost });
     if (!s) return [];
     return [{
@@ -44,9 +45,11 @@ export async function loadSuggestions(supabase, ids) {
       limit: s.limit,
       // The margin rule left no room to move; shown on the dashboard, not applied.
       held: s.price === price,
+      // The merchant said "not now" to this exact price (0014); a new price shows again.
+      dismissed: extra?.dismissed_price != null && Number(extra.dismissed_price) === s.price,
       cost,
       // What the product's status becomes once the suggestion is applied.
-      next: priceStatus(s.price, [best], priceTolerance),
+      next: priceStatus(s.price, [best], priceTolerance, rules.undercut),
     }];
   });
 }
@@ -57,4 +60,24 @@ export async function loadRules(supabase) {
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
   const num = (v) => (v == null ? null : Number(v));
   return { minMargin: num(data?.min_margin), undercut: num(data?.undercut) ?? 0, maxChange: num(data?.max_change) };
+}
+
+// Recompute statuses from the overview after a change that needs no Gemini call
+// (a linked listing, a new price, a new undercut rule), so pages show it at once.
+// `productId` narrows it to one product; without it, the merchant's whole catalog.
+// ponytail: PostgREST returns at most max-rows (1000 by default); page through for bigger catalogs.
+export async function refreshStatuses(supabase, productId) {
+  const { activeDays, priceTolerance } = matchConfig();
+  let q = supabase.rpc('product_overview', { active_days: activeDays });
+  if (productId) q = q.eq('id', productId);
+  const [{ data, error }, rules] = await Promise.all([q, loadRules(supabase)]);
+  if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });
+  const changed = data.flatMap((r) => {
+    const status = priceStatus(Number(r.price), r.best_price == null ? [] : [Number(r.best_price)], priceTolerance, rules.undercut);
+    return status === r.price_status ? [] : [{ id: r.id, status }];
+  });
+  for (const [status, group] of Map.groupBy(changed, (r) => r.status)) {
+    const { error: e } = await supabase.from('products').update({ price_status: status }).in('id', group.map((r) => r.id));
+    if (e) throw new Error(`${e.code}: ${e.message}`, { cause: e });
+  }
 }

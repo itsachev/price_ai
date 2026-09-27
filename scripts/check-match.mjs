@@ -39,7 +39,10 @@ assert.deepEqual(suggestPrice(1.5, 2.0, 0.03, { rules: { maxChange: 0.1 } }), { 
 assert.deepEqual(suggestPrice(2.2, 2.0, 0.03, { rules: { minMargin: 0.2 }, cost: 1.7 }), { price: 2.13, limit: 'margin' }, 'margin floor');
 assert.deepEqual(suggestPrice(2.2, 2.0, 0.03, { rules: { minMargin: 0.2 }, cost: 1.9 }), { price: 2.2, limit: 'margin' }, 'no room: hold today');
 assert.deepEqual(suggestPrice(2.2, 2.0, 0.03, { rules: { minMargin: 0.2 } }), { price: 2.0, limit: null }, 'no cost, no floor');
-assert.equal(suggestPrice(1.8, 2.0, 0.03, { rules: { undercut: 0.3 } }), null, 'undercut never cuts an opportunity');
+assert.deepEqual(suggestPrice(1.8, 2.0, 0.03, { rules: { undercut: 0.3 } }), { price: 1.7, limit: null }, 'too little under the cheapest: cut to the target');
+assert.equal(priceStatus(1.9, [2.0], 0.03, 0.1), 'competitive', 'on the undercut target');
+assert.equal(suggestPrice(1.9, 2.0, 0.03, { rules: { undercut: 0.1 } }), null, 'applied undercut stays put');
+assert.equal(priceStatus(0.5, [0.2], 0.03, 0.5), 'at-risk', 'undercut past zero floors at a cent');
 assert.equal(suggestPrice(2, 2.01, 0.03), null, 'competitive');
 assert.equal(suggestPrice(2, null, 0.03), null, 'unmatched');
 console.log('match ok');

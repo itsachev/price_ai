@@ -75,6 +75,17 @@
   text-wrap: pretty;
 }
 
+/* A dismissed suggestion: one line with a way to bring it back. */
+.pd__dismissed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+
+  & > span { max-inline-size: 60ch; }
+}
+
 .pd__advice-text {
   grid-area: text;
   display: grid;
