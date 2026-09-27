@@ -86,6 +86,7 @@ export default async function RootLayout({ children }) {
                     <ul className="site-menu__links">
                       <li><NavLink href="/dashboard" exact><ButtonLabel>{dict.nav.dashboard}</ButtonLabel></NavLink></li>
                       <li><NavLink href="/dashboard/reports"><ButtonLabel>{dict.nav.reports}</ButtonLabel></NavLink></li>
+                      <li><NavLink href="/dashboard/settings"><ButtonLabel>{dict.nav.settings}</ButtonLabel></NavLink></li>
                     </ul>
                   }
                 />
@@ -110,23 +111,14 @@ export default async function RootLayout({ children }) {
                 <SessionSwitch
                   initial={signedIn}
                   signedIn={
-                    // Desktop: a dropdown under the name button. In the phone menu it shows inline.
                     <div className="account">
-                      <button type="button" className="account__toggle" popoverTarget="account-menu">
+                      <Link href="/dashboard/settings" className="account__who" title={dict.nav.settings}>
                         <span className="account__avatar" aria-hidden="true">{userName[0].toUpperCase()}</span>
                         <span className="account__name">{userName}</span>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
-                      </button>
-                      <div id="account-menu" className="account__menu" popover="auto">
-                        <p className="account__who">
-                          <span className="account__avatar" aria-hidden="true">{userName[0].toUpperCase()}</span>
-                          {userName}
-                        </p>
-                        <NavLink href="/dashboard/settings">{dict.nav.account}</NavLink>
-                        <form action={signOut}>
-                          <button>{dict.auth.signOut}</button>
-                        </form>
-                      </div>
+                      </Link>
+                      <form action={signOut}>
+                        <button className="site-menu__account"><ButtonLabel>{dict.auth.signOut}</ButtonLabel></button>
+                      </form>
                     </div>
                   }
                   signedOut={<Link href="/login" className="site-menu__account"><ButtonLabel>{dict.auth.signIn}</ButtonLabel></Link>}

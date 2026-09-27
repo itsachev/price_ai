@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { revealIn } from '@/lib/reveal';
 
-// The header survives client navigation, so the phone menu and the account
-// submenu (native popovers) would stay open after a link or button inside
-// them is used. Close them then; buttons that open a popover are left alone.
+// The header survives client navigation, so the phone menu (a native popover)
+// would stay open after a link or button inside it is used. Close it then;
+// buttons that open a popover are left alone.
 // It also staggers each popover's items in as it opens.
 export default function MenuCloser({ id }) {
   useEffect(() => {
