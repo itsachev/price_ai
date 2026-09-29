@@ -57,6 +57,9 @@ export async function saveProduct(_prev, formData) {
   const res = await query.select('id').single();
   if (res.error) return { error: dbError(res.error), values };
 
+  // A new price changes the status against the listings already matched; the
+  // page's tone, badge and suggestion copy all read it.
+  await refreshStatuses(supabase, res.data.id);
   matchInBackground(res.data.id);
   done();
   if (id) redirect(`/dashboard/products/${id}?notice=saved`);
