@@ -1,0 +1,72 @@
+/* Bottom-anchored notice for the strictly-necessary cookies (session, language,
+   theme). No tracking to consent to, so one acknowledgement is enough — see
+   the privacy policy. Pure-CSS entrance: @starting-style animates it in on
+   first paint with no client JS. */
+.cookie-notice {
+  position: fixed;
+  z-index: 20;
+  inset-inline: var(--gutter);
+  inset-block-end: var(--gutter);
+  margin-inline: auto;
+  max-inline-size: 46rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  box-shadow: var(--shadow);
+  transition: translate 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+
+  @starting-style {
+    translate: 0 calc(100% + var(--gutter));
+    opacity: 0;
+  }
+
+  & p {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: var(--text-sm);
+
+    & a {
+      color: var(--accent);
+      text-underline-offset: 0.2em;
+    }
+  }
+
+  & form {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+.cookie-notice__icon {
+  inline-size: 1.75rem;
+  aspect-ratio: 1;
+  color: var(--accent);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Icon, text and button share one row once there's room. */
+@media (width >= 40rem) {
+  .cookie-notice {
+    grid-template-columns: auto 1fr auto;
+
+    & p {
+      grid-column: auto;
+    }
+
+    & form {
+      grid-column: auto;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cookie-notice {
+    transition: none;
+  }
+}

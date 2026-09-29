@@ -31,7 +31,7 @@
 /* The intro takes its own row until there is room for it beside the columns. */
 @media (width >= 64rem) {
   .site-footer__inner {
-    grid-template-columns: 1.6fr 1fr;
+    grid-template-columns: 1.6fr 1fr 1fr;
   }
 
   .site-footer__intro {

@@ -5,6 +5,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import AiBackground from '@/components/AiBackground';
 import ButtonLabel from '@/components/ButtonLabel';
 import ButtonSpotlight from '@/components/ButtonSpotlight';
+import CookieNotice from '@/components/CookieNotice';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
@@ -65,6 +66,7 @@ export default async function RootLayout({ children }) {
   const user = await sessionUser(cookieStore);
   const signedIn = Boolean(user);
   const userName = user?.name || dict.nav.account;
+  const cookieNoticeSeen = Boolean(cookieStore.get('cookie_notice')?.value);
 
   return (
     <html lang={lang} data-theme={theme} className={`${inter.variable} ${unbounded.variable} ${jetbrainsMono.variable}`}>
@@ -163,6 +165,13 @@ export default async function RootLayout({ children }) {
                   <li><Link href="/#how">{dict.home.how.eyebrow}</Link></li>
                 </ul>
               </nav>
+              <nav className="site-footer__col" aria-labelledby="footer-legal">
+                <h2 id="footer-legal" className="eyebrow">{dict.footer.legal}</h2>
+                <ul>
+                  <li><Link href="/terms">{dict.legal.terms.title}</Link></li>
+                  <li><Link href="/privacy">{dict.legal.privacy.title}</Link></li>
+                </ul>
+              </nav>
               <p className="site-footer__wordmark" aria-hidden="true">PriceAI</p>
               <div className="site-footer__bar">
                 <p>© {new Date().getFullYear()} PriceAI. {dict.footer.rights}</p>
@@ -171,6 +180,7 @@ export default async function RootLayout({ children }) {
             </div>
           </footer>
         </SmoothScroll>
+        {!cookieNoticeSeen && <CookieNotice t={dict.cookieNotice} />}
       </body>
     </html>
   );

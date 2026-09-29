@@ -1,0 +1,37 @@
+/* Terms & privacy: long-form prose, kept to a readable measure. */
+.legal {
+  max-width: 70ch;
+  margin-inline: auto;
+  padding-block: var(--space-3) var(--space-4);
+}
+
+.legal__updated {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.legal__section {
+  padding-block-start: var(--space-3);
+
+  & h2 {
+    font-size: var(--text-h3);
+  }
+
+  & p,
+  & li {
+    color: var(--muted);
+  }
+
+  & p + p,
+  & ul,
+  & ol {
+    margin-block-start: var(--space-1);
+  }
+
+  & ul,
+  & ol {
+    padding-inline-start: 1.25em;
+    display: grid;
+    gap: 0.4em;
+  }
+}

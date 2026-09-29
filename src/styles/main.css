@@ -17,7 +17,9 @@
 @import './components/form.css';
 @import './components/modal.css';
 @import './components/skeleton.css';
+@import './components/cookie-notice.css';
 @import './pages/home.css';
 @import './pages/auth.css';
 @import './pages/dashboard.css';
 @import './pages/product.css';
+@import './pages/legal.css';
