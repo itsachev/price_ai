@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { applySuggestions, importProducts, saveProduct } from '@/app/actions/products';
 import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
+import Pager from '@/components/Pager';
 import ProductDialog from '@/components/ProductDialog';
 import { ImportForm, ProductForm } from '@/components/ProductForms';
 import ProductSearch from '@/components/ProductSearch';
@@ -10,10 +11,10 @@ import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
+import { PAGE_SIZE } from '@/lib/pagination';
 import { loadSuggestions } from '@/lib/suggestions';
 import { getDictionary, getLocale } from '../dictionaries';
 
-const PAGE_SIZE = 10;
 // Tiles lead with the statuses that cost money; the quiet ones need no action.
 const TILE_ORDER = ['at-risk', 'opportunity', 'competitive', 'unmatched'];
 const QUIET = new Set(['competitive', 'unmatched']);
@@ -426,13 +427,7 @@ export default async function DashboardPage({ searchParams }) {
           </table>
         )}
 
-        {pages > 1 && (
-          <nav className="dash__pager" aria-label={t.pagination}>
-            {page > 1 ? <Link href={dashboardHref({ status, q, page: page - 1 })} className="dash__chip">{t.prev}</Link> : <span />}
-            <span className="muted">{fill(t.page, { page, pages })}</span>
-            {page < pages ? <Link href={dashboardHref({ status, q, page: page + 1 })} className="dash__chip">{t.next}</Link> : <span />}
-          </nav>
-        )}
+        <Pager page={page} pages={pages} href={(n) => dashboardHref({ status, q, page: n })} t={t} />
       </div>
     </section>
   );

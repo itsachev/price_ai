@@ -700,7 +700,6 @@
   },
   "admin": {
     "title": "Admin",
-    "intro": "Pipeline health, the match cache and every account.",
     "close": "Close",
     "notices": {
       "promoted": "The account is now an admin.",
@@ -717,9 +716,7 @@
       "failed": "That didn’t work. Try again."
     },
     "stats": {
-      "users": "Accounts",
       "products": "Products",
-      "lastRun": "Last scrape",
       "matching": "Waiting to match",
       "matchingHint": "Products with no match key yet"
     },
@@ -735,8 +732,19 @@
       "ok": "OK",
       "failed": "Failed",
       "notRun": "Not run",
-      "recent": "Last {n} runs",
-      "failedChains": "Failed: {chains}"
+      "recent": "{n} runs, newest first",
+      "intro": "The daily scrape: each chain’s result in the last run, how fresh its listings are, and recent runs.",
+      "chainsOk": "Chains OK",
+      "took": "Took",
+      "activeListings": "Active listings",
+      "chains": "Across {n} chains, last 7 days",
+      "failedRuns": "Runs with failures",
+      "failedRunsHint": "In the last {n} days",
+      "chainsTitle": "Chains",
+      "runsTitle": "Recent runs",
+      "finished": "Finished",
+      "result": "Chains OK",
+      "failedChainsCol": "Failed chains"
     },
     "matching": {
       "title": "Matching",
@@ -745,7 +753,15 @@
       "lastDay": "Judged in 24 hours",
       "latest": "Latest {date}",
       "unmatched": "Unmatched products",
-      "unmatchedHint": "{n} products with no confirmed match"
+      "unmatchedHint": "{n} products with no confirmed match",
+      "intro": "The shared verdict cache and how much of each catalog it covers.",
+      "cache": "Verdict cache",
+      "cacheHint": "{n} product and listing pairs judged by AI",
+      "coverage": "Coverage by account",
+      "matched": "Matched",
+      "unmatchedCol": "Unmatched",
+      "waiting": "Waiting",
+      "none": "No account has products yet."
     },
     "users": {
       "title": "Accounts",
@@ -768,7 +784,66 @@
       "ban": "Ban",
       "unban": "Unban",
       "delete": "Delete account",
-      "deleteConfirm": "Delete {email} and its {n} products, price history, rules and notifications? This can’t be undone."
+      "deleteConfirm": "Delete {email} and its {n} products, price history, rules and notifications? This can’t be undone.",
+      "intro": "Every account, newest first, with its catalog and the actions an admin can take.",
+      "empty": "No accounts match this filter.",
+      "filters": {
+        "label": "Filter accounts",
+        "all": "All accounts",
+        "admins": "Admins",
+        "banned": "Banned",
+        "unconfirmed": "Unconfirmed"
+      },
+      "makeAdminConfirm": "Give {email} admin access? They will see every account and the pipeline, and can use every admin action.",
+      "removeAdminConfirm": "Remove admin access from {email}? The Admin pages close for them at once.",
+      "banConfirm": "Ban {email}? They won’t be able to sign in until the ban is lifted. Their catalog stays.",
+      "unbanConfirm": "Lift the ban on {email}? They can sign in again straight away."
+    },
+    "nav": {
+      "label": "Admin sections",
+      "overview": "Overview",
+      "pipeline": "Pipeline",
+      "matching": "Matching",
+      "users": "Accounts"
+    },
+    "overview": {
+      "intro": "The pipeline, matching and accounts at a glance. Open a section for the detail.",
+      "open": "Open",
+      "pipelineHint": "Chains OK in the run that finished {date}",
+      "matchingHint": "Products · {n} waiting to match · {pct} unmatched",
+      "usersHint": "{n} joined in the last 7 days",
+      "attention": "Needs attention",
+      "allClear": "All clear. Nothing needs attention.",
+      "noRuns": "No scrape has run yet.",
+      "staleRun": "The last scrape finished {date}, over a day ago.",
+      "chainFailed": "{chain} failed in the last run.",
+      "chainStale": "{chain} has had no fresh listings for 7 days.",
+      "waiting": "{n} products are waiting to match.",
+      "unconfirmed": "{n} accounts haven’t confirmed their email."
+    },
+    "account": {
+      "back": "All accounts",
+      "self": "This is your account. Admin actions can’t be used on it.",
+      "waiting": "{n} waiting to match",
+      "details": "Details",
+      "email": "Email",
+      "confirmed": "Email confirmed",
+      "notConfirmed": "Not confirmed",
+      "bannedUntil": "Banned until",
+      "id": "Account ID",
+      "rules": "Pricing rules",
+      "defaults": "Never saved, so the defaults apply.",
+      "off": "Off",
+      "count": "{n} products, A to Z",
+      "product": "Product",
+      "sku": "SKU",
+      "price": "Price",
+      "cost": "Cost",
+      "status": "Status",
+      "matching": "Matching",
+      "noProducts": "No products yet.",
+      "danger": "Delete account",
+      "dangerIntro": "Removes the account with its catalog, price history, rules and notifications. Shared competitor data and match verdicts stay. This can’t be undone."
     }
   }
 }

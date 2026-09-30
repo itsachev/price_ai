@@ -1,250 +1,125 @@
-import { deleteUser, impersonate, resendConfirmation, setAdmin, setBanned } from '@/app/actions/admin';
-import ButtonLabel from '@/components/ButtonLabel';
-import ProductDialog from '@/components/ProductDialog';
-import { isAdmin, requireAdmin } from '@/lib/admin';
+import Link from 'next/link';
+import Pager from '@/components/Pager';
+import { adminFormat, age, catalogTotals, check, fill, listAccounts, requireAdmin } from '@/lib/admin';
 import { formatPercent } from '@/lib/format';
+import { pageHref, paginate } from '@/lib/pagination';
 import { getDictionary, getLocale } from '../../dictionaries';
 
-// Operator view, admins only (app_metadata.role, checked live by requireAdmin;
-// everyone else gets a 404). Reads through the service-role client: the daily
-// pipeline's health, the match cache and every account, with account actions.
-// ponytail: first 1000 accounts and 10 runs; page both when they outgrow it.
-const USERS_LIMIT = 1000;
-const RUNS = 10;
-const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
-
-function check(...results) {
-  for (const res of results) {
-    if (res.error) throw new Error(`${res.error.code}: ${res.error.message}`, { cause: res.error });
-  }
-}
+// Admin overview: one card per section with its headline number and health
+// tone, each drilling into its own page, then the few things that need action.
+const DAY = 86_400_000;
 
 export async function generateMetadata() {
   const dict = await getDictionary(await getLocale());
   return { title: dict.nav.admin };
 }
 
-// A small action form: hidden id (and flag), one button.
-function Action({ action, id, on, variant, children }) {
+function Card({ href, tone, label, value, hint, open }) {
   return (
-    <form action={action}>
-      <input type="hidden" name="id" value={id} />
-      {on != null && <input type="hidden" name="on" value={on ? '1' : ''} />}
-      <button className={variant ? `button button--${variant}` : 'button'}>
-        <ButtonLabel>{children}</ButtonLabel>
-      </button>
-    </form>
+    <Link href={href} className="admin__card" data-status={tone}>
+      <span className="admin__card-label">{label}</span>
+      <span className="admin__card-num">{value}</span>
+      <span className="admin__card-hint">{hint}</span>
+      <span className="admin__card-open">
+        {open}
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </span>
+    </Link>
   );
 }
 
-export default async function AdminPage({ searchParams }) {
-  const { admin, userId } = await requireAdmin();
+export default async function AdminOverview({ searchParams }) {
+  const { admin } = await requireAdmin();
   const lang = await getLocale();
   const dict = await getDictionary(lang);
   const t = dict.admin;
-  const { notice } = await searchParams;
+  const o = t.overview;
+  const { dateTime, num } = adminFormat(lang);
+  const params = await searchParams;
 
-  const [usersRes, statsRes, runsRes] = await Promise.all([
-    admin.auth.admin.listUsers({ page: 1, perPage: USERS_LIMIT }),
+  const [users, statsRes, runRes] = await Promise.all([
+    listAccounts(admin),
     admin.rpc('admin_stats'),
-    admin.from('scrape_runs').select('*, scrape_run_results(*)').order('id', { ascending: false }).limit(RUNS),
+    admin.from('scrape_runs').select('*, scrape_run_results(*)').order('id', { ascending: false }).limit(1).maybeSingle(),
   ]);
-  check(usersRes, statsRes, runsRes);
+  check(statsRes, runRes);
 
-  const locale = lang === 'bg' ? 'bg-BG' : 'en-IE';
-  const date = (value) => (value ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) : '—');
-  const dateTime = (value) => (value ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—');
-  const num = (n) => new Intl.NumberFormat(locale).format(n ?? 0);
-
-  const { merchants, verdicts, chains } = statsRes.data;
-  const runs = runsRes.data;
-  const users = usersRes.data.users.toSorted((a, b) => b.created_at.localeCompare(a.created_at));
-  const totals = Object.values(merchants).reduce(
-    (sum, m) => ({ products: sum.products + m.products, unmatched: sum.unmatched + m.unmatched, matching: sum.matching + m.matching }),
-    { products: 0, unmatched: 0, matching: 0 },
-  );
-  const lastRun = runs[0];
-  const lastResult = new Map(lastRun?.scrape_run_results.map((r) => [r.competitor_key, r]));
+  const { merchants, chains } = statsRes.data;
+  const run = runRes.data;
+  const totals = catalogTotals(merchants);
   const chainName = new Map(chains.map((c) => [c.key, c.name]));
-  const banned = (u) => u.banned_until && new Date(u.banned_until) > new Date();
+  const failed = run?.scrape_run_results.filter((r) => !r.ok) ?? [];
+  const stale = chains.filter((c) => !c.active);
+  const staleRun = run && age(run.finished_at) > 1.5 * DAY;
+  const fresh = users.filter((u) => age(u.created_at) < 7 * DAY).length;
+  const unconfirmed = users.filter((u) => !u.email_confirmed_at).length;
+
+  const attention = [
+    !run && { href: 'pipeline', tone: 'at-risk', text: o.noRuns },
+    staleRun && { href: 'pipeline', tone: 'at-risk', text: fill(o.staleRun, { date: dateTime(run.finished_at) }) },
+    ...failed.map((r) => ({ href: 'pipeline', tone: 'at-risk', text: fill(o.chainFailed, { chain: chainName.get(r.competitor_key) ?? r.competitor_key }) })),
+    ...stale.map((c) => ({ href: 'pipeline', tone: 'opportunity', text: fill(o.chainStale, { chain: c.name }) })),
+    totals.matching > 0 && { href: 'matching', tone: 'opportunity', text: fill(o.waiting, { n: num(totals.matching) }) },
+    unconfirmed > 0 && { href: 'users?show=unconfirmed', tone: 'opportunity', text: fill(o.unconfirmed, { n: num(unconfirmed) }) },
+  ].filter(Boolean);
+  const issues = paginate(params.issues, attention.length);
 
   return (
-    <section className="dash admin">
+    <>
       <header className="dash__head">
         <div className="dash__title">
           <h1>{t.title}</h1>
-          <p className="muted">{t.intro}</p>
+          <p className="muted">{o.intro}</p>
         </div>
       </header>
 
-      {t.notices[notice] && (
-        <p className="form-message" role="status" data-kind={['failed', 'self', 'missing', 'rateLimited', 'unconfirmed'].includes(notice) ? 'error' : 'notice'}>
-          {t.notices[notice]}
-        </p>
-      )}
+      <div className="admin__cards">
+        <Card
+          href="/dashboard/admin/pipeline"
+          tone={!run || staleRun || failed.length === run.total_count ? 'at-risk' : failed.length ? 'opportunity' : 'competitive'}
+          label={t.nav.pipeline}
+          value={run ? `${run.ok_count}/${run.total_count}` : '—'}
+          hint={run ? fill(o.pipelineHint, { date: dateTime(run.finished_at) }) : o.noRuns}
+          open={o.open}
+        />
+        <Card
+          href="/dashboard/admin/matching"
+          tone={totals.matching ? 'opportunity' : 'competitive'}
+          label={t.nav.matching}
+          value={num(totals.products)}
+          hint={fill(o.matchingHint, {
+            n: num(totals.matching),
+            pct: totals.products ? formatPercent(totals.unmatched / totals.products, lang, 'auto') : '—',
+          })}
+          open={o.open}
+        />
+        <Card
+          href="/dashboard/admin/users"
+          tone="admin"
+          label={t.nav.users}
+          value={num(users.length)}
+          hint={fill(o.usersHint, { n: num(fresh) })}
+          open={o.open}
+        />
+      </div>
 
-      <dl className="stat-grid">
-        <div><dt>{t.stats.users}</dt><dd>{num(users.length)}</dd></div>
-        <div><dt>{t.stats.products}</dt><dd>{num(totals.products)}</dd></div>
-        <div>
-          <dt>{t.stats.lastRun}</dt>
-          <dd>{lastRun ? `${lastRun.ok_count}/${lastRun.total_count}` : '—'}</dd>
-          <small>{dateTime(lastRun?.finished_at)}</small>
-        </div>
-        <div>
-          <dt>{t.stats.matching}</dt>
-          <dd>{num(totals.matching)}</dd>
-          <small>{t.stats.matchingHint}</small>
-        </div>
-      </dl>
-
-      <section className="dash__panel" id="pipeline" aria-labelledby="admin-pipeline">
+      <section className="dash__panel" aria-labelledby="admin-attention">
         <div className="dash__panel-head">
-          <h2 id="admin-pipeline">{t.pipeline.title}</h2>
-          <p className="muted">{lastRun ? fill(t.pipeline.lastRun, { date: dateTime(lastRun.finished_at) }) : t.pipeline.noRuns}</p>
+          <h2 id="admin-attention">{o.attention}</h2>
         </div>
-        <table className="dash__table">
-          <thead>
-            <tr>
-              <th scope="col">{t.pipeline.chain}</th>
-              <th scope="col">{t.pipeline.status}</th>
-              <th scope="col" className="num">{t.pipeline.codes}</th>
-              <th scope="col" className="num">{t.pipeline.active}</th>
-              <th scope="col">{t.pipeline.lastSeen}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {chains.map((c) => {
-              const r = lastResult.get(c.key);
-              return (
-                <tr key={c.key}>
-                  <th scope="row" className="dash__product">{c.name}</th>
-                  <td data-label={t.pipeline.status}>
-                    {r ? (
-                      <span className="badge" data-status={r.ok ? 'competitive' : 'at-risk'}>{r.ok ? t.pipeline.ok : t.pipeline.failed}</span>
-                    ) : (
-                      <span className="badge">{t.pipeline.notRun}</span>
-                    )}
-                    {r?.error_message && <small className="admin__error">{r.error_message}</small>}
-                  </td>
-                  <td className="num" data-label={t.pipeline.codes}>{r?.listing_count != null ? num(r.listing_count) : '—'}</td>
-                  <td className="num" data-label={t.pipeline.active}>{num(c.active)} / {num(c.listings)}</td>
-                  <td data-label={t.pipeline.lastSeen}>{dateTime(c.lastSeen)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {runs.length > 1 && (
-          <details className="admin__runs">
-            <summary>{fill(t.pipeline.recent, { n: runs.length })}</summary>
-            <ul>
-              {runs.map((run) => {
-                const failed = run.scrape_run_results.filter((r) => !r.ok).map((r) => chainName.get(r.competitor_key) ?? r.competitor_key);
-                return (
-                  <li key={run.id}>
-                    <span>{dateTime(run.finished_at)}</span>
-                    <strong>{run.ok_count}/{run.total_count}</strong>
-                    {failed.length > 0 && <span className="muted">{fill(t.pipeline.failedChains, { chains: failed.join(', ') })}</span>}
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
+        {attention.length ? (
+          <ul className="admin__attention">
+            {attention.slice(issues.from, issues.to).map((item) => (
+              <li key={item.text} data-status={item.tone}>
+                <Link href={`/dashboard/admin/${item.href}`}>{item.text}</Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="admin__clear">{o.allClear}</p>
         )}
+        <Pager {...issues} href={pageHref('/dashboard/admin', params, 'issues')} t={dict.dashboard} label={o.attention} />
       </section>
-
-      <section className="admin__section" id="matching" aria-labelledby="admin-matching">
-        <h2 id="admin-matching">{t.matching.title}</h2>
-        <dl className="stat-grid">
-          <div><dt>{t.matching.confirmed}</dt><dd>{num(verdicts.confirmed)}</dd></div>
-          <div><dt>{t.matching.rejected}</dt><dd>{num(verdicts.rejected)}</dd></div>
-          <div>
-            <dt>{t.matching.lastDay}</dt>
-            <dd>{num(verdicts.lastDay)}</dd>
-            <small>{fill(t.matching.latest, { date: dateTime(verdicts.latest) })}</small>
-          </div>
-          <div>
-            <dt>{t.matching.unmatched}</dt>
-            <dd>{totals.products ? formatPercent(totals.unmatched / totals.products, lang, 'auto') : '—'}</dd>
-            <small>{fill(t.matching.unmatchedHint, { n: num(totals.unmatched) })}</small>
-          </div>
-        </dl>
-      </section>
-
-      <section className="dash__panel" id="users" aria-labelledby="admin-users">
-        <div className="dash__panel-head">
-          <h2 id="admin-users">{t.users.title}</h2>
-          <p className="muted">{fill(t.users.count, { n: num(users.length) })}</p>
-        </div>
-        <table className="dash__table">
-          <thead>
-            <tr>
-              <th scope="col">{t.users.user}</th>
-              <th scope="col">{t.users.joined}</th>
-              <th scope="col">{t.users.lastSignIn}</th>
-              <th scope="col" className="num">{t.users.products}</th>
-              <th scope="col" className="num">{t.users.atRisk}</th>
-              <th scope="col">{t.users.actions}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => {
-              const m = merchants[u.id];
-              const self = u.id === userId;
-              const name = u.user_metadata?.username || u.email?.split('@')[0] || u.id;
-              return (
-                <tr key={u.id}>
-                  <td className="dash__product">
-                    <strong>{name}</strong>
-                    <small className="muted admin__email">{u.email}</small>
-                    <span className="admin__badges">
-                      {self && <span className="badge" data-status="admin">{t.users.you}</span>}
-                      {isAdmin(u) && <span className="badge" data-status="admin">{t.users.admin}</span>}
-                      {banned(u) && <span className="badge" data-status="at-risk">{t.users.banned}</span>}
-                      {!u.email_confirmed_at && <span className="badge" data-status="opportunity">{t.users.unconfirmed}</span>}
-                    </span>
-                  </td>
-                  <td data-label={t.users.joined}>{date(u.created_at)}</td>
-                  <td data-label={t.users.lastSignIn}>{dateTime(u.last_sign_in_at)}</td>
-                  <td className="num" data-label={t.users.products}>{num(m?.products)}</td>
-                  <td className="num" data-label={t.users.atRisk}>{num(m?.['at-risk'])}</td>
-                  <td className="admin__cell" data-label={t.users.actions}>
-                    {self ? (
-                      <span className="muted">—</span>
-                    ) : (
-                      <div className="admin__actions">
-                        <Action action={setAdmin} id={u.id} on={!isAdmin(u)} variant="quiet">
-                          {isAdmin(u) ? t.users.removeAdmin : t.users.makeAdmin}
-                        </Action>
-                        {u.email_confirmed_at ? (
-                          <ProductDialog label={t.users.impersonate} title={t.users.impersonate} closeLabel={t.close} variant="quiet">
-                            <p>{fill(t.users.impersonateConfirm, { email: u.email })}</p>
-                            <div className="product-form__actions">
-                              <Action action={impersonate} id={u.id} variant="primary">{t.users.impersonate}</Action>
-                            </div>
-                          </ProductDialog>
-                        ) : (
-                          <Action action={resendConfirmation} id={u.id} variant="quiet">{t.users.resend}</Action>
-                        )}
-                        <Action action={setBanned} id={u.id} on={!banned(u)} variant="danger-quiet">
-                          {banned(u) ? t.users.unban : t.users.ban}
-                        </Action>
-                        <ProductDialog label={t.users.delete} title={t.users.delete} closeLabel={t.close} variant="danger-quiet">
-                          <p>{fill(t.users.deleteConfirm, { email: u.email, n: num(m?.products) })}</p>
-                          <div className="product-form__actions">
-                            <Action action={deleteUser} id={u.id} variant="danger">{t.users.delete}</Action>
-                          </div>
-                        </ProductDialog>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
-    </section>
+    </>
   );
 }
