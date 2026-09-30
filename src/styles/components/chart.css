@@ -162,25 +162,3 @@
     color: var(--c);
   }
 }
-
-/* Draw the price line as the chart scrolls into view. Scroll-driven, so no JS;
-   browsers without support simply show the finished line. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .chart__area polyline[data-series='yours'] {
-      animation: chart-draw linear both;
-      animation-timeline: view();
-      animation-range: entry 20% cover 45%;
-    }
-  }
-}
-
-@keyframes chart-draw {
-  from {
-    clip-path: inset(-10% 100% -10% 0);
-  }
-
-  to {
-    clip-path: inset(-10% 0 -10% 0);
-  }
-}
