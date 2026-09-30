@@ -141,6 +141,11 @@
   border-radius: 999px;
 }
 
+/* Nav links: hover changes only the text, never the background. */
+.site-menu__links a:hover {
+  background: none;
+}
+
 .site-menu__links a[aria-current='page'] {
   color: var(--text);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -325,18 +330,17 @@
     }
   }
 
-  /* Raised tab: rests on the current page and slides to the hovered link.
-     Anchor positioning, no JS; without it the links keep their tint. */
+  /* Raised tab: rests on the current page (it doesn't follow the pointer).
+     Anchor positioning, no JS; without it the current link keeps its tint. */
   @supports (anchor-name: --a) {
     .site-menu .site-menu__links {
       position: relative;
       anchor-scope: --tab;
 
-      & a:hover,
-      & a[aria-current='page'] { background: none; }
-      & a[aria-current='page'] { anchor-name: --tab; }
-      &:has(a:hover) a { anchor-name: none; }
-      &:has(a:hover) a:hover { anchor-name: --tab; }
+      & a[aria-current='page'] {
+        anchor-name: --tab;
+        background: none;
+      }
 
       &::after {
         content: '';
@@ -353,8 +357,8 @@
         transition: inset 0.35s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
       }
 
-      /* No current page here (e.g. a product page) and nothing hovered: hide it. */
-      &:not(:has(a[aria-current='page'], a:hover))::after { opacity: 0; }
+      /* No current page here (e.g. a product page): hide it. */
+      &:not(:has(a[aria-current='page']))::after { opacity: 0; }
     }
   }
 }

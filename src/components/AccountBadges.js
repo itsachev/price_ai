@@ -4,7 +4,7 @@ import { isAdmin, isBanned } from '@/lib/admin';
 // `t` is dict.admin.users.
 export default function AccountBadges({ user, self, t }) {
   return (
-    <span className="admin__badges">
+    <span className="admin-badges">
       {self && <span className="badge" data-status="admin">{t.you}</span>}
       {isAdmin(user) && <span className="badge" data-status="admin">{t.admin}</span>}
       {isBanned(user) && <span className="badge" data-status="at-risk">{t.banned}</span>}

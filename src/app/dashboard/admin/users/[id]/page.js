@@ -5,14 +5,16 @@ import { deleteUser, impersonate, resendConfirmation, setAdmin, setBanned } from
 import AccountBadges from '@/components/AccountBadges';
 import AdminAction, { ConfirmAction } from '@/components/AdminAction';
 import Pager from '@/components/Pager';
-import { accountName, adminFormat, check, fill, isAdmin, isBanned, isUuid, requireAdmin } from '@/lib/admin';
+import { accountName, adminFormat, adminHealth, check, fill, isAdmin, isBanned, isUuid, requireAdmin } from '@/lib/admin';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { PAGE_SIZE, pageHref, paginate } from '@/lib/pagination';
 import { getDictionary, getLocale } from '../../../../dictionaries';
 
-// One account, as an admin sees it: profile, catalog numbers, pricing rules
-// and its products (paged), with every account action. Sign in as and Delete
-// live only here, so they're never one mis-click away in the list.
+// One account, as an admin sees it: who it is and the one primary action
+// (Sign in as), its catalog numbers, an Access panel where each row states
+// what's true now and offers the one change (admin role, sign-in, email),
+// details and pricing rules, its products (paged), and a Delete zone that
+// asks for the email to be typed first.
 const LIST = '/dashboard/admin/users';
 const ERRORS = ['failed', 'self', 'missing', 'rateLimited', 'unconfirmed'];
 const STATUSES = ['at-risk', 'opportunity', 'competitive'];
@@ -32,8 +34,20 @@ export async function generateMetadata({ params }) {
   return { title: `${accountName(user)} · ${t.title}` };
 }
 
+function Access({ tone, title, state, children }) {
+  return (
+    <li data-status={tone}>
+      <span className="admin-access__text">
+        <strong>{title}</strong>
+        <span>{state}</span>
+      </span>
+      {children}
+    </li>
+  );
+}
+
 export default async function AdminAccount({ params, searchParams }) {
-  const { admin, userId } = await requireAdmin();
+  const { admin, userId, stats } = await adminHealth();
   const { id } = await params;
   const query = await searchParams;
   const lang = await getLocale();
@@ -46,8 +60,7 @@ export default async function AdminAccount({ params, searchParams }) {
   const productPage = paginate(query.page, Infinity);
 
   const user = await loadUser(admin, id);
-  const [statsRes, rulesRes, productsRes] = await Promise.all([
-    admin.rpc('admin_stats'),
+  const [rulesRes, productsRes] = await Promise.all([
     admin.from('pricing_rules').select('*').eq('owner_id', id).maybeSingle(),
     admin
       .from('products')
@@ -56,14 +69,16 @@ export default async function AdminAccount({ params, searchParams }) {
       .order('name')
       .range(productPage.from, productPage.to - 1),
   ]);
-  check(statsRes, rulesRes, productsRes);
+  check(rulesRes, productsRes);
 
-  const counts = statsRes.data.merchants[id] ?? {};
+  const counts = stats.merchants[id] ?? {};
   const rules = rulesRes.data;
   const products = productsRes.data;
   const productPages = Math.max(1, Math.ceil((productsRes.count ?? 0) / PAGE_SIZE));
   const self = id === userId;
+  const admined = isAdmin(user);
   const banned = isBanned(user);
+  const confirmed = Boolean(user.email_confirmed_at);
   const name = accountName(user);
   const pct = (v) => (v == null ? ta.off : formatPercent(Number(v), lang, 'auto'));
   const { notice } = query;
@@ -72,51 +87,27 @@ export default async function AdminAccount({ params, searchParams }) {
     <>
       <Link href={LIST} className="pd__back">← {ta.back}</Link>
 
-      <header className="dash__head">
-        <div className="admin__profile">
-          <span className="admin__avatar" aria-hidden="true">{name[0].toUpperCase()}</span>
-          <div className="dash__title">
-            <h1>{name}</h1>
-            <p className="muted admin__email">{user.email}</p>
-            <AccountBadges user={user} self={self} t={tu} />
-          </div>
+      <header className="admin-profile">
+        <span className="admin-avatar admin-avatar--lg" aria-hidden="true">{name[0].toUpperCase()}</span>
+        <div className="admin-profile__who">
+          <h1>{name}</h1>
+          <p className="muted admin-email">{user.email}</p>
+          <p className="admin-profile__meta">
+            {fill(ta.since, { date: date(user.created_at) })} · {fill(ta.seen, { date: dateTime(user.last_sign_in_at) })}
+          </p>
+          <p className="admin-profile__meta admin-mono" title={ta.id}>{user.id}</p>
+          <AccountBadges user={user} self={self} t={tu} />
         </div>
-        {!self && (
-          <div className="admin__actions">
-            {user.email_confirmed_at ? (
-              <ConfirmAction
-                action={impersonate}
-                id={id}
-                back
-                label={tu.impersonate}
-                text={fill(tu.impersonateConfirm, { email: user.email })}
-                closeLabel={t.close}
-                variant="primary"
-              />
-            ) : (
-              <AdminAction action={resendConfirmation} id={id} back>{tu.resend}</AdminAction>
-            )}
+        {!self && confirmed && (
+          <div className="admin-profile__cta">
             <ConfirmAction
-              action={setAdmin}
+              action={impersonate}
               id={id}
-              on={!isAdmin(user)}
               back
-              label={isAdmin(user) ? tu.removeAdmin : tu.makeAdmin}
-              text={fill(isAdmin(user) ? tu.removeAdminConfirm : tu.makeAdminConfirm, { email: user.email })}
+              label={tu.impersonate}
+              text={fill(tu.impersonateConfirm, { email: user.email })}
               closeLabel={t.close}
-              variant="quiet"
-              confirm={isAdmin(user) ? 'danger' : 'primary'}
-            />
-            <ConfirmAction
-              action={setBanned}
-              id={id}
-              on={!banned}
-              back
-              label={banned ? tu.unban : tu.ban}
-              text={fill(banned ? tu.unbanConfirm : tu.banConfirm, { email: user.email })}
-              closeLabel={t.close}
-              variant="danger-quiet"
-              confirm={banned ? 'primary' : 'danger'}
+              variant="primary"
             />
           </div>
         )}
@@ -127,47 +118,86 @@ export default async function AdminAccount({ params, searchParams }) {
           {t.notices[notice]}
         </p>
       )}
-      {self && <p className="muted">{ta.self}</p>}
+      {self && <p className="form-message">{ta.self}</p>}
 
       <dl className="stat-grid">
         <div>
           <dt>{tu.products}</dt>
-          <dd>{num(counts.products)}</dd>
+          <dd data-count={counts.products ?? 0}>{num(counts.products)}</dd>
           <small>{fill(ta.waiting, { n: num(counts.matching) })}</small>
         </div>
         {STATUSES.map((s) => (
           <div key={s} data-status={s}>
-            <dt className="admin__stat-label">{dict.status[s]}</dt>
-            <dd>{num(counts[s])}</dd>
+            <dt className="admin-stat-label">{dict.status[s]}</dt>
+            <dd data-count={counts[s] ?? 0}>{num(counts[s])}</dd>
           </div>
         ))}
       </dl>
 
-      <section className="dash__panel" aria-labelledby="account-details">
-        <div className="dash__panel-head">
-          <h2 id="account-details">{ta.details}</h2>
-        </div>
-        <dl className="admin__details">
-          <div><dt>{ta.email}</dt><dd>{user.email}</dd></div>
-          <div><dt>{ta.confirmed}</dt><dd>{user.email_confirmed_at ? dateTime(user.email_confirmed_at) : ta.notConfirmed}</dd></div>
-          <div><dt>{tu.joined}</dt><dd>{date(user.created_at)}</dd></div>
-          <div><dt>{tu.lastSignIn}</dt><dd>{dateTime(user.last_sign_in_at)}</dd></div>
-          {banned && <div><dt>{ta.bannedUntil}</dt><dd>{date(user.banned_until)}</dd></div>}
-          <div><dt>{ta.id}</dt><dd className="admin__mono">{user.id}</dd></div>
-        </dl>
-      </section>
+      <div className="admin-panels">
+        <section className="dash__panel" aria-labelledby="account-access">
+          <div className="dash__panel-head">
+            <h2 id="account-access">{ta.access}</h2>
+          </div>
+          <ul className="admin-access">
+            <Access tone={admined ? 'admin' : undefined} title={ta.role} state={admined ? ta.roleAdmin : ta.roleMember}>
+              {!self && (
+                <ConfirmAction
+                  action={setAdmin}
+                  id={id}
+                  on={!admined}
+                  back
+                  label={admined ? tu.removeAdmin : tu.makeAdmin}
+                  text={fill(admined ? tu.removeAdminConfirm : tu.makeAdminConfirm, { email: user.email })}
+                  closeLabel={t.close}
+                  variant="quiet"
+                  confirm={admined ? 'danger' : 'primary'}
+                />
+              )}
+            </Access>
+            <Access
+              tone={banned ? 'at-risk' : 'competitive'}
+              title={ta.signIn}
+              state={banned ? fill(ta.signInBanned, { date: date(user.banned_until) }) : ta.signInAllowed}
+            >
+              {!self && (
+                <ConfirmAction
+                  action={setBanned}
+                  id={id}
+                  on={!banned}
+                  back
+                  label={banned ? tu.unban : tu.ban}
+                  text={fill(banned ? tu.unbanConfirm : tu.banConfirm, { email: user.email })}
+                  closeLabel={t.close}
+                  variant={banned ? 'quiet' : 'danger-quiet'}
+                  confirm={banned ? 'primary' : 'danger'}
+                />
+              )}
+            </Access>
+            <Access
+              tone={confirmed ? 'competitive' : 'opportunity'}
+              title={ta.email}
+              state={confirmed ? fill(ta.confirmedOn, { date: date(user.email_confirmed_at) }) : ta.notConfirmed}
+            >
+              {!self && !confirmed && (
+                <AdminAction action={resendConfirmation} id={id} back variant="quiet">{tu.resend}</AdminAction>
+              )}
+            </Access>
+          </ul>
+        </section>
 
-      <section className="dash__panel" aria-labelledby="account-rules">
-        <div className="dash__panel-head">
-          <h2 id="account-rules">{ta.rules}</h2>
-          {!rules && <p className="muted">{ta.defaults}</p>}
-        </div>
-        <dl className="admin__details">
-          <div><dt>{dict.settings.rules.fields.min_margin}</dt><dd>{pct(rules?.min_margin)}</dd></div>
-          <div><dt>{dict.settings.rules.fields.undercut}</dt><dd>{Number(rules?.undercut) ? formatPrice(rules.undercut, lang) : ta.off}</dd></div>
-          <div><dt>{dict.settings.rules.fields.max_change}</dt><dd>{pct(rules?.max_change)}</dd></div>
-        </dl>
-      </section>
+        <section className="dash__panel" aria-labelledby="account-rules">
+          <div className="dash__panel-head">
+            <h2 id="account-rules">{ta.rules}</h2>
+            {!rules && <p className="muted">{ta.defaults}</p>}
+          </div>
+          <dl className="admin-details">
+            <div><dt>{dict.settings.rules.fields.min_margin}</dt><dd>{pct(rules?.min_margin)}</dd></div>
+            <div><dt>{dict.settings.rules.fields.undercut}</dt><dd>{Number(rules?.undercut) ? formatPrice(rules.undercut, lang) : ta.off}</dd></div>
+            <div><dt>{dict.settings.rules.fields.max_change}</dt><dd>{pct(rules?.max_change)}</dd></div>
+          </dl>
+        </section>
+      </div>
 
       <section className="dash__panel" aria-labelledby="account-products">
         <div className="dash__panel-head">
@@ -187,10 +217,10 @@ export default async function AdminAccount({ params, searchParams }) {
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id}>
+                <tr key={p.id} data-status={p.match_key ? p.price_status : undefined}>
                   <th scope="row" className="dash__product">
                     {p.name}
-                    {(p.brand || p.size) && <small className="muted admin__email">{[p.brand, p.size].filter(Boolean).join(' · ')}</small>}
+                    {(p.brand || p.size) && <small className="muted admin-email">{[p.brand, p.size].filter(Boolean).join(' · ')}</small>}
                   </th>
                   <td data-label={ta.sku}>{p.sku ?? '—'}</td>
                   <td className="num" data-label={ta.price}>{formatPrice(p.price, lang)}</td>
@@ -199,7 +229,7 @@ export default async function AdminAccount({ params, searchParams }) {
                     {p.match_key ? (
                       <span className="badge" data-status={p.price_status}>{dict.status[p.price_status]}</span>
                     ) : (
-                      <span className="badge">{ta.matching}</span>
+                      <span className="badge" data-status="matching">{ta.matching}</span>
                     )}
                   </td>
                 </tr>
@@ -207,16 +237,17 @@ export default async function AdminAccount({ params, searchParams }) {
             </tbody>
           </table>
         ) : (
-          <p className="admin__clear">{ta.noProducts}</p>
+          <p className="admin-clear">{ta.noProducts}</p>
         )}
         <Pager page={productPage.page} pages={productPages} href={pageHref(path, query, 'page')} t={dict.dashboard} label={tu.products} />
       </section>
 
       {!self && (
-        <section className="dash__panel admin__danger" aria-labelledby="account-danger">
-          <div className="admin__danger-text">
+        <section className="admin-danger" aria-labelledby="account-danger">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l10 18H2zM12 10v5M12 18h.01" /></svg>
+          <div className="admin-danger__text">
             <h2 id="account-danger">{ta.danger}</h2>
-            <p className="muted">{ta.dangerIntro}</p>
+            <p>{ta.dangerIntro}</p>
           </div>
           <ConfirmAction
             action={deleteUser}
@@ -224,6 +255,8 @@ export default async function AdminAccount({ params, searchParams }) {
             back
             label={tu.delete}
             text={fill(tu.deleteConfirm, { email: user.email, n: num(counts.products) })}
+            guard={user.email}
+            guardLabel={fill(ta.typeEmail, { email: user.email })}
             closeLabel={t.close}
             variant="danger"
           />

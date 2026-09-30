@@ -26,7 +26,8 @@ async function target(formData) {
 }
 
 function done(notice, back) {
-  revalidatePath(PAGE, 'layout');
+  // The whole console: the side rail's counts live in the admin layout.
+  revalidatePath('/dashboard/admin', 'layout');
   redirect(`${back}?notice=${notice}`);
 }
 
@@ -48,6 +49,8 @@ export async function setBanned(formData) {
 // and notifications. Shared competitor data and match verdicts stay.
 export async function deleteUser(formData) {
   const { admin, user, back } = await target(formData);
+  // Type-to-confirm: the form asks for the email; a mismatch never deletes.
+  if (formData.get('guard') !== user.email) done('failed', back);
   const { error } = await admin.auth.admin.deleteUser(user.id);
   done(error ? 'failed' : 'deleted', error ? back : PAGE);
 }

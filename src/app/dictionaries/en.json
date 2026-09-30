@@ -744,7 +744,9 @@
       "runsTitle": "Recent runs",
       "finished": "Finished",
       "result": "Chains OK",
-      "failedChainsCol": "Failed chains"
+      "failedChainsCol": "Failed chains",
+      "stripTitle": "Run history",
+      "stripHint": "The last {n} runs, oldest first. Each bar’s height is the share of chains that worked."
     },
     "matching": {
       "title": "Matching",
@@ -771,7 +773,6 @@
       "lastSignIn": "Last sign-in",
       "products": "Products",
       "atRisk": "At risk",
-      "actions": "Actions",
       "you": "You",
       "admin": "Admin",
       "banned": "Banned",
@@ -797,14 +798,16 @@
       "makeAdminConfirm": "Give {email} admin access? They will see every account and the pipeline, and can use every admin action.",
       "removeAdminConfirm": "Remove admin access from {email}? The Admin pages close for them at once.",
       "banConfirm": "Ban {email}? They won’t be able to sign in until the ban is lifted. Their catalog stays.",
-      "unbanConfirm": "Lift the ban on {email}? They can sign in again straight away."
+      "unbanConfirm": "Lift the ban on {email}? They can sign in again straight away.",
+      "open": "Open"
     },
     "nav": {
       "label": "Admin sections",
       "overview": "Overview",
       "pipeline": "Pipeline",
       "matching": "Matching",
-      "users": "Accounts"
+      "users": "Accounts",
+      "console": "Admin console"
     },
     "overview": {
       "intro": "The pipeline, matching and accounts at a glance. Open a section for the detail.",
@@ -819,17 +822,18 @@
       "chainFailed": "{chain} failed in the last run.",
       "chainStale": "{chain} has had no fresh listings for 7 days.",
       "waiting": "{n} products are waiting to match.",
-      "unconfirmed": "{n} accounts haven’t confirmed their email."
+      "unconfirmed": "{n} accounts haven’t confirmed their email.",
+      "headlineClear": "All systems normal",
+      "headlineOne": "One thing needs attention",
+      "headline": "{n} things need attention",
+      "checked": "Last scrape {date}"
     },
     "account": {
       "back": "All accounts",
       "self": "This is your account. Admin actions can’t be used on it.",
       "waiting": "{n} waiting to match",
-      "details": "Details",
       "email": "Email",
-      "confirmed": "Email confirmed",
       "notConfirmed": "Not confirmed",
-      "bannedUntil": "Banned until",
       "id": "Account ID",
       "rules": "Pricing rules",
       "defaults": "Never saved, so the defaults apply.",
@@ -843,7 +847,18 @@
       "matching": "Matching",
       "noProducts": "No products yet.",
       "danger": "Delete account",
-      "dangerIntro": "Removes the account with its catalog, price history, rules and notifications. Shared competitor data and match verdicts stay. This can’t be undone."
+      "dangerIntro": "Removes the account with its catalog, price history, rules and notifications. Shared competitor data and match verdicts stay. This can’t be undone.",
+      "since": "Joined {date}",
+      "seen": "last sign-in {date}",
+      "access": "Access",
+      "role": "Admin access",
+      "roleAdmin": "Can open the admin console and use every admin action.",
+      "roleMember": "Standard account, no admin console.",
+      "signIn": "Sign-in",
+      "signInAllowed": "Can sign in.",
+      "signInBanned": "Banned until {date}.",
+      "confirmedOn": "Confirmed {date}.",
+      "typeEmail": "Type {email} to confirm"
     }
   }
 }

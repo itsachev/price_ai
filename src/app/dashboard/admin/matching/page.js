@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Pager from '@/components/Pager';
-import { accountName, adminFormat, catalogTotals, check, fill, listAccounts, requireAdmin } from '@/lib/admin';
+import { accountName, adminFormat, adminHealth, fill } from '@/lib/admin';
 import { formatPercent } from '@/lib/format';
 import { pageHref, paginate } from '@/lib/pagination';
 import { getDictionary, getLocale } from '../../../dictionaries';
@@ -12,7 +12,7 @@ export async function generateMetadata() {
 }
 
 export default async function AdminMatching({ searchParams }) {
-  const { admin } = await requireAdmin();
+  const { users, stats, totals } = await adminHealth();
   const lang = await getLocale();
   const dict = await getDictionary(lang);
   const t = dict.admin;
@@ -21,11 +21,7 @@ export default async function AdminMatching({ searchParams }) {
   const { dateTime, num } = adminFormat(lang);
   const pct = (part, whole) => (whole ? formatPercent(part / whole, lang, 'auto') : '—');
 
-  const [users, statsRes] = await Promise.all([listAccounts(admin), admin.rpc('admin_stats')]);
-  check(statsRes);
-
-  const { merchants, verdicts } = statsRes.data;
-  const totals = catalogTotals(merchants);
+  const { merchants, verdicts } = stats;
   const judged = verdicts.confirmed + verdicts.rejected;
   const name = new Map(users.map((u) => [u.id, accountName(u)]));
   const coverage = Object.entries(merchants)
@@ -45,11 +41,11 @@ export default async function AdminMatching({ searchParams }) {
       <dl className="stat-grid">
         <div>
           <dt>{t.stats.products}</dt>
-          <dd>{num(totals.products)}</dd>
+          <dd data-count={totals.products}>{num(totals.products)}</dd>
         </div>
         <div>
           <dt>{t.stats.matching}</dt>
-          <dd>{num(totals.matching)}</dd>
+          <dd data-count={totals.matching}>{num(totals.matching)}</dd>
           <small>{t.stats.matchingHint}</small>
         </div>
         <div>
@@ -59,7 +55,7 @@ export default async function AdminMatching({ searchParams }) {
         </div>
         <div>
           <dt>{m.lastDay}</dt>
-          <dd>{num(verdicts.lastDay)}</dd>
+          <dd data-count={verdicts.lastDay}>{num(verdicts.lastDay)}</dd>
           <small>{fill(m.latest, { date: dateTime(verdicts.latest) })}</small>
         </div>
       </dl>
@@ -69,12 +65,12 @@ export default async function AdminMatching({ searchParams }) {
           <h2 id="admin-verdicts">{m.cache}</h2>
           <p className="muted">{fill(m.cacheHint, { n: num(judged) })}</p>
         </div>
-        <div className="admin__split">
-          <div className="admin__meter" aria-hidden="true">
-            <span data-status="competitive" style={{ flexGrow: verdicts.confirmed }} />
-            <span data-status="at-risk" style={{ flexGrow: verdicts.rejected }} />
+        <div className="admin-split">
+          <div className="admin-meter admin-meter--lg" aria-hidden="true">
+            <span data-status="competitive" style={{ flexGrow: verdicts.confirmed }} data-grow />
+            <span data-status="at-risk" style={{ flexGrow: verdicts.rejected }} data-grow />
           </div>
-          <dl className="admin__legend">
+          <dl className="admin-legend">
             <div data-status="competitive">
               <dt>{m.confirmed}</dt>
               <dd>{num(verdicts.confirmed)} <small>{pct(verdicts.confirmed, judged)}</small></dd>
@@ -109,7 +105,12 @@ export default async function AdminMatching({ searchParams }) {
                     <Link href={`/dashboard/admin/users/${c.id}`}>{name.get(c.id) ?? c.id}</Link>
                   </th>
                   <td className="num" data-label={t.stats.products}>{num(c.products)}</td>
-                  <td className="num" data-label={m.matched}>{pct(c.matched, c.products)}</td>
+                  <td className="num" data-label={m.matched}>
+                    {pct(c.matched, c.products)}
+                    <span className="admin-bar" aria-hidden="true">
+                      <span data-grow style={{ '--p': c.products ? c.matched / c.products : 0 }} />
+                    </span>
+                  </td>
                   <td className="num" data-label={m.unmatchedCol}>{num(c.unmatched)}</td>
                   <td className="num" data-label={m.waiting}>{num(c.matching)}</td>
                 </tr>
@@ -117,7 +118,7 @@ export default async function AdminMatching({ searchParams }) {
             </tbody>
           </table>
         ) : (
-          <p className="admin__clear">{m.none}</p>
+          <p className="admin-clear">{m.none}</p>
         )}
         <Pager {...coveragePage} href={pageHref('/dashboard/admin/matching', params, 'accounts')} t={dict.dashboard} label={m.coverage} />
       </section>
