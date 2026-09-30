@@ -49,19 +49,19 @@ export async function generateMetadata() {
   };
 }
 
+// Dark by default; the `theme` cookie can switch to light.
+const themeOf = (cookieStore) => (cookieStore.get('theme')?.value === 'light' ? 'light' : 'dark');
+
 // Matches --bg in src/styles/base/tokens.css.
-export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f4f6fa' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0f1a' },
-  ],
-};
+export async function generateViewport() {
+  return { themeColor: themeOf(await cookies()) === 'light' ? '#f4f6fa' : '#0a0f1a' };
+}
 
 export default async function RootLayout({ children }) {
   const lang = await getLocale();
   const dict = await getDictionary(lang);
   const cookieStore = await cookies();
-  const theme = cookieStore.get('theme')?.value;
+  const theme = themeOf(cookieStore);
   // Nav hint only, no network call, so every page stays fast; the proxy and pages do the real check.
   const user = await sessionUser(cookieStore);
   const signedIn = Boolean(user);

@@ -185,13 +185,6 @@
   &[value='light'] { display: grid; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .theme-switch button {
-    &[value='dark'] { display: none; }
-    &[value='light'] { display: grid; }
-  }
-}
-
 .site-menu__links {
   display: flex;
   gap: 0.125rem;

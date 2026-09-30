@@ -1,8 +1,8 @@
 /* Design tokens — colors use light-dark(), so `color-scheme` picks the theme:
-   the OS preference by default, or the `theme` cookie via <html data-theme>.
+   dark by default, or the `theme` cookie via <html data-theme>.
    Palette: blue ink on cool paper, sky-blue price-tag signal. */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
   --bg: light-dark(#f4f6fa, #0a0f1a);
   --surface: light-dark(#ffffff, #121a2a);
