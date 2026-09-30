@@ -69,6 +69,7 @@ export default async function DashboardPage({ searchParams }) {
   let rowsQuery = supabase
     .rpc('product_overview', { active_days: activeDays }, { count: 'exact' })
     .order('status_rank')
+    .order('held')
     .order('urgency', { ascending: false, nullsFirst: false })
     .order('name')
     .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);

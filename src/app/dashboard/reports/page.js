@@ -40,9 +40,10 @@ export default async function ReportsPage() {
   const top = (status) =>
     supabase
       .rpc('product_overview', { active_days: activeDays })
-      // RPC order() runs on the selected columns, so urgency has to be in the select.
-      .select('id, name, gap_ratio, urgency')
+      // RPC order() runs on the selected columns, so held and urgency have to be in the select.
+      .select('id, name, gap_ratio, held, urgency')
       .eq('price_status', status)
+      .order('held')
       .order('urgency', { ascending: false, nullsFirst: false })
       .limit(TOP);
 
