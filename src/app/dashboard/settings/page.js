@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import AuthForm from '@/components/AuthForm';
-import ButtonLabel from '@/components/ButtonLabel';
-import { updateProfile } from '@/app/actions/auth';
+import Toast from '@/components/Toast';
+import { changePassword, updateProfile } from '@/app/actions/auth';
 import { savePricingRules } from '@/app/actions/pricing';
 import { formatPrice } from '@/lib/format';
+import { PASSWORD_MAX, PASSWORD_MIN } from '@/lib/formGuard';
 import { loadRules } from '@/lib/suggestions';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../../dictionaries';
@@ -30,7 +30,8 @@ function Section({ id, title, intro, aside, children }) {
   );
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }) {
+  const { notice, at } = await searchParams;
   const lang = await getLocale();
   const dict = await getDictionary(lang);
   const t = dict.settings;
@@ -55,85 +56,89 @@ export default async function SettingsPage() {
   ];
 
   return (
-    <section className="dash">
-      <header className="dash__head">
-        <div className="dash__title">
-          <h1>{t.title}</h1>
-          <p className="muted">{t.intro}</p>
-        </div>
-      </header>
+    <>
+      {notice === 'passwordChanged' && <Toast key={at}>{dict.auth.notices.passwordChanged}</Toast>}
+      <section className="dash">
+        <header className="dash__head">
+          <div className="dash__title">
+            <h1>{t.title}</h1>
+            <p className="muted">{t.intro}</p>
+          </div>
+        </header>
 
-      <div className="settings">
-        <nav className="settings__nav" aria-label={t.title}>
-          {nav.map(([id, label]) => (
-            <a key={id} href={`#${id}`}>
-              {label}
-            </a>
-          ))}
-        </nav>
+        <div className="settings">
+          <nav className="settings__nav" aria-label={t.title}>
+            {nav.map(([id, label]) => (
+              <a key={id} href={`#${id}`}>
+                {label}
+              </a>
+            ))}
+          </nav>
 
-        <div className="settings__body">
-          <Section
-            id="rules"
-            title={tr.title}
-            intro={tr.intro}
-            aside={
-              <ul className="settings__rules" aria-label={tr.current}>
-                {summary.map(([key, value]) => (
-                  <li key={key} data-on={value ? '' : undefined}>
-                    <span>{tr.short[key]}</span>
-                    <strong>{value || tr.off}</strong>
-                  </li>
-                ))}
-              </ul>
-            }
-          >
-            <AuthForm
-              action={savePricingRules}
-              t={tr}
-              submit={tr.save}
-              fields={[
-                { name: 'min_margin', unit: '%', label: tr.fields.min_margin, hint: tr.hints.min_margin, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '15', defaultValue: shown(rules.minMargin, 100) },
-                { name: 'undercut', unit: '€', label: tr.fields.undercut, hint: tr.hints.undercut, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '0', defaultValue: rules.undercut ? shown(rules.undercut) : '' },
-                { name: 'max_change', unit: '%', label: tr.fields.max_change, hint: tr.hints.max_change, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '10', defaultValue: shown(rules.maxChange, 100) },
-              ]}
-            />
-          </Section>
+          <div className="settings__body">
+            <Section
+              id="rules"
+              title={tr.title}
+              intro={tr.intro}
+              aside={
+                <ul className="settings__rules" aria-label={tr.current}>
+                  {summary.map(([key, value]) => (
+                    <li key={key} data-on={value ? '' : undefined}>
+                      <span>{tr.short[key]}</span>
+                      <strong>{value || tr.off}</strong>
+                    </li>
+                  ))}
+                </ul>
+              }
+            >
+              <AuthForm
+                action={savePricingRules}
+                t={tr}
+                submit={tr.save}
+                fields={[
+                  { name: 'min_margin', unit: '%', label: tr.fields.min_margin, hint: tr.hints.min_margin, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '15', defaultValue: shown(rules.minMargin, 100) },
+                  { name: 'undercut', unit: '€', label: tr.fields.undercut, hint: tr.hints.undercut, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '0', defaultValue: rules.undercut ? shown(rules.undercut) : '' },
+                  { name: 'max_change', unit: '%', label: tr.fields.max_change, hint: tr.hints.max_change, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '10', defaultValue: shown(rules.maxChange, 100) },
+                ]}
+              />
+            </Section>
 
-          <Section id="profile" title={t.profile} intro={t.profileIntro}>
-            <div className="settings__identity">
-              <span className="settings__avatar" aria-hidden="true">
-                {name[0].toUpperCase()}
-              </span>
-              <div>
-                <strong>{name}</strong>
-                <span className="muted">{email}</span>
+            <Section id="profile" title={t.profile} intro={t.profileIntro}>
+              <div className="settings__identity">
+                <span className="settings__avatar" aria-hidden="true">
+                  {name[0].toUpperCase()}
+                </span>
+                <div>
+                  <strong>{name}</strong>
+                  <span className="muted">{email}</span>
+                </div>
               </div>
-            </div>
-            <AuthForm
-              action={updateProfile}
-              t={dict.auth}
-              submit={t.save}
-              fields={[
-                { name: 'username', label: dict.auth.username, hint: dict.auth.usernameHint, autoComplete: 'nickname', minLength: 2, maxLength: 32, defaultValue: meta?.username ?? '' },
-                { name: 'email', type: 'email', label: dict.auth.email, hint: t.emailHint, defaultValue: email, readOnly: true, required: false },
-              ]}
-            />
-          </Section>
+              <AuthForm
+                action={updateProfile}
+                t={dict.auth}
+                submit={t.save}
+                fields={[
+                  { name: 'username', label: dict.auth.username, hint: dict.auth.usernameHint, autoComplete: 'nickname', minLength: 2, maxLength: 32, defaultValue: meta?.username ?? '' },
+                  { name: 'email', type: 'email', label: dict.auth.email, hint: t.emailHint, defaultValue: email, readOnly: true, required: false },
+                ]}
+              />
+            </Section>
 
-          <Section id="security" title={t.security} intro={t.securityIntro}>
-            <div className="settings__row">
-              <div>
-                <strong>{dict.auth.password}</strong>
-                <span className="muted">{t.passwordHint}</span>
-              </div>
-              <Link href="/reset-password" className="button">
-                <ButtonLabel>{t.changePassword}</ButtonLabel>
-              </Link>
-            </div>
-          </Section>
+            <Section id="security" title={t.security} intro={t.securityIntro}>
+              <AuthForm
+                action={changePassword}
+                t={dict.auth}
+                submit={t.changePassword}
+                fields={[
+                  { name: 'current', type: 'password', label: t.currentPassword, autoComplete: 'current-password', maxLength: 256 },
+                  { name: 'password', type: 'password', label: dict.auth.newPassword, hint: dict.auth.passwordHint, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
+                  { name: 'confirm', type: 'password', label: dict.auth.confirmPassword, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
+                ]}
+              />
+            </Section>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

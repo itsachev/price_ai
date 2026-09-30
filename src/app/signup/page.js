@@ -3,6 +3,7 @@ import AuthForm from '@/components/AuthForm';
 import AuthShell from '@/components/AuthShell';
 import { signUp } from '../actions/auth';
 import { safeNext } from '@/lib/auth';
+import { PASSWORD_MAX, PASSWORD_MIN } from '@/lib/formGuard';
 import { getDictionary, getLocale } from '../dictionaries';
 
 export async function generateMetadata() {
@@ -28,12 +29,13 @@ export default async function SignupPage({ searchParams }) {
         t={t}
         submit={t.signUp}
         hidden={{ next: safeNext(next) }}
+        guard
         fields={[
           // "nickname", not "username": password managers would save it as the login, which is the email.
           { name: 'username', label: t.username, hint: t.usernameHint, autoComplete: 'nickname', minLength: 2, maxLength: 32, half: true },
-          { name: 'email', type: 'email', label: t.email, autoComplete: 'email', half: true },
-          { name: 'password', type: 'password', label: t.password, hint: t.passwordHint, autoComplete: 'new-password', minLength: 6, half: true },
-          { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: 6, half: true },
+          { name: 'email', type: 'email', label: t.email, autoComplete: 'email', maxLength: 254, half: true },
+          { name: 'password', type: 'password', label: t.password, hint: t.passwordHint, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
+          { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
         ]}
       />
     </AuthShell>

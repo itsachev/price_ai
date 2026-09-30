@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import ButtonLabel from './ButtonLabel';
+import { HONEYPOT } from '@/lib/formGuard';
 
 // Password input with a show/hide toggle. The value survives the type switch
 // because the input stays uncontrolled.
@@ -26,8 +27,16 @@ function PasswordInput({ t, ...input }) {
 // One form for every auth page. `t` is dict.auth (dictionaries are server-only),
 // `fields` are <input> props plus a label (`half` pairs two side by side, `unit` shows a suffix like %), `hidden` becomes hidden inputs and
 // `children` render under the fields (e.g. the "forgot password" link).
-export default function AuthForm({ action, t, fields, submit, hidden = {}, initialError, children }) {
+// `guard` (guest forms) adds the bot traps isBot() checks: a field people never
+// see, and the time the form came alive in the browser (set after hydration, so
+// a bot that doesn't run scripts sends none).
+export default function AuthForm({ action, t, fields, submit, hidden = {}, guard, initialError, children }) {
   const [state, formAction, pending] = useActionState(action, initialError ? { error: initialError } : null);
+  const served = useRef(null);
+  useEffect(() => {
+    // A hidden input's value is its attribute, so React's form reset keeps it.
+    if (served.current) served.current.value = Date.now();
+  }, []);
   const message = state?.error ? t.errors[state.error] ?? t.errors.unknown : state?.notice && t.notices[state.notice];
 
   return (
@@ -35,6 +44,16 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, initi
       {Object.entries(hidden).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
+      {guard && (
+        <>
+          <input ref={served} type="hidden" name="ts" />
+          <label className="visually-hidden" aria-hidden="true">
+            {/* Never shown, so not translated. */}
+            Website
+            <input name={HONEYPOT} tabIndex={-1} autoComplete="off" />
+          </label>
+        </>
+      )}
       {fields.map(({ label, hint, half, unit, ...input }) => {
         const props = { required: true, ...input, defaultValue: state?.[input.name] ?? input.defaultValue };
         return (

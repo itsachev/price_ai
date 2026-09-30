@@ -61,7 +61,7 @@ export default async function DashboardPage({ searchParams }) {
   const status = PRICE_STATUSES.includes(params.status) ? params.status : null;
   const page = Math.max(1, Number.parseInt(params.page, 10) || 1);
   // Strip what PostgREST's or() filter syntax would read as operators.
-  const q = String(params.q ?? '').replace(/[,()*%\\]/g, ' ').trim().slice(0, 100);
+  const q = String(params.q ?? '').replace(/[,()*%\\"]/g, ' ').trim().slice(0, 100);
   const added = /^\d+$/.test(params.added ?? '') ? Number(params.added) : null;
   const applied = /^\d+$/.test(params.applied ?? '') ? Number(params.applied) : null;
   const notice = added ? 'added' : params.notice;

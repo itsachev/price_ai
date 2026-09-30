@@ -22,13 +22,18 @@
   padding: clamp(1.25rem, 5vw, 3rem);
 
   & h1 {
-    font-size: var(--text-h2);
+    font-size: var(--text-card-title);
     text-wrap: balance;
   }
 
   & > p {
     max-inline-size: 45ch;
     text-wrap: pretty;
+  }
+
+  /* The intro under the title: a caption, sized like the hints and footer. */
+  & > p.muted {
+    font-size: var(--text-sm);
   }
 }
 

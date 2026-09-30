@@ -110,6 +110,7 @@ async function setLink(formData, linked) {
   const supabase = await merchant();
   const productId = Number(formData.get('product_id'));
   const listingId = Number(formData.get('listing_id'));
+  if (!Number.isSafeInteger(productId) || !Number.isSafeInteger(listingId)) redirect('/dashboard');
   if (linked) await adoptListing(supabase, productId, listingId);
   const { error } = linked
     ? await supabase.from('product_links').upsert({ product_id: productId, listing_id: listingId })
@@ -160,6 +161,7 @@ export async function unlinkListing(formData) {
 export async function applyPrice(formData) {
   const supabase = await merchant();
   const id = Number(formData.get('id'));
+  if (!Number.isSafeInteger(id)) redirect('/dashboard');
   const price = parsePrice(formData.get('price'));
   if (!(price > 0 && price < 1e8)) redirect(`/dashboard/products/${id}`);
   const { error } = await supabase.rpc('apply_price', { product_id: id, new_price: price });
@@ -174,6 +176,7 @@ export async function applyPrice(formData) {
 export async function dismissSuggestion(formData) {
   const supabase = await merchant();
   const id = Number(formData.get('id'));
+  if (!Number.isSafeInteger(id)) redirect('/dashboard');
   const price = parsePrice(formData.get('price'));
   const { error } = await supabase.from('products').update({ dismissed_price: price > 0 ? price : null }).eq('id', id);
   if (error) throw new Error(`${error.code}: ${error.message}`, { cause: error });

@@ -19,7 +19,8 @@ export default async function ForgotPasswordPage() {
         action={requestPasswordReset}
         t={t}
         submit={t.sendLink}
-        fields={[{ name: 'email', type: 'email', label: t.email, autoComplete: 'email' }]}
+        guard
+        fields={[{ name: 'email', type: 'email', label: t.email, autoComplete: 'email', maxLength: 254 }]}
       />
     </AuthShell>
   );

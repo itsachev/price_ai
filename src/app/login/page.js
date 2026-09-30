@@ -28,9 +28,10 @@ export default async function LoginPage({ searchParams }) {
         t={t}
         submit={t.signIn}
         hidden={{ next: nextPath }}
+        guard
         initialError={error === 'link' ? 'link' : null}
         fields={[
-          { name: 'email', type: 'email', label: t.email, autoComplete: 'email' },
+          { name: 'email', type: 'email', label: t.email, autoComplete: 'email', maxLength: 254 },
           { name: 'password', type: 'password', label: t.password, autoComplete: 'current-password' },
         ]}
       >

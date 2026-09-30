@@ -1,5 +1,6 @@
 // Merchant catalog input: one product from a form or a CSV row, validated the
 // same way. Plain functions (no Supabase) so scripts/check-catalog.mjs can test them.
+import { cleanText } from './formGuard.js';
 import { parseCsv } from './scrapers/kzp.js';
 
 // Header names we accept per field, compared lowercased and trimmed.
@@ -20,7 +21,7 @@ export function parsePrice(value) {
   return /^\d+(\.\d+)?$/.test(s) ? Math.round(Number(s) * 100) / 100 : NaN;
 }
 
-const text = (value, max) => String(value ?? '').trim().slice(0, max) || null;
+const text = (value, max) => cleanText(value).slice(0, max) || null;
 
 // Returns { product } or { error } with a key from dict.products.errors.
 export function toProduct(input) {

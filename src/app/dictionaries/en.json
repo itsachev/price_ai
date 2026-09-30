@@ -462,7 +462,8 @@
     "notices": {
       "checkEmail": "Check your inbox and open the confirmation link to finish creating your account.",
       "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox.",
-      "profileSaved": "Settings saved."
+      "profileSaved": "Settings saved.",
+      "passwordChanged": "Password changed. Other devices were signed out."
     },
     "errors": {
       "missing": "Enter your email and password.",
@@ -477,7 +478,13 @@
       "unknown": "Something went wrong. Please try again.",
       "same_password": "Choose a password different from your current one.",
       "password_mismatch": "The passwords don't match.",
-      "username": "Choose a username of 2 to 32 characters."
+      "username": "Choose a username of 2 to 32 characters.",
+      "password_length": "Use 6 to 72 characters for your password.",
+      "current_password": "Your current password is wrong.",
+      "password_missing": "Enter a password.",
+      "current_missing": "Enter your current password.",
+      "password_not_changed": "Your password wasn't changed. Please try again in a moment.",
+      "reauthentication_needed": "For your security, sign out and sign in again, then change your password."
     },
     "signUpEyebrow": "Start in minutes",
     "username": "Username",
@@ -510,7 +517,8 @@
       "added": "Product added. AI is looking for it at competitor chains; its row updates when it finishes.",
       "saved": "Changes saved.",
       "deleted": "Product deleted.",
-      "priceApplied": "New price applied. Your status is updated."
+      "priceApplied": "New price applied. Your status is updated.",
+      "passwordChanged": "Password changed. Other devices were signed out."
     },
     "errors": {
       "name": "Enter a product name.",
@@ -652,7 +660,7 @@
     "emailHint": "Used to sign in. Can’t be changed here.",
     "security": "Security",
     "securityIntro": "Keep your account safe.",
-    "passwordHint": "Set a new password for signing in."
+    "currentPassword": "Current password"
   },
   "reports": {
     "title": "Reports",

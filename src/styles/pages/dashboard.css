@@ -754,9 +754,8 @@
   }
 }
 
-/* Avatar, name and email above the profile form; label and action rows. */
-.settings__identity,
-.settings__row {
+/* Avatar, name and email above the profile form. */
+.settings__identity {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

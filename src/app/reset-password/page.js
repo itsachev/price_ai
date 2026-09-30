@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import AuthForm from '@/components/AuthForm';
 import AuthShell from '@/components/AuthShell';
 import { updatePassword } from '../actions/auth';
+import { PASSWORD_MAX, PASSWORD_MIN } from '@/lib/formGuard';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../dictionaries';
 
@@ -26,8 +27,8 @@ export default async function ResetPasswordPage() {
         submit={t.savePassword}
         fields={[
           { name: 'email', type: 'email', label: t.email, autoComplete: 'username', defaultValue: data.claims.email, readOnly: true, required: false },
-          { name: 'password', type: 'password', label: t.newPassword, hint: t.passwordHint, autoComplete: 'new-password', minLength: 6 },
-          { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: 6 },
+          { name: 'password', type: 'password', label: t.newPassword, hint: t.passwordHint, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
+          { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
         ]}
       />
     </AuthShell>
