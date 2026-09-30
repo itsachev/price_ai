@@ -11,7 +11,8 @@
     "check": "node scripts/check-kzp.mjs && node scripts/check-match.mjs && node scripts/check-auth.mjs && node scripts/check-catalog.mjs",
     "match": "node --env-file-if-exists=.env.local scripts/match.mjs",
     "seed-demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
-    "seed-history": "node --env-file-if-exists=.env.local scripts/seed-history.mjs"
+    "seed-history": "node --env-file-if-exists=.env.local scripts/seed-history.mjs",
+    "make-admin": "node --env-file-if-exists=.env.local scripts/make-admin.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

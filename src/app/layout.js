@@ -89,6 +89,7 @@ export default async function RootLayout({ children }) {
                       <li><NavLink href="/dashboard" exact><ButtonLabel>{dict.nav.dashboard}</ButtonLabel></NavLink></li>
                       <li><NavLink href="/dashboard/reports"><ButtonLabel>{dict.nav.reports}</ButtonLabel></NavLink></li>
                       <li><NavLink href="/dashboard/settings"><ButtonLabel>{dict.nav.settings}</ButtonLabel></NavLink></li>
+                      {user?.admin && <li><NavLink href="/dashboard/admin"><ButtonLabel>{dict.nav.admin}</ButtonLabel></NavLink></li>}
                     </ul>
                   }
                 />

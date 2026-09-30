@@ -36,6 +36,7 @@
 .badge[data-status='competitive'] { --c: var(--status-competitive); }
 .badge[data-status='opportunity'] { --c: var(--status-opportunity); }
 .badge[data-status='at-risk'] { --c: var(--status-at-risk); }
+.badge[data-status='admin'] { --c: var(--accent); }
 
 /* Background AI match still running: the dot pulses until the row refreshes. */
 .badge[data-status='matching'] {

@@ -14,7 +14,8 @@
     "menu": "Menu",
     "reports": "Reports",
     "settings": "Settings",
-    "account": "Account"
+    "account": "Account",
+    "admin": "Admin"
   },
   "dashboard": {
     "title": "Your prices today",
@@ -695,6 +696,79 @@
       "delisted": "{chain} no longer lists {product}",
       "matched": "Matching finished for {n} products. Their prices are now compared.",
       "matchedOne": "Matching finished for 1 product. Its price is now compared."
+    }
+  },
+  "admin": {
+    "title": "Admin",
+    "intro": "Pipeline health, the match cache and every account.",
+    "close": "Close",
+    "notices": {
+      "promoted": "The account is now an admin.",
+      "demoted": "The account is no longer an admin.",
+      "banned": "The account is banned. It can no longer sign in.",
+      "unbanned": "The ban is lifted.",
+      "deleted": "The account and its catalog were deleted.",
+      "resent": "The confirmation email was sent again.",
+      "confirmed": "That account has already confirmed its email.",
+      "unconfirmed": "You can only sign in as an account that has confirmed its email.",
+      "rateLimited": "Too many emails were sent. Try again in a few minutes.",
+      "self": "You can’t do that to your own account.",
+      "missing": "That account no longer exists.",
+      "failed": "That didn’t work. Try again."
+    },
+    "stats": {
+      "users": "Accounts",
+      "products": "Products",
+      "lastRun": "Last scrape",
+      "matching": "Waiting to match",
+      "matchingHint": "Products with no match key yet"
+    },
+    "pipeline": {
+      "title": "Pipeline",
+      "lastRun": "Last run finished {date}",
+      "noRuns": "No scrape has run yet.",
+      "chain": "Chain",
+      "status": "Last run",
+      "codes": "Codes in run",
+      "active": "Active (7 days) / all",
+      "lastSeen": "Last seen",
+      "ok": "OK",
+      "failed": "Failed",
+      "notRun": "Not run",
+      "recent": "Last {n} runs",
+      "failedChains": "Failed: {chains}"
+    },
+    "matching": {
+      "title": "Matching",
+      "confirmed": "Confirmed verdicts",
+      "rejected": "Rejected verdicts",
+      "lastDay": "Judged in 24 hours",
+      "latest": "Latest {date}",
+      "unmatched": "Unmatched products",
+      "unmatchedHint": "{n} products with no confirmed match"
+    },
+    "users": {
+      "title": "Accounts",
+      "count": "{n} accounts, newest first",
+      "user": "Account",
+      "joined": "Joined",
+      "lastSignIn": "Last sign-in",
+      "products": "Products",
+      "atRisk": "At risk",
+      "actions": "Actions",
+      "you": "You",
+      "admin": "Admin",
+      "banned": "Banned",
+      "unconfirmed": "Unconfirmed",
+      "makeAdmin": "Make admin",
+      "removeAdmin": "Remove admin",
+      "impersonate": "Sign in as",
+      "impersonateConfirm": "You will be signed out of your account and signed in as {email}. Sign out and back in to return.",
+      "resend": "Resend email",
+      "ban": "Ban",
+      "unban": "Unban",
+      "delete": "Delete account",
+      "deleteConfirm": "Delete {email} and its {n} products, price history, rules and notifications? This can’t be undone."
     }
   }
 }

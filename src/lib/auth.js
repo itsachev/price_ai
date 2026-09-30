@@ -15,7 +15,8 @@ export const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
 // Header hint with no network call: a session cookie that holds a refresh token.
 // The access token inside expires hourly and only gets refreshed on proxy routes,
 // so checking its expiry showed signed-in visitors "Sign in" on marketing pages.
-// Returns { name } (the signup username, else the email's local part) or null.
+// Returns { name, admin } (name: the signup username, else the email's local part;
+// admin: a hint for the nav link, the admin page checks the role itself) or null.
 // ponytail: a revoked session or deleted user still reads as signed in here until
 // the first proxy route they open, where the proxy clears the dead cookie.
 export async function sessionUser(cookieStore) {
@@ -27,7 +28,10 @@ export async function sessionUser(cookieStore) {
     const session = JSON.parse(raw);
     if (!session.refresh_token) return null;
     const user = session.user ?? {};
-    return { name: user.user_metadata?.username || user.email?.split('@')[0] || '' };
+    return {
+      name: user.user_metadata?.username || user.email?.split('@')[0] || '',
+      admin: user.app_metadata?.role === 'admin',
+    };
   } catch {
     return null;
   }
