@@ -146,9 +146,39 @@
   background: none;
 }
 
+/* Current page: full ink and a short glowing accent bar, no fill. The bar
+   sits under the label in the bar (desktop) and at the row's start in the
+   phone menu. Shape and ink mark it, not colour alone. */
+.site-menu__links a {
+  position: relative;
+}
+
 .site-menu__links a[aria-current='page'] {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.site-menu__links a[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  inset-block-end: 0.375rem;
+  inset-inline-start: 50%;
+  inline-size: 1.25rem;
+  block-size: 3px;
+  translate: -50% 0;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--accent) 60%, transparent);
+  pointer-events: none;
+}
+
+@media (width < 60rem) {
+  .site-menu__links a[aria-current='page']::after {
+    inset-block: 50% auto;
+    inset-inline-start: 0;
+    inline-size: 3px;
+    block-size: 1.25rem;
+    translate: 0 -50%;
+  }
 }
 
 /* Nav labels roll like the buttons (ButtonLabel markup, button.css styles). */
@@ -330,35 +360,38 @@
     }
   }
 
-  /* Raised tab: rests on the current page (it doesn't follow the pointer).
-     Anchor positioning, no JS; without it the current link keeps its tint. */
+  /* One bar for the whole list, anchored under the current link, so it
+     slides to the new page on navigation (anchor positioning, no JS; without
+     it each current link draws its own bar). It never follows the pointer. */
   @supports (anchor-name: --a) {
     .site-menu .site-menu__links {
       position: relative;
       anchor-scope: --tab;
 
-      & a[aria-current='page'] {
-        anchor-name: --tab;
-        background: none;
-      }
+      & a[aria-current='page'] { anchor-name: --tab; }
+      & a[aria-current='page']::after { content: none; }
 
       &::after {
         content: '';
         position: absolute;
         position-anchor: --tab;
-        inset-block: anchor(top) anchor(bottom);
-        inset-inline: anchor(left) anchor(right);
-        z-index: -1;
-        border-radius: 999px;
-        background: var(--surface);
-        box-shadow:
-          0 1px 3px color-mix(in srgb, var(--text) 14%, transparent),
-          inset 0 0 0 1px var(--border);
-        transition: inset 0.35s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
+        inset-block-start: calc(anchor(bottom) - 0.375rem - 3px);
+        inset-inline-start: calc(anchor(center) - 0.625rem);
+        inline-size: 1.25rem;
+        block-size: 3px;
+        border-radius: 3px;
+        background: var(--accent);
+        box-shadow: 0 0 0.75rem color-mix(in srgb, var(--accent) 60%, transparent);
+        pointer-events: none;
+        transition: inset 0.45s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
       }
 
       /* No current page here (e.g. a product page): hide it. */
       &:not(:has(a[aria-current='page']))::after { opacity: 0; }
+
+      @media (prefers-reduced-motion: reduce) {
+        &::after { transition: none; }
+      }
     }
   }
 }
