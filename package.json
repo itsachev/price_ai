@@ -10,7 +10,6 @@
     "scrape": "node --env-file-if-exists=.env.local scripts/scrape.mjs",
     "check": "node scripts/check-kzp.mjs && node scripts/check-match.mjs && node scripts/check-auth.mjs && node scripts/check-catalog.mjs",
     "match": "node --env-file-if-exists=.env.local scripts/match.mjs",
-    "digest": "node --env-file-if-exists=.env.local scripts/send-digest.mjs",
     "seed-demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
     "seed-history": "node --env-file-if-exists=.env.local scripts/seed-history.mjs"
   },

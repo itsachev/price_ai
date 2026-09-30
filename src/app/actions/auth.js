@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { SESSION_COOKIE, safeNext } from '@/lib/auth';
-import { getLocale } from '@/app/dictionaries';
 
 // Supabase error codes the auth forms have a translated message for.
 const KNOWN_ERRORS = [
@@ -53,8 +52,7 @@ export async function signUp(_prev, formData) {
     email,
     password,
     options: {
-      // lang: the language of the morning digest email (scripts/send-digest.mjs).
-      data: { username: name, lang: await getLocale() },
+      data: { username: name },
       emailRedirectTo: await callbackUrl(safeNext(formData.get('next'))),
     },
   });
@@ -97,13 +95,6 @@ export async function updateProfile(_prev, formData) {
   if (error) return { username: name, error: errorCode(error) };
   revalidatePath('/', 'layout');
   return { username: name, notice: 'profileSaved' };
-}
-
-// Settings: the morning digest email on or off, sent in the language used now.
-export async function updateEmailPrefs(formData) {
-  const supabase = await createClient();
-  await supabase.auth.updateUser({ data: { digest: formData.get('digest') === 'on', lang: await getLocale() } });
-  revalidatePath('/dashboard/settings');
 }
 
 export async function signOut() {

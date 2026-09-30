@@ -32,10 +32,6 @@ jobs:
       MATCH_ACTIVE_DAYS: ${{ vars.MATCH_ACTIVE_DAYS }}
       NOTIFY_MIN_CHANGE: ${{ vars.NOTIFY_MIN_CHANGE }}
       NOTIFY_KEEP_DAYS: ${{ vars.NOTIFY_KEEP_DAYS }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      DIGEST_FROM: ${{ vars.DIGEST_FROM }}
-      DIGEST_MAX_ITEMS: ${{ vars.DIGEST_MAX_ITEMS }}
-      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -50,7 +46,3 @@ jobs:
       - name: Match
         if: success() || failure()
         run: npm run match
-      # Morning email with the day's notifications. Skips itself without
-      # RESEND_API_KEY / DIGEST_FROM; skipped when matching failed, so no half-written day goes out.
-      - name: Digest
-        run: npm run digest

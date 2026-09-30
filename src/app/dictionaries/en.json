@@ -650,26 +650,7 @@
     "emailHint": "Used to sign in. Can’t be changed here.",
     "security": "Security",
     "securityIntro": "Keep your account safe.",
-    "passwordHint": "Set a new password for signing in.",
-    "emails": {
-      "title": "Emails",
-      "intro": "What PriceAI sends to your inbox.",
-      "digest": "Morning price alerts",
-      "digestHint": "One email on days a chain moves a price on your products, in the language you use now. Nothing on quiet days.",
-      "save": "Save"
-    }
-  },
-  "digest": {
-    "subject": "{n} price changes at the chains, {date}",
-    "subjectOne": "1 price change at the chains, {date}",
-    "greeting": "Hi {name},",
-    "intro": "Here is what the chains changed in the {date} prices.",
-    "summary": "Right now {atRisk} of your products are at risk and {opportunity} could be priced higher.",
-    "summaryClear": "All your matched products are priced competitively right now.",
-    "more": "{n} more changes",
-    "open": "Open your dashboard",
-    "footer": "You get this because morning price alerts are on.",
-    "settings": "Turn them off in Settings"
+    "passwordHint": "Set a new password for signing in."
   },
   "reports": {
     "title": "Reports",
