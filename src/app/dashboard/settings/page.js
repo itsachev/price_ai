@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import AuthForm from '@/components/AuthForm';
 import ButtonLabel from '@/components/ButtonLabel';
-import { updateProfile } from '@/app/actions/auth';
+import { updateEmailPrefs, updateProfile } from '@/app/actions/auth';
 import { savePricingRules } from '@/app/actions/pricing';
 import { formatPrice } from '@/lib/format';
 import { loadRules } from '@/lib/suggestions';
@@ -51,6 +51,7 @@ export default async function SettingsPage() {
   const nav = [
     ['rules', tr.title],
     ['profile', t.profile],
+    ['emails', t.emails.title],
     ['security', t.security],
   ];
 
@@ -121,7 +122,22 @@ export default async function SettingsPage() {
             />
           </Section>
 
-          <Section id="security" title={t.security} intro={t.securityIntro}>
+          <Section id="emails" title={t.emails.title} intro={t.emails.intro}>
+            <form action={updateEmailPrefs} className="settings__row">
+              <label className="settings__toggle">
+                <input type="checkbox" name="digest" defaultChecked={meta?.digest !== false} />
+                <div>
+                  <strong>{t.emails.digest}</strong>
+                  <span className="muted">{t.emails.digestHint}</span>
+                </div>
+              </label>
+              <button className="button">
+                <ButtonLabel>{t.emails.save}</ButtonLabel>
+              </button>
+            </form>
+          </Section>
+
+          <Section id="security"title={t.security} intro={t.securityIntro}>
             <div className="settings__row">
               <div>
                 <strong>{dict.auth.password}</strong>

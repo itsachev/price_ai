@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import NotificationBell from '@/components/NotificationBell';
 import { createClient } from '@/lib/supabase/server';
-import { COMPETITORS } from '@/lib/config';
-import { formatPrice } from '@/lib/format';
+import { notificationText as text } from '@/lib/notifications';
 
-const fill = (text, values) => text.replace(/\{(\w+)\}/g, (_, k) => values[k]);
 const HEADER_LIMIT = 8;
 
 // Newest first; within a day in the order the job wrote them (most urgent first).
@@ -19,16 +17,6 @@ export function loadNotifications(supabase, limit) {
 
 export const dayLabel = (date, lang) =>
   new Intl.DateTimeFormat(lang === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(date));
-
-function text(n, t, lang) {
-  if (n.kind === 'matched') return n.count === 1 ? t.kinds.matchedOne : fill(t.kinds.matched, { n: n.count });
-  return fill(t.kinds[n.kind] ?? n.kind, {
-    chain: COMPETITORS[n.listing?.competitor_key] ?? n.listing?.competitor_key ?? '',
-    product: n.product?.name ?? '',
-    old: n.old_price == null ? '' : formatPrice(n.old_price, lang),
-    new: n.new_price == null ? '' : formatPrice(n.new_price, lang),
-  });
-}
 
 // One list, used by the header popover and /dashboard/notifications. `showDate`
 // adds each item's feed date (the page groups by date instead).
