@@ -5,6 +5,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import AiBackground from '@/components/AiBackground';
 import ButtonLabel from '@/components/ButtonLabel';
 import ButtonSpotlight from '@/components/ButtonSpotlight';
+import BackToTop from '@/components/BackToTop';
 import CookieNotice from '@/components/CookieNotice';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
@@ -180,6 +181,7 @@ export default async function RootLayout({ children }) {
               </div>
             </div>
           </footer>
+          <BackToTop label={dict.nav.backToTop} />
         </SmoothScroll>
         {!cookieNoticeSeen && <CookieNotice t={dict.cookieNotice} />}
       </body>

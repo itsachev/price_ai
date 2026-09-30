@@ -15,7 +15,8 @@
     "reports": "Отчети",
     "settings": "Настройки",
     "account": "Профил",
-    "admin": "Админ"
+    "admin": "Админ",
+    "backToTop": "Към началото"
   },
   "dashboard": {
     "title": "Вашите цени днес",

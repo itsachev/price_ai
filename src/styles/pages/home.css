@@ -40,7 +40,7 @@
 /* Headline: one line per sentence, each word slides up out of a mask.
    Pure CSS, so it runs from first paint without waiting for JS. */
 .hero__title {
-  font-size: var(--text-h1);
+  font-size: var(--text-hero);
   font-weight: 800;
   line-height: 1.1;
 

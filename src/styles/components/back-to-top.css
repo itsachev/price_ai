@@ -1,0 +1,55 @@
+/* Floating back-to-top button. Hidden at the top of the page and faded in by a
+   scroll-driven animation once the visitor has scrolled a screen, so no scroll
+   listener runs. A page too short to scroll has an inactive timeline and keeps
+   the hidden base style. Sits under the cookie notice (z-index 20). */
+.back-to-top {
+  position: fixed;
+  z-index: 15;
+  inset-inline-end: var(--gutter);
+  inset-block-end: max(var(--gutter), env(safe-area-inset-bottom));
+  inline-size: 2.75rem;
+  padding: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--btn-ring), var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 0.75rem;
+  animation: back-to-top-in linear both;
+  animation-timeline: scroll(root);
+  animation-range: 60dvh 100dvh;
+
+  & svg {
+    inline-size: 1.25rem;
+    aspect-ratio: 1;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+@keyframes back-to-top-in {
+  to {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+  }
+}
+
+/* ponytail: without scroll-driven animations (Firefox today) it just stays visible.
+   Add a scroll listener if hiding it at the top matters there. */
+@supports not (animation-timeline: scroll()) {
+  .back-to-top {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+  }
+}
+
+/* Fade only: the keyframe animates from this base, so nothing slides. */
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    translate: none;
+  }
+}
