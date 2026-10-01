@@ -147,11 +147,6 @@ export default async function RootLayout({ children }) {
                   )
                 }
               />
-              <SessionSwitch
-                initial={signedIn}
-                signedIn={null}
-                signedOut={<Link href="/signup" className="button button--signal site-header__cta"><ButtonLabel>{dict.auth.signUp}</ButtonLabel></Link>}
-              />
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16" /><path d="M4 16h16" /></svg>
               </button>

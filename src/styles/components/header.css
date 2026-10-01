@@ -126,19 +126,6 @@
   .brand:hover .brand__mark { rotate: -14deg; }
 }
 
-/* A pill like the bar: square corners poke past the bar's curve at its end.
-   .button.* because button.css loads later and sets its own radius. */
-.button.site-header__cta {
-  border-radius: 999px;
-}
-
-.site-header__cta {
-  padding-inline: clamp(0.875rem, 2vw, 1.25rem);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 /* Shared look for the small header controls: 44px targets, quiet until hovered. */
 .site-header__menu,
 .lang-switch button,
@@ -558,7 +545,6 @@
 @media (prefers-reduced-motion: no-preference) {
   .site-header .brand,
   .site-header__inner > .bell,
-  .site-header__cta,
   .site-header__menu {
     animation: header-in 0.6s var(--d, 0s) cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
@@ -568,7 +554,6 @@
   }
 
   .site-header__inner > .bell { --d: 0.2s; }
-  .site-header__cta { --d: 0.24s; }
   .site-header__menu { --d: 0.12s; }
 
   /* The inline nav joins the stagger; the phone popover has its own reveal. */
