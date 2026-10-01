@@ -7,6 +7,7 @@
 }
 
 .admin {
+  gap: var(--space-3);
   align-items: start;
 
   @media (min-width: 60rem) {
@@ -19,7 +20,7 @@
 .admin__main {
   container: dash / inline-size;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-section);
   min-inline-size: 0;
 }
 

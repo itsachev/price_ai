@@ -49,7 +49,9 @@
   --space-1: 0.5rem;
   --space-2: 1rem;
   --space-3: clamp(1.5rem, 3vw, 2.5rem);
-  --space-4: clamp(3rem, 8vw, 6rem);
+  --space-4: clamp(3.5rem, 1.5rem + 7vw, 8rem);
+  /* Between a page's major sections; shrinks with the viewport. */
+  --space-section: clamp(3rem, 2rem + 4vw, 6rem);
 
   /* Type scale: fluid from 375px to 1200px viewports. Headings are set in
      Unbounded, a wide face, so long Bulgarian words still fit on 320px screens. */

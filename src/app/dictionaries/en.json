@@ -25,6 +25,9 @@
     "noData": "No competitor data yet",
     "staleBanner": "These competitor prices are from {date}. The daily update hasn’t run since, so check them before you change a price.",
     "summary": "Summary",
+    "health": "Catalog health",
+    "trackedOne": "1 product tracked",
+    "tracked": "{n} products tracked",
     "hints": {
       "at-risk": "More than {pct} above the cheapest chain",
       "opportunity": "Cheapest by more than {pct}, room to raise",
@@ -672,7 +675,16 @@
     "topRisk": "Top 5 at risk",
     "topOpportunity": "Top 5 opportunities",
     "noneRisk": "Nothing at risk. None of your prices is above the cheapest chain.",
-    "noneOpportunity": "No opportunities right now. None of your prices is well below the cheapest chain."
+    "noneOpportunity": "No opportunities right now. None of your prices is well below the cheapest chain.",
+    "lead": {
+      "above": "Your prices sit {pct} above the chains’ average.",
+      "below": "Your prices sit {pct} below the chains’ average.",
+      "level": "Your prices are level with the chains’ average.",
+      "since": "{change} points since {date}",
+      "market": "Market"
+    },
+    "focus": "Where to look first",
+    "focusIntro": "The biggest gaps first. Open a product to see its suggested price."
   },
   "notifications": {
     "title": "Notifications",

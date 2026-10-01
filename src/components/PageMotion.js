@@ -9,18 +9,17 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 
-// The admin console's entrance, one choreography per section page: the title's
-// lines rise out of a mask, panels and tiles lift in as they scroll into view,
-// [data-count] numbers count up, [data-grow] bars fill from the start and
-// [data-rise] bars grow from the baseline.
+// A page's GSAP entrance (admin sections, the dashboard): the title's lines
+// rise out of a mask, the `reveal` elements (if given) lift in as they scroll
+// into view, [data-count] numbers count up, [data-grow] bars fill from the
+// start and [data-rise] bars grow from the baseline.
 //
 // It runs only when the page was rendered on the client (an in-app
 // navigation). On a hard load the server HTML is already on screen, and
 // hiding it to animate would flash. Content is always complete without it.
-const REVEAL = '.admin__main > :not(.stat-grid, .admin-cards, .admin-panels), .stat-grid > *, .admin-cards > *, .admin-panels > *';
 const subscribe = () => () => {};
 
-export default function AdminMotion({ children }) {
+export default function PageMotion({ as: Tag = 'div', className, reveal, children }) {
   const scope = useRef(null);
   const pathname = usePathname();
   // false only while hydrating server HTML (useSyncExternalStore's server snapshot).
@@ -45,12 +44,14 @@ export default function AdminMotion({ children }) {
           });
         }
 
-        gsap.set(REVEAL, { autoAlpha: 0, y: 24 });
-        ScrollTrigger.batch(REVEAL, {
-          start: 'top 95%',
-          once: true,
-          onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 0.8, ease, stagger: 0.06, delay: 0.1 }),
-        });
+        if (reveal) {
+          gsap.set(reveal, { autoAlpha: 0, y: 24 });
+          ScrollTrigger.batch(reveal, {
+            start: 'top 95%',
+            once: true,
+            onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 0.8, ease, stagger: 0.06, delay: 0.1 }),
+          });
+        }
 
         const fmt = new Intl.NumberFormat(document.documentElement.lang === 'bg' ? 'bg-BG' : 'en-IE');
         gsap.utils.toArray('[data-count]').forEach((el) => {
@@ -74,8 +75,8 @@ export default function AdminMotion({ children }) {
   );
 
   return (
-    <div ref={scope} className="admin__main">
+    <Tag ref={scope} className={className}>
       {children}
-    </div>
+    </Tag>
   );
 }

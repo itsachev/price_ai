@@ -1,11 +1,10 @@
 /* App pages (dashboard, product, reports, settings): solid, calm surfaces so
-   the numbers read first. Order on the dashboard: freshness, alerts, status
-   tiles (the filter), then the product list. The table turns into one card
+   the numbers read first. The table turns into one card
    per product when its panel is narrow (container query). */
 .dash {
   container: dash / inline-size;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-section);
 
   & [data-status="competitive"] {
     --c: var(--status-competitive);
@@ -22,6 +21,153 @@
 
   & h1 {
     font-size: var(--text-h2);
+  }
+}
+
+/* A page head stays close to what follows it (and a back link to the head);
+   only the sections after that sit a full section apart. */
+:is(.dash, .admin__main) > :is(.dash__head, .admin-hero, .admin-profile, .pd__back) + * {
+  margin-block-start: calc(var(--space-3) - var(--space-section));
+}
+
+/* The dashboard (/dashboard), read like a morning ledger: today's state,
+   today's to-do, catalog health, then the list. Groups sit a full section
+   apart; what belongs together stays close inside a group. */
+.dash--overview {
+  & h1 {
+    font-size: var(--text-hero);
+    text-wrap: balance;
+  }
+
+  /* A hairline under the title, with the header dock's scan line resting at its start. */
+  & .dash__head {
+    position: relative;
+    padding-block-end: var(--space-3);
+    border-block-end: 1px solid var(--border);
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-end: -1px;
+      inline-size: min(8rem, 30%);
+      block-size: 2px;
+      background: var(--edge-gradient);
+      border-radius: 2px;
+      transform-origin: 0 50%;
+    }
+  }
+
+  /* The feed date as a stamp; its dot pulses a few times while the data is fresh. */
+  & .dash__fresh {
+    justify-self: start;
+    padding: 0.4em 0.9em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+}
+
+.dash__group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dash__summary {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dash__summary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+
+  & h2 {
+    font-size: var(--text-card-title);
+    text-wrap: balance;
+  }
+
+  & p {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+}
+
+/* One bar split by status, each part as wide as its share of the catalog.
+   A status filter dims the others. */
+.dash__meter {
+  display: flex;
+  gap: 3px;
+  block-size: 0.625rem;
+
+  & span {
+    flex-basis: 0;
+    min-inline-size: 0.5rem;
+    background: var(--c);
+    border-radius: 999px;
+    transform-origin: 0 50%;
+    transition: opacity 0.2s;
+  }
+
+  & [data-dim] {
+    opacity: 0.3;
+  }
+}
+
+/* Entrance, pure CSS so it plays on a hard load without a flash: the groups
+   rise in turn, then the tiles and rows (sibling-index() staggers them where
+   supported; elsewhere they rise together). The meter and the scan line draw
+   in from the start. backwards fill: once done, hover transitions own translate. */
+@media (prefers-reduced-motion: no-preference) {
+  .dash--overview {
+    & > *,
+    & .dash__tiles > *,
+    & .dash__table tbody tr {
+      animation: dash-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    & > * {
+      animation-delay: calc((sibling-index() - 1) * 90ms);
+    }
+    & .dash__tiles > * {
+      animation-delay: calc(200ms + sibling-index() * 60ms);
+    }
+    & .dash__table tbody tr {
+      animation-delay: calc(min(sibling-index(), 10) * 30ms);
+    }
+    & .dash__meter span,
+    & .dash__head::after {
+      animation: dash-draw 1s cubic-bezier(0.16, 1, 0.3, 1) 0.25s backwards;
+    }
+    & .dash__fresh:not([data-stale])::before {
+      animation: fresh-pulse 1.6s ease-out 0.6s 3;
+    }
+  }
+}
+
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    translate: 0 1.25rem;
+  }
+}
+
+@keyframes dash-draw {
+  from {
+    scale: 0 1;
+  }
+}
+
+@keyframes fresh-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-competitive) 55%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 0.6em transparent;
   }
 }
 
@@ -150,10 +296,23 @@
 }
 
 .dash__tile-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
   color: var(--c);
+
+  &::before {
+    content: "";
+    flex: none;
+    inline-size: 0.5em;
+    block-size: 0.5em;
+    border-radius: 50%;
+    background: var(--c);
+  }
 }
 
 .dash__tile-num {
+  font-family: var(--font-heading);
   font-size: var(--text-stat);
   font-weight: 700;
   line-height: 1.1;
@@ -191,7 +350,7 @@
   border-block-end: 1px solid var(--border);
 
   & h2 {
-    font-size: var(--text-h3);
+    font-size: var(--text-card-title);
   }
 }
 
@@ -665,7 +824,7 @@
 .settings__section {
   display: grid;
   gap: var(--space-2);
-  padding-block: var(--space-3);
+  padding-block: calc(var(--space-section) * 0.6);
   border-block-start: 1px solid var(--border);
   scroll-margin-block-start: 6rem;
 
@@ -876,7 +1035,7 @@
   gap: var(--space-1) var(--space-2);
 
   & h2 {
-    font-size: var(--text-h3);
+    font-size: var(--text-card-title);
     text-wrap: balance;
   }
 }
@@ -1017,38 +1176,13 @@
   }
 }
 
-/* Reports: the moves line as plain text, and the top-5 cards' product links. */
+/* Reports: the moves line as plain text. */
 .dash__moves--static::after {
   content: none;
 }
 
 .dash .card {
   background: var(--surface);
-}
-
-.dash .report {
-  & h2 {
-    font-size: var(--text-base);
-  }
-
-  & li a {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    min-block-size: 44px;
-    color: inherit;
-    overflow-wrap: anywhere;
-    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
-    text-underline-offset: 0.2em;
-
-    &:hover {
-      text-decoration-color: currentColor;
-    }
-  }
-
-  & ol li {
-    align-items: center;
-  }
 }
 
 /* Bulk apply dialog: one row per suggestion, the whole row toggles its tick.

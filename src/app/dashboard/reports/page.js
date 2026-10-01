@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import PageMotion from '@/components/PageMotion';
 import PriceTrend from '@/components/PriceTrend';
 import { formatPercent } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
@@ -36,7 +37,7 @@ export default async function ReportsPage() {
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) redirect('/login?next=/dashboard/reports');
 
-  const { activeDays } = matchConfig();
+  const { activeDays, priceTolerance } = matchConfig();
   const top = (status) =>
     supabase
       .rpc('product_overview', { active_days: activeDays })
@@ -93,12 +94,30 @@ export default async function ReportsPage() {
     i === 0 || s.data_date.slice(0, 7) !== list[i - 1].data_date.slice(0, 7) ? date(s.data_date, { month: 'short', timeZone: 'UTC' }) : '');
   const number = (v) => new Intl.NumberFormat(lang === 'bg' ? 'bg-BG' : 'en-IE', { maximumFractionDigits: 1 }).format(v);
 
+  // The lead: today's index as one verdict, placed on a gauge around the market's 100.
+  const now = index.at(-1);
+  const diff = now / 100 - 1;
+  const verdict = diff > priceTolerance ? 'above' : diff < -priceTolerance ? 'below' : 'level';
+  const span = Math.max(10, Math.ceil(Math.abs(now - 100)) + 2);
+  const since = index.length > 1 && fill(t.lead.since, {
+    change: new Intl.NumberFormat(lang === 'bg' ? 'bg-BG' : 'en-IE', { maximumFractionDigits: 1, signDisplay: 'exceptZero' }).format(now - index[0]),
+    date: date(indexPoints[0].data_date, { day: 'numeric', month: 'long', timeZone: 'UTC' }),
+  });
+  const asOf = snapRes.data[0]?.data_date;
+
+  // A printed market report: masthead, one verdict, then numbered sections.
+  // Entrance: the dashboard's CSS (dash--overview) plus PageMotion on in-app navigations.
   return (
-    <section className="dash">
+    <PageMotion as="section" className="dash dash--overview rp">
       <header className="dash__head">
         <div className="dash__title">
           <h1>{t.title}</h1>
           <p className="muted">{t.intro}</p>
+          {asOf && (
+            <p className="dash__fresh">
+              {fill(dict.dashboard.dataAsOf, { date: date(asOf, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) })}
+            </p>
+          )}
         </div>
       </header>
 
@@ -107,21 +126,39 @@ export default async function ReportsPage() {
         {undercut > 0 && <strong>{fill(dict.dashboard.movesUndercut, { n: undercut })}</strong>}
       </p>
 
-      {index.length > 1 ? (
-        <PriceTrend
-          t={t.index}
-          yours={index}
-          market={index.map(() => 100)}
-          xLabels={monthLabels(indexPoints)}
-          money={number}
-          pct={(v) => formatPercent(v, lang)}
-        />
-      ) : (
-        index.length === 1 && <p className="muted">{fill(t.indexStarting, { index: number(index[0]) })}</p>
+      {index.length > 0 && (
+        <section className="rp__lead" aria-labelledby="rp-index">
+          <div className="rp__verdict" data-status={verdict === 'above' ? 'at-risk' : 'competitive'}>
+            <h2 id="rp-index">{t.index.title}</h2>
+            <p className="rp__index">{number(now)}</p>
+            <div className="rp__claim">
+              <p>{verdict === 'level' ? t.lead.level : fill(t.lead[verdict], { pct: formatPercent(Math.abs(diff), lang, 'never') })}</p>
+              {since && <small>{since}</small>}
+            </div>
+            {/* Where today's index sits around the market's 100; the sentence carries the numbers. */}
+            <div className="rp__gauge" aria-hidden="true" style={{ '--p': (now - 100 + span) / (2 * span) }}>
+              <span>{100 - span}</span>
+              <span>{t.lead.market} 100</span>
+              <span>{100 + span}</span>
+            </div>
+          </div>
+          {index.length > 1 ? (
+            <PriceTrend
+              t={t.index}
+              yours={index}
+              market={index.map(() => 100)}
+              xLabels={monthLabels(indexPoints)}
+              money={number}
+              pct={(v) => formatPercent(v, lang)}
+            />
+          ) : (
+            <p className="muted">{fill(t.indexStarting, { index: number(now) })}</p>
+          )}
+        </section>
       )}
 
-      <section className="stack" aria-labelledby="rp-changes">
-        <div>
+      <section className="rp__section" aria-labelledby="rp-changes">
+        <div className="rp__section-head">
           <h2 id="rp-changes">{fill(t.changes.title, { days: CHANGE_DAYS })}</h2>
           <p className="muted">
             {changes.total
@@ -130,48 +167,67 @@ export default async function ReportsPage() {
           </p>
         </div>
         {changes.total > 0 && (
-          <dl className="stat-grid">
-            <div>
-              <dt>{t.changes.applied}</dt>
-              <dd>{applied?.changes ?? 0}</dd>
-              <small>{applied ? fill(t.changes.competitiveNow, { n: applied.competitive_now, of: applied.products }) : t.changes.noneApplied}</small>
+          <>
+            {/* Rises against cuts at a glance; the tiles below carry the numbers. */}
+            <div className="dash__meter" aria-hidden="true">
+              {changes.rises > 0 && <span data-status="opportunity" style={{ flexGrow: changes.rises }} />}
+              {changes.cuts > 0 && <span data-status="competitive" style={{ flexGrow: changes.cuts }} />}
             </div>
-            <div>
-              <dt>{t.changes.rises}</dt>
-              <dd>{changes.rises}</dd>
-              {changes.rises > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgRise, lang) })}</small>}
-            </div>
-            <div>
-              <dt>{t.changes.cuts}</dt>
-              <dd>{changes.cuts}</dd>
-              {changes.cuts > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgCut, lang) })}</small>}
-            </div>
-          </dl>
+            <dl className="stat-grid">
+              <div>
+                <dt>{t.changes.applied}</dt>
+                <dd data-count={applied?.changes ?? 0}>{applied?.changes ?? 0}</dd>
+                <small>{applied ? fill(t.changes.competitiveNow, { n: applied.competitive_now, of: applied.products }) : t.changes.noneApplied}</small>
+              </div>
+              <div data-status="opportunity">
+                <dt>{t.changes.rises}</dt>
+                <dd data-count={changes.rises}>{changes.rises}</dd>
+                {changes.rises > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgRise, lang) })}</small>}
+              </div>
+              <div data-status="competitive">
+                <dt>{t.changes.cuts}</dt>
+                <dd data-count={changes.cuts}>{changes.cuts}</dd>
+                {changes.cuts > 0 && <small>{fill(t.changes.average, { pct: formatPercent(changes.avgCut, lang) })}</small>}
+              </div>
+            </dl>
+          </>
         )}
       </section>
 
-      <div className="reports">
-        {[
-          ['at-risk', t.topRisk, riskRes.data, t.noneRisk],
-          ['opportunity', t.topOpportunity, oppRes.data, t.noneOpportunity],
-        ].map(([status, title, rows, empty]) => (
-          <article key={status} className="card report" data-status={status}>
-            <h2>{title}</h2>
-            {rows.length ? (
-              <ol>
-                {rows.map((r) => (
-                  <li key={r.id}>
-                    <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
-                    <strong>{formatPercent(Number(r.gap_ratio), lang)}</strong>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="muted">{empty}</p>
-            )}
-          </article>
-        ))}
-      </div>
-    </section>
+      <section className="rp__section" aria-labelledby="rp-focus">
+        <div className="rp__section-head">
+          <h2 id="rp-focus">{t.focus}</h2>
+          <p className="muted">{t.focusIntro}</p>
+        </div>
+        <div className="rp__focus">
+          {[
+            ['at-risk', t.topRisk, riskRes.data, t.noneRisk],
+            ['opportunity', t.topOpportunity, oppRes.data, t.noneOpportunity],
+          ].map(([status, title, rows, empty]) => {
+            // Bars are scaled to the list's biggest gap.
+            const max = Math.max(...rows.map((r) => Math.abs(Number(r.gap_ratio))), 1e-9);
+            return (
+              <article key={status} className="card report" data-status={status}>
+                <h3>{title}</h3>
+                {rows.length ? (
+                  <ol className="rp__rank">
+                    {rows.map((r, i) => (
+                      <li key={r.id} style={{ '--w': Math.abs(Number(r.gap_ratio)) / max }}>
+                        <span className="rp__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                        <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
+                        <strong>{formatPercent(Number(r.gap_ratio), lang)}</strong>
+                        <span className="rp__bar" aria-hidden="true" />
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="muted">{empty}</p>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    </PageMotion>
   );
 }

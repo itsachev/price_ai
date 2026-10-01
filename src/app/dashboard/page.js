@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { applySuggestions, importProducts, saveProduct } from '@/app/actions/products';
 import ButtonLabel from '@/components/ButtonLabel';
 import MatchPoller from '@/components/MatchPoller';
+import PageMotion from '@/components/PageMotion';
 import Pager from '@/components/Pager';
 import ProductDialog from '@/components/ProductDialog';
 import { ImportForm, ProductForm } from '@/components/ProductForms';
@@ -264,64 +265,87 @@ export default async function DashboardPage({ searchParams }) {
     </>
   );
 
+  // Four groups, spaced apart: today's state, today's to-do, catalog health, the list.
+  // Entrance: CSS (dashboard.css) on every load; PageMotion adds the title split
+  // and tile counters on in-app navigations.
   return (
-    <section className="dash">
-      <header className="dash__head">
-        <div className="dash__title">
-          <h1>{t.title}</h1>
-          <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
-            {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
+    <PageMotion as="section" className="dash dash--overview">
+      <div className="dash__group">
+        <header className="dash__head">
+          <div className="dash__title">
+            <h1>{t.title}</h1>
+            <p className="dash__fresh" data-stale={stale || !dataDate || undefined}>
+              {dataDate ? fill(t.dataAsOf, { date: dateLabel }) : t.noData}
+            </p>
+          </div>
+          {total > 0 && <div className="dash__actions">{exportPrices}{addImport}</div>}
+        </header>
+
+        {rows.some((r) => !r.match_key) && <MatchPoller />}
+
+        {/* Repricing from an old feed is the costly mistake, so staleness gets its own line. */}
+        {stale && (
+          <p className="dash__alert" role="status">{fill(t.staleBanner, { date: dateLabel })}</p>
+        )}
+
+        {applied != null && (
+          <p className="form-message" role="status" data-kind="notice">
+            {fill(t.bulk.applied, { n: applied })}{' '}
+            {applied > 0 && (
+              <Link href={`/dashboard/export?since=${today}`} download prefetch={false} className="catalog__link">{t.bulk.download}</Link>
+            )}
           </p>
-        </div>
-        {total > 0 && <div className="dash__actions">{exportPrices}{addImport}</div>}
-      </header>
+        )}
 
-      {rows.some((r) => !r.match_key) && <MatchPoller />}
+        {tp.notices[notice] && (
+          <p className="form-message" role="status" data-kind="notice">{tp.notices[notice]}</p>
+        )}
+      </div>
 
-      {/* Repricing from an old feed is the costly mistake, so staleness gets its own line. */}
-      {stale && (
-        <p className="dash__alert" role="status">{fill(t.staleBanner, { date: dateLabel })}</p>
-      )}
+      {(advice || moves > 0) && (
+        <div className="dash__group">
+          {advice}
 
-      {advice}
-
-      {moves > 0 && (
-        <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
-          {fill(t.movesToday, { n: moves })}
-          {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
-        </Link>
-      )}
-
-      {applied != null && (
-        <p className="form-message" role="status" data-kind="notice">
-          {fill(t.bulk.applied, { n: applied })}{' '}
-          {applied > 0 && (
-            <Link href={`/dashboard/export?since=${today}`} download prefetch={false} className="catalog__link">{t.bulk.download}</Link>
+          {moves > 0 && (
+            <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
+              {fill(t.movesToday, { n: moves })}
+              {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
+            </Link>
           )}
-        </p>
+        </div>
       )}
 
-      {tp.notices[notice] && (
-        <p className="form-message" role="status" data-kind="notice">{tp.notices[notice]}</p>
+      {total > 0 && (
+        <section className="dash__summary" aria-labelledby="summary-title">
+          <div className="dash__summary-head">
+            <h2 id="summary-title">{t.health}</h2>
+            <p>{plural(total, t.trackedOne, t.tracked)}</p>
+          </div>
+          {/* The catalog's split by status at a glance; the tiles below carry the numbers. */}
+          <div className="dash__meter" aria-hidden="true">
+            {TILE_ORDER.filter((s) => counts[s] > 0).map((s) => (
+              <span key={s} data-status={s} data-dim={(status && status !== s) || undefined} style={{ flexGrow: counts[s] }} />
+            ))}
+          </div>
+          {/* The status filter: each tile toggles ?status=. */}
+          <nav className="dash__tiles" aria-label={t.summary}>
+            {TILE_ORDER.map((s) => (
+              <Link
+                key={s}
+                href={dashboardHref({ status: status === s ? null : s, q })}
+                className="dash__tile"
+                data-status={s}
+                data-quiet={QUIET.has(s) || undefined}
+                aria-current={status === s ? 'page' : undefined}
+              >
+                <span className="dash__tile-label">{dict.status[s]}</span>
+                <span className="dash__tile-num" data-count={counts[s]}>{counts[s]}</span>
+                <span className="dash__tile-hint">{fill(t.hints[s], { pct })}</span>
+              </Link>
+            ))}
+          </nav>
+        </section>
       )}
-
-      {/* The status filter: each tile toggles ?status=. */}
-      <nav className="dash__tiles" aria-label={t.summary}>
-        {TILE_ORDER.map((s) => (
-          <Link
-            key={s}
-            href={dashboardHref({ status: status === s ? null : s, q })}
-            className="dash__tile"
-            data-status={s}
-            data-quiet={QUIET.has(s) || undefined}
-            aria-current={status === s ? 'page' : undefined}
-          >
-            <span className="dash__tile-label">{dict.status[s]}</span>
-            <span className="dash__tile-num">{counts[s]}</span>
-            <span className="dash__tile-hint">{fill(t.hints[s], { pct })}</span>
-          </Link>
-        ))}
-      </nav>
 
       <div className="dash__panel" id="products">
         {/* Bring the new row and its matching status into view. */}
@@ -432,6 +456,6 @@ export default async function DashboardPage({ searchParams }) {
 
         <Pager page={page} pages={pages} href={(n) => dashboardHref({ status, q, page: n })} t={t} />
       </div>
-    </section>
+    </PageMotion>
   );
 }
