@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 
 // One pointer listener for the whole page: it tells the button and the
 // spotlight surface ([data-spotlight], e.g. the header bar) under the pointer
-// where to centre their glow (--x/--y), and buttons which way to lean
-// (--mx/--my, -0.5 to 0.5). Skipped on touch screens, which have no hover.
+// where to centre their glow (--x/--y). Skipped on touch screens, which have
+// no hover.
 //
 // It also replays the entry of each button (button.css) and of the footer's
 // scan line and each of its rows (footer.css) when it scrolls into view: one first seen out of view (below
@@ -28,14 +28,8 @@ export default function ButtonSpotlight() {
       for (const el of [event.target.closest?.('.button'), event.target.closest?.('[data-spotlight]')]) {
         if (!el) continue;
         const box = el.getBoundingClientRect();
-        const x = event.clientX - box.left;
-        const y = event.clientY - box.top;
-        el.style.setProperty('--x', `${x}px`);
-        el.style.setProperty('--y', `${y}px`);
-        if (el.classList.contains('button')) {
-          el.style.setProperty('--mx', (x / box.width - 0.5).toFixed(3));
-          el.style.setProperty('--my', (y / box.height - 0.5).toFixed(3));
-        }
+        el.style.setProperty('--x', `${event.clientX - box.left}px`);
+        el.style.setProperty('--y', `${event.clientY - box.top}px`);
       }
     };
     document.addEventListener('pointermove', move, { passive: true });

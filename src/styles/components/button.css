@@ -1,5 +1,5 @@
 /* Buttons: a spotlight glow that follows the pointer (ButtonSpotlight feeds
-   --x/--y, and --mx/--my from -0.5 to 0.5 for the magnetic pull) plus a label
+   --x/--y) plus a label
    that rolls up to a copy of itself (ButtonLabel). Each action only sets the
    --btn-* colors below. On entry a button opens from its centre line while the
    label rises; ButtonSpotlight marks buttons out of view with [data-reveal]
@@ -40,7 +40,7 @@
     var(--btn-bg);
   box-shadow: inset 0 0 0 1px var(--btn-ring);
   cursor: pointer;
-  transition: --spot 0.3s, color 0.2s, scale 0.15s, translate 0.4s var(--btn-ease);
+  transition: --spot 0.3s, color 0.2s, scale 0.15s;
 
   /* Glow ring on the border, centred on the pointer. */
   &::before {
@@ -82,22 +82,11 @@
   }
 }
 
-/* Magnetic hover: the button leans toward the pointer and its label a little
-   further, so the face reads as having depth. */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .button:hover:not(:disabled) {
-    translate: calc(var(--mx, 0) * 0.4rem) calc(var(--my, 0) * 0.35rem);
-
-    & .button__label { translate: calc(var(--mx, 0) * 0.25rem) calc(var(--my, 0) * 0.2rem); }
-  }
-}
-
 /* Rolling label: the text slides up and its copy (data-roll) follows. */
 .button__label {
   display: grid;
   overflow: clip;
   line-height: 1.3;
-  transition: translate 0.4s var(--btn-ease);
 
   & > span {
     position: relative;
@@ -127,20 +116,22 @@
   translate: 0.2em 0;
 }
 
+/* Blue buttons share one hover: a bright white spotlight. */
+.button--primary,
+.button--signal {
+  --btn-glow: #fff;
+  --btn-ring: transparent;
+  --btn-spot: 60%;
+}
+
 .button--primary {
   --btn-bg: var(--accent);
   --btn-fg: var(--on-accent);
-  --btn-glow: var(--signal);
-  --btn-ring: transparent;
-  --btn-spot: 45%;
 }
 
 .button--signal {
   --btn-bg: var(--signal);
   --btn-fg: var(--on-signal);
-  --btn-glow: #fff;
-  --btn-ring: transparent;
-  --btn-spot: 60%;
 }
 
 /* Destructive action (confirm delete): solid red. */
