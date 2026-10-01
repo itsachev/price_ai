@@ -178,7 +178,7 @@ export default async function RootLayout({ children }) {
                   <li><Link href="/privacy">{dict.legal.privacy.title}</Link></li>
                 </ul>
               </nav>
-              <p className="site-footer__wordmark" aria-hidden="true">PriceAI</p>
+              <p className="site-footer__wordmark" aria-hidden="true" data-spotlight>PriceAI</p>
               <div className="site-footer__bar">
                 <p>© {new Date().getFullYear()} PriceAI. {dict.footer.rights}</p>
                 <p>{dict.footer.currency}</p>

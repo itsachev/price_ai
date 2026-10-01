@@ -1,5 +1,8 @@
-/* Footer: intro + link columns, an oversized fading wordmark, then a legal bar. */
+/* Footer: intro + link columns, an oversized fading wordmark, then a legal bar.
+   As it scrolls in a scan line draws along the top edge, each row rises as it
+   enters (columns in turn) and the wordmark climbs out of its baseline (see the motion block at the end). */
 .site-footer {
+  position: relative;
   margin-block-start: var(--space-4);
   padding-block-start: var(--space-4);
   border-block-start: 1px solid var(--border);
@@ -100,7 +103,10 @@
 /* Decorative: sized to always fit the container, so it never scrolls sideways. */
 .site-footer__wordmark {
   grid-column: 1 / -1;
-  margin-block: var(--space-2) calc(var(--space-3) * -0.5);
+  /* Glyphs (the i's dot) rise above the tight line box, and background-clip
+     only paints inside the box: pad it up, pull the margin back. */
+  padding-block-start: 0.2em;
+  margin-block: calc(var(--space-2) - 0.2em) calc(var(--space-3) * -0.5);
   font-family: var(--font-heading);
   font-weight: 800;
   font-size: min(14.5vw, 12rem);
@@ -109,8 +115,18 @@
   text-align: center;
   user-select: none;
   color: transparent;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 18%, transparent), transparent 85%);
+  /* A spotlight follows the pointer through the letters (ButtonSpotlight
+     feeds --x/--y via data-spotlight; --spot is registered in button.css). */
+  background:
+    radial-gradient(16rem circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--accent) var(--spot), transparent), transparent 70%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--accent) 18%, transparent), transparent 85%);
   background-clip: text;
+  transition: --spot 0.5s;
+
+  @media (hover: hover) {
+    &:hover { --spot: 70%; }
+  }
 }
 
 .site-footer__bar {
@@ -125,8 +141,70 @@
   font-size: var(--text-xs);
 }
 
+/* The line the scan draws: it rests as a short accent glow at the start. */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(to right, transparent, var(--accent) 15%, var(--signal) 30%, transparent 60%);
+  transform-origin: left;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .site-footer__live::before {
     animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  .site-footer {
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    &::before { animation: footer-scan 1.4s var(--ease) backwards; }
+
+    & .site-footer__inner > * { animation: footer-rise 0.9s var(--d, 0s) var(--ease) backwards; }
+    & .site-footer__col:nth-of-type(1) { --d: 0.1s; }
+    & .site-footer__col:nth-of-type(2) { --d: 0.2s; }
+    & .site-footer__bar { --d: 0.15s; }
+
+    & li { animation: footer-rise 0.7s calc(var(--d) + 0.15s) var(--ease) backwards; }
+    & li + li { animation-delay: calc(var(--d) + 0.22s); }
+
+    & .site-footer__wordmark {
+      --d: 0.05s;
+      animation-name: footer-word;
+      animation-duration: 1.3s;
+    }
+
+    /* Waiting below the fold: ButtonSpotlight tags the scan line's footer and
+       each row on its own, so every row rises as it scrolls in. Removing the
+       attribute restarts the animations above. */
+    &[data-reveal]::before,
+    & .site-footer__inner > [data-reveal],
+    & [data-reveal] li {
+      opacity: 0;
+      animation: none;
+    }
+  }
+}
+
+@keyframes footer-scan {
+  from { scale: 0 1; }
+}
+
+@keyframes footer-rise {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+}
+
+/* Rises out of a fixed baseline: the clip shrinks as fast as the text climbs. */
+@keyframes footer-word {
+  from {
+    translate: 0 60%;
+    clip-path: inset(0 0 60% 0);
+    letter-spacing: 0.06em;
   }
 }

@@ -1,6 +1,9 @@
 /* Buttons: a spotlight glow that follows the pointer (ButtonSpotlight feeds
-   --x/--y) plus a label that rolls up to a copy of itself (ButtonLabel).
-   Each action only sets the four --btn-* colors below. */
+   --x/--y, and --mx/--my from -0.5 to 0.5 for the magnetic pull) plus a label
+   that rolls up to a copy of itself (ButtonLabel). Each action only sets the
+   --btn-* colors below. On entry a button opens from its centre line while the
+   label rises; ButtonSpotlight marks buttons out of view with [data-reveal]
+   and removes it when they scroll in, which replays the entry. */
 
 /* Registered so the glow's strength can fade in and out. */
 @property --spot {
@@ -15,6 +18,7 @@
   --btn-glow: var(--accent);
   --btn-ring: var(--border);
   --btn-spot: 18%;
+  --btn-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   position: relative;
   isolation: isolate;
@@ -36,7 +40,7 @@
     var(--btn-bg);
   box-shadow: inset 0 0 0 1px var(--btn-ring);
   cursor: pointer;
-  transition: --spot 0.3s, color 0.2s, scale 0.15s;
+  transition: --spot 0.3s, color 0.2s, scale 0.15s, translate 0.4s var(--btn-ease);
 
   /* Glow ring on the border, centred on the pointer. */
   &::before {
@@ -62,6 +66,30 @@
     &:hover:not(:disabled) { --spot: var(--btn-spot); }
     &:hover:not(:disabled)::before { opacity: 1; }
   }
+
+  /* Light streak that crosses filled buttons once as they arrive. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(105deg, transparent 35%,
+      color-mix(in srgb, #fff 35%, transparent) 50%, transparent 65%) no-repeat;
+    background-size: 250% 100%;
+    background-position: 150% 0;
+    pointer-events: none;
+  }
+}
+
+/* Magnetic hover: the button leans toward the pointer and its label a little
+   further, so the face reads as having depth. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .button:hover:not(:disabled) {
+    translate: calc(var(--mx, 0) * 0.4rem) calc(var(--my, 0) * 0.35rem);
+
+    & .button__label { translate: calc(var(--mx, 0) * 0.25rem) calc(var(--my, 0) * 0.2rem); }
+  }
 }
 
 /* Rolling label: the text slides up and its copy (data-roll) follows. */
@@ -69,6 +97,7 @@
   display: grid;
   overflow: clip;
   line-height: 1.3;
+  transition: translate 0.4s var(--btn-ease);
 
   & > span {
     position: relative;
@@ -140,6 +169,54 @@
   --btn-fg: var(--status-at-risk);
 
   &:hover { --btn-fg: var(--status-at-risk); }
+}
+
+/* Entry. The delay inherits --d from an animated parent (hero actions, the
+   header), so a button opens as its group lands, then staggers by position. */
+@media (prefers-reduced-motion: no-preference) {
+  .button {
+    --btn-delay: var(--d, 0s);
+    animation: button-open 0.9s var(--btn-delay) var(--btn-ease) backwards;
+
+    & .button__label { animation: button-rise 0.8s calc(var(--btn-delay) + 0.12s) var(--btn-ease) backwards; }
+  }
+
+  .button--primary,
+  .button--signal,
+  .button--danger {
+    &::after { animation: button-sheen 1.1s calc(var(--btn-delay) + 0.35s) ease-in-out backwards; }
+  }
+
+  @supports (animation-delay: calc(sibling-index() * 1s)) {
+    .button { --btn-delay: calc(var(--d, 0s) + (min(sibling-index(), 6) - 1) * 0.07s); }
+  }
+
+  /* Waiting below the fold: hidden, and animation: none so that removing the
+     attribute restarts the entry. Still focusable; focus scrolls it in. */
+  .button[data-reveal] {
+    opacity: 0;
+
+    &,
+    &::after,
+    & .button__label { animation: none; }
+  }
+}
+
+@keyframes button-open {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+    clip-path: inset(0 50% round var(--radius));
+  }
+}
+
+@keyframes button-rise {
+  from { translate: 0 120%; }
+}
+
+@keyframes button-sheen {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
