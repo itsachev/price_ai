@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { ReactLenis, useLenis } from 'lenis/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -27,6 +28,28 @@ export default function SmoothScroll({ children }) {
 
     return () => gsap.ticker.remove(update);
   }, [lenis]);
+
+  // Next only scrolls a changed segment into view (and Lenis can carry its old
+  // target over), so jump to the top on every new page. Back/forward keeps the
+  // browser's restored position, and a #hash link keeps its anchor.
+  const pathname = usePathname();
+  const first = useRef(true);
+  const popped = useRef(false);
+
+  useEffect(() => {
+    const onPop = () => { popped.current = true; };
+    addEventListener('popstate', onPop);
+    return () => removeEventListener('popstate', onPop);
+  }, []);
+
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    if (popped.current) { popped.current = false; return; }
+    if (location.hash) return;
+    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+    else scrollTo(0, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run per page, not when Lenis appears
+  }, [pathname]);
 
   return (
     <ReactLenis root options={{ autoRaf: false, smoothWheel, lerp: 0.12, anchors: { offset: -96 } }}>
