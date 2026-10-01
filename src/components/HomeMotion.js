@@ -11,7 +11,8 @@ gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 // Home page choreography below the hero. The server HTML is the finished page;
 // this only adds to it.
 // - [data-split] titles rise word by word as they scroll in. SplitText keeps
-//   the whole title as the accessible name and hides the word spans.
+//   the whole title as the accessible name and hides the word spans. The
+//   paragraph right after a title lifts in with it.
 // - The pipeline story: from 60rem the example panel (.pipe) sticks beside the
 //   steps and shows the step being read (data-step, CSS does the rest).
 //   Narrower, and without JS, it shows the end state.
@@ -29,14 +30,13 @@ export default function HomeMotion({ children }) {
             type: 'words',
             mask: 'words',
             autoSplit: true,
-            onSplit: (self) =>
-              gsap.from(self.words, {
-                yPercent: 110,
-                duration: 0.9,
-                ease: 'expo.out',
-                stagger: 0.05,
-                scrollTrigger: { trigger: title, start: 'top 85%', once: true },
-              }),
+            onSplit: (self) => {
+              const tl = gsap.timeline({ scrollTrigger: { trigger: title, start: 'top 85%', once: true } });
+              tl.from(self.words, { yPercent: 110, duration: 0.9, ease: 'expo.out', stagger: 0.05 });
+              const text = title.nextElementSibling;
+              if (text?.matches('p')) tl.from(text, { autoAlpha: 0, y: 16, duration: 0.8, ease: 'expo.out' }, 0.2);
+              return tl;
+            },
           });
         });
       });

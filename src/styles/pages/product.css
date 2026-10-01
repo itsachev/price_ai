@@ -156,7 +156,7 @@
 
 @container (width >= 40rem) {
   .pd__advice:has(.pd__advice-act) {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas: "text act" "warn act";
     align-items: center;
   }

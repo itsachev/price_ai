@@ -20,3 +20,13 @@ html {
 ::placeholder {
   font-size: var(--text-sm);
 }
+
+/* Phones: no grey flash on tap (buttons have their own :active), and controls
+   fire at once instead of waiting to see if a double-tap zoom is coming. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:is(a, button, summary, label, select, [role='button']) {
+  touch-action: manipulation;
+}

@@ -52,7 +52,7 @@
 /* Paired fields (password + confirm) sit side by side once both fit. */
 @container auth (width >= 26rem) {
   .auth-form:has(.field--half) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: end; /* inputs line up even when one label wraps */
 
     & > :not(.field--half) { grid-column: 1 / -1; }

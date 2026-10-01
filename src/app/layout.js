@@ -90,7 +90,7 @@ export default async function RootLayout({ children }) {
                 <span>Price<span>AI</span></span>
               </Link>
               {/* Inline row from 60rem up; below that a native popover opened by the menu button. */}
-              <nav id="site-menu" className="site-menu" popover="auto" aria-label={dict.nav.main}>
+              <nav id="site-menu" className="site-menu" popover="auto" aria-label={dict.nav.main} data-lenis-prevent>
                 <SessionSwitch
                   initial={signedIn}
                   signedIn={

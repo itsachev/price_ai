@@ -34,7 +34,7 @@
   & ul {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
     gap: 0.25rem;
     margin: 0;
     padding: 0.25rem;
@@ -155,10 +155,10 @@
 
 .admin-rail__label {
   flex: 1;
-  min-inline-size: 0;
 }
 
 .admin-rail__meta {
+  flex: none;
   padding: 0.1em 0.55em;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -683,6 +683,47 @@
   &:has(.admin-who a:focus-visible) {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
+  }
+}
+
+/* Row actions sit above the row's stretched link so they stay clickable. */
+.dash__table .admin-row-actions {
+  position: relative;
+  z-index: 1;
+  cursor: auto;
+
+  & > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: end;
+    gap: var(--space-1);
+  }
+}
+
+/* Narrow card: dates and actions line up under the name, past the avatar
+   (2.25rem + 0.75rem gap); the actions split the row as outlined buttons. */
+@container (width < 44rem) {
+  .dash__table tr:has(.admin-who) > td:not(.dash__product) {
+    margin-inline-start: 3rem;
+  }
+
+  .dash__table .admin-row-actions:has(div) {
+    flex-basis: 100%;
+
+    & > div {
+      justify-content: start;
+    }
+    & .button {
+      --btn-ring: var(--border);
+      flex: 1 1 8rem;
+    }
+  }
+}
+
+/* Narrowest phones: the indent costs more width than the alignment is worth. */
+@container (width < 24rem) {
+  .dash__table tr:has(.admin-who) > td:not(.dash__product) {
+    margin-inline-start: 0;
   }
 }
 

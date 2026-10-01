@@ -710,7 +710,7 @@
 
 .suggest__item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-1) var(--space-2);
   padding-block: var(--space-1);
@@ -771,6 +771,13 @@
       grid-column: auto;
     }
   }
+}
+
+/* No hairline under the masthead here: the section pills sit right on it. */
+.dash--overview:has(> .settings) .dash__head {
+  border-block-end: 0;
+
+  &::after { content: none; }
 }
 
 /* Settings (/dashboard/settings): the dashboard's masthead, a section index

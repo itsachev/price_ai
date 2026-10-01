@@ -52,7 +52,7 @@ export default function SmoothScroll({ children }) {
   }, [pathname]);
 
   return (
-    <ReactLenis root options={{ autoRaf: false, smoothWheel, lerp: 0.12, anchors: { offset: -96 } }}>
+    <ReactLenis root options={{ autoRaf: false, autoToggle: true, smoothWheel, lerp: 0.12, anchors: { offset: -96 } }}>
       {children}
     </ReactLenis>
   );

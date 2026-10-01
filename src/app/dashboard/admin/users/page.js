@@ -1,13 +1,15 @@
 import Link from 'next/link';
+import { deleteUser, setBanned } from '@/app/actions/admin';
 import AccountBadges from '@/components/AccountBadges';
+import { ConfirmAction } from '@/components/AdminAction';
 import Pager from '@/components/Pager';
 import { accountName, adminFormat, adminHealth, fill, isAdmin, isBanned } from '@/lib/admin';
 import { pageHref, paginate } from '@/lib/pagination';
 import { getDictionary, getLocale } from '../../../dictionaries';
 
-// Every account with its catalog, filterable by ?show=. The list is for
-// scanning: each row opens the account's page, which holds every action.
-// Deleting an account lands back here with ?notice=<code>.
+// Every account, filterable by ?show=. Each row opens the account's page,
+// which holds every action; ban and delete are also offered on the row.
+// Actions land back here with ?notice=<code>.
 const FILTERS = {
   admins: isAdmin,
   banned: isBanned,
@@ -73,8 +75,7 @@ export default async function AdminUsers({ searchParams }) {
                 <th scope="col">{tu.user}</th>
                 <th scope="col">{tu.joined}</th>
                 <th scope="col">{tu.lastSignIn}</th>
-                <th scope="col" className="num">{tu.products}</th>
-                <th scope="col" className="num">{tu.atRisk}</th>
+                <th scope="col"><span className="visually-hidden">{tu.actions}</span></th>
                 <th scope="col"><span className="visually-hidden">{tu.open}</span></th>
               </tr>
             </thead>
@@ -82,6 +83,7 @@ export default async function AdminUsers({ searchParams }) {
               {shown.slice(pager.from, pager.to).map((u) => {
                 const m = merchants[u.id];
                 const self = u.id === userId;
+                const banned = isBanned(u);
                 return (
                   <tr key={u.id}>
                     <td className="dash__product">
@@ -96,8 +98,33 @@ export default async function AdminUsers({ searchParams }) {
                     </td>
                     <td data-label={tu.joined}>{date(u.created_at)}</td>
                     <td data-label={tu.lastSignIn}>{dateTime(u.last_sign_in_at)}</td>
-                    <td className="num" data-label={tu.products}>{num(m?.products)}</td>
-                    <td className="num" data-label={tu.atRisk}>{num(m?.['at-risk'])}</td>
+                    <td className="admin-row-actions">
+                      {!self && (
+                        <div>
+                          <ConfirmAction
+                            action={setBanned}
+                            id={u.id}
+                            on={!banned}
+                            label={banned ? tu.unban : tu.ban}
+                            text={fill(banned ? tu.unbanConfirm : tu.banConfirm, { email: u.email })}
+                            closeLabel={t.close}
+                            variant="quiet"
+                            confirm={banned ? 'primary' : 'danger'}
+                          />
+                          <ConfirmAction
+                            action={deleteUser}
+                            id={u.id}
+                            label={tu.delete}
+                            text={fill(tu.deleteConfirm, { email: u.email, n: num(m?.products) })}
+                            guard={u.email}
+                            guardLabel={fill(t.account.typeEmail, { email: u.email })}
+                            closeLabel={t.close}
+                            variant="danger-quiet"
+                            confirm="danger"
+                          />
+                        </div>
+                      )}
+                    </td>
                     <td className="admin-chevron" aria-hidden="true">›</td>
                   </tr>
                 );
