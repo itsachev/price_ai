@@ -1,9 +1,11 @@
-// npm run seed-history -- <email> [--clean]
-// Test data for the price trend chart and the Reports feed: 10 products for the
+// npm run seed-history -- <email> [--products=N] [--clean]
+// Test data for the price trend chart and the Reports feed: N (default 10) products for the
 // given account, each linked to 2-3 real competitor listings of one KZP
 // category, plus ~4 months of made-up daily competitor prices and merchant
 // price changes before the newest real feed date. The last fake day is set up
-// so the newest real day produces every kind of price move.
+// so the newest real day produces every kind of price move, and the first three
+// products are at risk, an opportunity and competitive. One more product matches
+// nothing, so the catalog shows every status.
 // It also writes a daily merchant snapshot per fake day (over the 10 test
 // products only), so the Reports price index chart has months to show.
 // Everything it writes is marked, so --clean removes exactly that: products by
@@ -13,16 +15,16 @@
 import { createAdminClient } from '../src/lib/supabase/admin.js';
 import { matchConfig, matchKey, priceStatus } from '../src/lib/pipeline/match.js';
 
-const PRODUCTS = 10;
+const PRODUCTS = Number(process.argv.find((a) => a.startsWith('--products='))?.slice(11)) || 10;
 const DAYS = 120;
 const SKU = 'DEMO-';
 const FAKE_CAPTURED = '2000-01-01T00:00:00Z';
-const SCENARIOS = ['undercut', 'raised-above', 'undercut', 'raised-above', 'calm', 'calm', 'calm', 'calm', 'calm', 'calm'];
+const scenario = (i) => ['undercut', 'raised-above', 'calm', 'undercut', 'raised-above'][i] ?? 'calm';
 
 const [email] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const clean = process.argv.includes('--clean');
 if (!email) {
-  console.error('usage: npm run seed-history -- <email> [--clean]');
+  console.error('usage: npm run seed-history -- <email> [--products=N] [--clean]');
   process.exit(1);
 }
 
@@ -92,10 +94,9 @@ const seeded = []; // { listingIds, own } per product, for the snapshots
 for (const [i, picked] of categories.entries()) {
   const cheapest = picked.reduce((a, b) => (Number(b.price) < Number(a.price) ? b : a));
   const low = Number(cheapest.price);
-  const scenario = SCENARIOS[i];
 
   // Merchant price chosen so the newest real day crosses it as the scenario needs.
-  const price = cents(scenario === 'undercut' ? low * 1.06 : scenario === 'raised-above' ? low * 0.96 : low * rand(0.95, 1.05));
+  const price = cents(scenario(i) === 'undercut' ? low * 1.06 : scenario(i) === 'raised-above' ? low * 0.96 : low * rand(0.99, 1.01));
   const { title, brand, size, category_code } = picked[0].listing;
   const product = { owner_id: user.id, name: title, brand, size, category_code, price, sku: `${SKU}${i + 1}` };
   const [row] = must(
@@ -121,8 +122,8 @@ for (const [i, picked] of categories.entries()) {
     const cur = Number(r.price);
     // The day before the newest: sets up the move the newest real day shows.
     let prev;
-    if (r === cheapest && scenario === 'undercut') prev = price * 1.04;
-    else if (r === cheapest && scenario === 'raised-above') prev = price * 0.95;
+    if (r === cheapest && scenario(i) === 'undercut') prev = price * 1.04;
+    else if (r === cheapest && scenario(i) === 'raised-above') prev = price * 0.95;
     else prev = cur * [1, 1, 1, 0.94, 1.06][Math.floor(Math.random() * 5)];
     prev = cents(prev);
 
@@ -151,7 +152,7 @@ for (const [i, picked] of categories.entries()) {
       if (promoLeft) promoLeft--;
     }
   }
-  console.log(`${scenario.padEnd(12)} ${price.toFixed(2)}  ${title} (${picked.length} chains)`);
+  console.log(`${scenario(i).padEnd(12)} ${price.toFixed(2)}  ${title} (${picked.length} chains)`);
 }
 
 // Real feed days older than the newest win: fake rows for them are skipped.
@@ -160,6 +161,14 @@ for (let from = 0; from < history.length; from += 500) {
   must(await supabase.from('competitor_listing_price_history')
     .upsert(history.slice(from, from + 500), { onConflict: 'listing_id,data_date', ignoreDuplicates: true }));
 }
+// One product no chain sells: matched (match_key set) but unmatched.
+const lone = { owner_id: user.id, name: 'Мед от липа домашен', brand: 'Пчелин', size: '450 г', price: 7.9, sku: `${SKU}U` };
+const [loneRow] = must(await supabase.from('products')
+  .insert({ ...lone, match_key: matchKey(lone), price_status: 'unmatched' }).select('id'));
+ownHistory.push(...[[DAYS, 7.2], [60, 7.5], [20, 7.9]].map(([ago, price]) => ({
+  product_id: loneRow.id, price, recorded_at: `${day(newest, -ago)}T09:00:00Z`, source: 'manual',
+})));
+console.log(`unmatched    ${lone.price.toFixed(2)}  ${lone.name}`);
 must(await supabase.from('product_price_history').insert(ownHistory));
 
 // Snapshots for the fake days, computed like record_snapshots but over the test
@@ -192,4 +201,4 @@ for (let ago = DAYS; ago >= 1; ago--) {
   });
 }
 must(await supabase.from('merchant_snapshots').upsert(snapshots, { onConflict: 'owner_id,data_date', ignoreDuplicates: true }));
-console.log(`Seeded ${PRODUCTS} products for ${email}, ${history.length} competitor price rows and ${snapshots.length} snapshots up to ${day(newest, -1)}`);
+console.log(`Seeded ${PRODUCTS + 1} products for ${email}, ${history.length} competitor price rows and ${snapshots.length} snapshots up to ${day(newest, -1)}`);
