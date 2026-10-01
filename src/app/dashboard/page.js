@@ -7,6 +7,7 @@ import Pager from '@/components/Pager';
 import ProductDialog from '@/components/ProductDialog';
 import { ImportForm, ProductForm } from '@/components/ProductForms';
 import ProductSearch from '@/components/ProductSearch';
+import ScrollToOnMount from '@/components/ScrollToOnMount';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
@@ -322,7 +323,9 @@ export default async function DashboardPage({ searchParams }) {
         ))}
       </nav>
 
-      <div className="dash__panel">
+      <div className="dash__panel" id="products">
+        {/* Bring the new row and its matching status into view. */}
+        {added && <ScrollToOnMount key={added} target="#products" />}
         <div className="dash__panel-head">
           <h2>{status ? dict.status[status] : t.products}</h2>
           {(status || q) && (
@@ -370,7 +373,7 @@ export default async function DashboardPage({ searchParams }) {
                 const best = r.best_price == null ? null : Number(r.best_price);
                 const s = r.match_key ? suggestionById.get(r.id) : null;
                 return (
-                  <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined}>
+                  <tr key={r.id} data-status={r.price_status} data-new={r.id === added || undefined} data-matching={!r.match_key || undefined}>
                     <th scope="row" className="dash__product">
                       <Link href={`/dashboard/products/${r.id}`}>{r.name}</Link>
                       {(r.brand || r.size) && <small>{[r.brand, r.size].filter(Boolean).join(' · ')}</small>}

@@ -479,10 +479,26 @@
   --row-bg: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
+/* AI still matching: a band of accent light sweeps across the whole row (on
+   the stretched name link's overlay) until MatchPoller swaps the row in. */
+@media (prefers-reduced-motion: no-preference) {
+  .dash__table tr[data-matching] > .dash__product > a:first-child::after {
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 16%, transparent), transparent)
+      no-repeat -100% 0 / 50% 100%;
+    animation: row-scan 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes row-scan {
+  to { background-position: 200% 0; }
+}
+
 .dash__suggest {
   display: inline-flex;
   align-items: center;
   min-block-size: 44px;
+  /* Keep the 44px target without pushing the text below the row's baseline. */
+  margin-block: calc((1lh - 44px) / 2);
   font-size: var(--text-sm);
   color: var(--accent);
 }
