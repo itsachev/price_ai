@@ -993,7 +993,6 @@
     & .auth-form > .button {
       inline-size: auto;
       justify-self: end;
-      padding-inline: var(--space-3);
     }
   }
 }
