@@ -639,6 +639,23 @@
         "min_margin": "Minimum margin",
         "undercut": "Under cheapest",
         "max_change": "Largest step"
+      },
+      "example": {
+        "title": "How your rules play out",
+        "intro": "An example product, run through the rules you saved. The cheapest chain sells it at {chain}.",
+        "rows": {
+          "price": "Your price",
+          "suggested": "Suggested",
+          "floor": "Margin floor",
+          "chain": "Cheapest chain",
+          "cost": "Cost"
+        },
+        "limit": {
+          "none": "Suggested price follows the cheapest chain and your undercut.",
+          "step": "Held back to one step by your largest-change rule.",
+          "margin": "Held back by your minimum margin.",
+          "hold": "Your rules leave no room to move this price."
+        }
       }
     },
     "profileIntro": "The name shown in the header. You sign in with your email.",
