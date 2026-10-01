@@ -250,7 +250,7 @@ export default async function ProductPage({ params, searchParams }) {
               <form action={applyPrice}>
                 <input type="hidden" name="id" value={product.id} />
                 <input type="hidden" name="price" value={suggested} />
-                <button className="button button--primary"><ButtonLabel>{fill(p.apply, { price: money(suggested) })}</ButtonLabel></button>
+                <button className="button button--primary"><ButtonLabel>{p.apply}</ButtonLabel></button>
               </form>
               <form action={dismissSuggestion}>
                 <input type="hidden" name="id" value={product.id} />
@@ -387,8 +387,11 @@ export default async function ProductPage({ params, searchParams }) {
                       {l.on_promo && h?.promo_ends_on && <small>{fill(p.until, { date: date(h.promo_ends_on) })}</small>}
                     </td>
                     <td className="num" data-label={p.cols.diff}>
-                      {diff > 0 ? '+' : diff < 0 ? '−' : ''}
-                      {money(Math.abs(diff))}
+                      {/* Same reading as the dashboard's Gap: up (red) means you're dearer. */}
+                      <span className="tracker__delta" data-dir={diff > 0 ? 'up' : diff < 0 ? 'down' : undefined}>
+                        {diff > 0 ? '+' : diff < 0 ? '−' : ''}
+                        {money(Math.abs(diff))}
+                      </span>
                     </td>
                     <td data-label={p.cols.source}>
                       {l.linked ? p.linked : fill(p.confirmed, { pct: formatPercent(l.confidence ?? 1, lang, 'auto') })}

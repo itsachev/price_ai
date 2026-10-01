@@ -232,6 +232,13 @@ export default async function DashboardPage({ searchParams }) {
     </section>
   );
 
+  const movesLink = moves > 0 && (
+    <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
+      {fill(t.movesToday, { n: moves })}
+      {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
+    </Link>
+  );
+
   // Export: the prices changed here, as a CSV for the till or POS.
   const te = t.export;
   const exportPrices = (
@@ -304,14 +311,10 @@ export default async function DashboardPage({ searchParams }) {
 
       {(advice || moves > 0) && (
         <div className="dash__group">
+          {/* An undercut is the day's most urgent news, so it leads; otherwise the moves trail the advice. */}
+          {undercut > 0 && movesLink}
           {advice}
-
-          {moves > 0 && (
-            <Link href="/dashboard/reports" className="dash__moves" data-urgent={undercut > 0 || undefined}>
-              {fill(t.movesToday, { n: moves })}
-              {undercut > 0 && <strong>{fill(t.movesUndercut, { n: undercut })}</strong>}
-            </Link>
-          )}
+          {undercut === 0 && movesLink}
         </div>
       )}
 

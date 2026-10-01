@@ -76,10 +76,12 @@
   cursor: pointer;
   transition: color 0.15s, background-color 0.15s, rotate 0.25s;
 
-  &:hover {
-    color: var(--text);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    rotate: 90deg;
+  @media (hover: hover) {
+    &:hover {
+      color: var(--text);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      rotate: 90deg;
+    }
   }
 
   &:focus-visible {
@@ -148,9 +150,11 @@ html:has(.modal:modal) {
       overlay 0.35s allow-discrete;
   }
 
+  /* Closing is quicker than opening: the user is done, get out of the way. */
   .modal:not([open]),
   .modal:not([open])::backdrop {
     opacity: 0;
+    transition-duration: 0.2s;
   }
 
   .modal:not([open]) {

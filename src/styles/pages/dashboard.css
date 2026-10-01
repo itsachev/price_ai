@@ -4,7 +4,8 @@
 .dash {
   container: dash / inline-size;
   display: grid;
-  gap: var(--space-section);
+  /* A work screen, not a landing page: tight enough that the list sits near the fold. */
+  gap: var(--space-3);
 
   & [data-status="competitive"] {
     --c: var(--status-competitive);
@@ -79,6 +80,11 @@
   gap: var(--space-2);
 }
 
+/* The tiles filter the list, so the list sits right under them. */
+.dash__summary + .dash__panel {
+  margin-block-start: calc(var(--space-2) - var(--space-3));
+}
+
 .dash__summary-head {
   display: flex;
   flex-wrap: wrap;
@@ -120,24 +126,21 @@
 }
 
 /* Entrance, pure CSS so it plays on a hard load without a flash: the groups
-   rise in turn, then the tiles and rows (sibling-index() staggers them where
-   supported; elsewhere they rise together). The meter and the scan line draw
-   in from the start. backwards fill: once done, hover transitions own translate. */
+   rise in turn, then the tiles (sibling-index() staggers them where supported;
+   elsewhere they rise together). Short, because this page opens many times a
+   day; the rows just appear. The meter and the scan line draw in from the
+   start. backwards fill: once done, hover transitions own translate. */
 @media (prefers-reduced-motion: no-preference) {
   .dash--overview {
     & > *,
-    & .dash__tiles > *,
-    & .dash__table tbody tr {
-      animation: dash-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    & .dash__tiles > * {
+      animation: dash-rise 0.3s cubic-bezier(0.23, 1, 0.32, 1) backwards;
     }
     & > * {
-      animation-delay: calc((sibling-index() - 1) * 90ms);
+      animation-delay: calc((sibling-index() - 1) * 50ms);
     }
     & .dash__tiles > * {
-      animation-delay: calc(200ms + sibling-index() * 60ms);
-    }
-    & .dash__table tbody tr {
-      animation-delay: calc(min(sibling-index(), 10) * 30ms);
+      animation-delay: calc(100ms + sibling-index() * 40ms);
     }
     & .dash__meter span,
     & .dash__head::after {
@@ -274,9 +277,12 @@
     border-color: color-mix(in srgb, var(--c) 30%, var(--border));
   }
 
-  &:hover {
-    translate: 0 -2px;
-    border-color: var(--c);
+  /* Touch would leave the lift stuck after a tap. */
+  @media (hover: hover) {
+    &:hover {
+      translate: 0 -2px;
+      border-color: var(--c);
+    }
   }
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -502,7 +508,9 @@
   border-block-start: 1px solid var(--border);
 }
 
-/* Narrow panel: one card per product, labels from data-label. */
+/* Narrow panel: one card per product, labels from data-label. The name and
+   status badge share the first line; a zero-height break (tr::after) then
+   starts the numbers, which flow two-up even on 320px phones. */
 @container (width < 44rem) {
   .dash__table {
     display: block;
@@ -514,10 +522,31 @@
     }
 
     & tbody tr {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
-      gap: 0.75rem var(--space-2);
+      --row-gap: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: start;
+      gap: var(--row-gap) var(--space-2);
       padding: var(--space-2);
+
+      &::after {
+        content: "";
+        order: -1;
+        flex-basis: 100%;
+        margin-block-start: calc(-1 * var(--row-gap));
+      }
+    }
+
+    & .dash__product {
+      order: -3;
+      flex: 1 1 10rem;
+    }
+    & .dash__status {
+      order: -2;
+      flex: none;
+    }
+    & td[data-label] {
+      flex: 1 1 7rem;
     }
 
     & tbody > tr > * {
@@ -533,13 +562,6 @@
       }
     }
 
-    & .dash__product,
-    & .dash__status {
-      grid-column: 1 / -1;
-    }
-    & .dash__status {
-      order: -1;
-    }
     & .num {
       text-align: start;
     }

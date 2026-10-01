@@ -552,7 +552,7 @@
       "raiseWhy": "You are the cheapest by a wide margin. At this price you still undercut {chain} ({best}) and earn {gain} more on every unit.",
       "promo": "The cheapest price is a promotion, so it may not last.",
       "promoUntil": "The cheapest price is a promotion until {date}. Consider changing back after it ends.",
-      "apply": "Apply {price}",
+      "apply": "Apply",
       "competitive": "Your price is competitive. The cheapest chain, {chain}, sells it for {best}. Nothing to change today.",
       "reviewMatches": "No confirmed competitor prices yet. Review the possible matches below: each one you accept adds its price.",
       "nothing": "No suggestions yet. No chain lists this product, or matching hasn’t run. Adding brand and pack size helps matching find it.",
