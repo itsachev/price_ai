@@ -109,66 +109,111 @@
   "home": {
     "eyebrow": "AI price intelligence for Bulgarian grocers",
     "title": [
-      "Compete Smarter.",
-      "Price Better."
+      "Compete smarter.",
+      "Price better."
     ],
     "lead": "PriceAI reads the prices of {count} Bulgarian chains every night, matches them to your catalog product by product and tells you where to raise, lower or hold.",
     "cta": "Open dashboard",
-    "ctaSecondary": "How it works",
+    "ctaSecondary": "See how it works",
     "trust": [
       "Official chain price feeds",
       "Every price in euro",
       "English and Bulgarian"
     ],
     "example": "Example data",
-    "scan": {
-      "label": "Example price scan for one product",
-      "live": "Live scan",
-      "product": "Product",
-      "compare": "Price comparison",
-      "below": "{pct} below market",
-      "yours": "Your store",
-      "best": "Best",
-      "aiLabel": "AI suggestion:",
-      "ai": "Hold at {price}. You stay below every tracked chain and keep your margin."
+    "tag": {
+      "label": "Example: one product checked against the chains",
+      "yours": "Your price",
+      "chains": "Chains today",
+      "cheapest": "Cheapest",
+      "pick": "Try another example",
+      "products": [
+        "Eggs",
+        "Cheese",
+        "Oil"
+      ],
+      "lower": "Lower to {price}",
+      "raise": "Raise to {price}",
+      "hold": "Keep your price",
+      "why": {
+        "at-risk": "Matches {chain}, the cheapest chain.",
+        "opportunity": "Still a cent under {chain}.",
+        "competitive": "Only {pct} from {chain}, the cheapest chain."
+      }
     },
     "chains": {
-      "title": "Chains we track every day"
+      "title": "Prices from {count} chains, every morning"
     },
-    "stats": {
-      "chains": "Bulgarian chains tracked",
-      "basket": "Basket products per chain",
-      "fresh": "Fresh prices every morning",
-      "statuses": "Clear price statuses"
+    "how": {
+      "link": "How it works",
+      "title": "What happens while you sleep",
+      "text": "Add your products once. Every night the pipeline does the rest, and the verdicts are waiting when you open the shop.",
+      "steps": [
+        {
+          "title": "Add your products",
+          "text": "Type them in or import your price list. A brand and pack size help the match."
+        },
+        {
+          "title": "Prices arrive overnight",
+          "text": "Large chains must publish their prices every day by law. We read every feed, store by store."
+        },
+        {
+          "title": "AI finds the same product",
+          "text": "Keywords, category and pack size narrow thousands of listings to a few. Gemini confirms which ones really are your product."
+        },
+        {
+          "title": "You get a verdict",
+          "text": "Each product is marked competitive, opportunity or at risk, with a suggested price you can apply in one click."
+        }
+      ],
+      "visual": {
+        "label": "Example: one product going through the nightly run",
+        "yours": "Your product",
+        "feed": "Listings from the chains",
+        "same": "Same product",
+        "different": "Different product",
+        "apply": "Apply"
+      }
     },
     "features": {
-      "eyebrow": "Features",
-      "title": "Everything you need to price with confidence",
-      "text": "Built for Bulgarian grocery merchants: track, match and act on competitor prices without checking shelves by hand.",
+      "title": "Everything you need before the shop opens",
+      "text": "PriceAI does more than compare. It tells you what to change and lets you know when the market moves.",
       "items": [
         {
-          "title": "AI product matching",
-          "text": "A keyword search shortlists listings, then Gemini confirms it is the same product by name, brand and size."
+          "title": "Suggested prices",
+          "text": "Every product that needs a change gets a suggested price. Apply one, or review them all and apply them in one go."
         },
         {
-          "title": "Price statuses",
-          "text": "Every product is labelled competitive, opportunity, at risk or unmatched, so you know where to look first."
+          "title": "Your pricing rules",
+          "text": "Set a minimum margin, how far to undercut and the largest change per step. Suggestions follow them."
         },
         {
-          "title": "Daily scans",
-          "text": "Prices come from the feeds large chains must publish by law, refreshed before 07:00 every morning."
+          "title": "Alerts when the market moves",
+          "text": "Know when a chain undercuts you, raises its price, starts or ends a promotion, or stops selling a product."
+        },
+        {
+          "title": "Import and export",
+          "text": "Bring your price list as a CSV file and send the prices you changed back to your till."
         },
         {
           "title": "Price history",
-          "text": "Every run is kept, so you can see how your price and the market moved over weeks and months."
+          "text": "Every day is kept, so you can see how your prices and the market moved over weeks and months."
         }
-      ]
+      ],
+      "chart": {
+        "title": "Price trend",
+        "subtitle": "6 months · your price vs. market average",
+        "yours": "Your price",
+        "market": "Market average",
+        "current": "Current price",
+        "delta": "Δ vs. market",
+        "label": "Line chart: your price rose from April to September and is now {yours}, while the market average is {market}."
+      }
     },
     "tracker": {
-      "eyebrow": "Live dashboard",
-      "title": "Your command center for pricing",
-      "text": "Track every product, compare it with the best market price and filter to what needs attention.",
-      "card": "Product price tracker",
+      "title": "Your whole catalog on one screen",
+      "text": "Products that lose you sales come first, then the ones where you can earn more.",
+      "card": "Products",
       "live": "Live data from {count} chains",
       "total": "Total products",
       "categories": {
@@ -184,71 +229,8 @@
         "status": "Status"
       }
     },
-    "insights": {
-      "eyebrow": "AI price insights",
-      "title": "Turn price changes into margin",
-      "text": "PriceAI does not just show you the market. It tells you what to do about it.",
-      "chart": {
-        "title": "Price trend",
-        "subtitle": "6 months · your price vs. market average",
-        "yours": "Your price",
-        "market": "Market average",
-        "current": "Current price",
-        "delta": "Δ vs. market",
-        "label": "Line chart: your price rose from April to September and is now {yours}, while the market average is {market}."
-      },
-      "heading": "AI insights",
-      "sub": "Examples from a sample catalog",
-      "items": [
-        {
-          "title": "Price recommendation",
-          "text": "{product} is {pct} above the market. Lower it to {price} to move back into the competitive band."
-        },
-        {
-          "title": "New match found",
-          "text": "Chicken fillet 1 kg now matches a {chain} listing at {match}, 2% below your price."
-        },
-        {
-          "title": "Unmatched product",
-          "text": "{count} product in your catalog has no competitor match yet. Add a brand or size to help the AI."
-        }
-      ]
-    },
-    "reports": {
-      "eyebrow": "Reports",
-      "title": "Your whole catalog in one weekly report",
-      "text": "See which products lose you sales, where you can raise prices and how well each chain covers your range.",
-      "atRisk": "Top at-risk products",
-      "opportunity": "Top opportunities",
-      "byChain": "Products matched per chain",
-      "note": "Example data from a sample catalog."
-    },
-    "how": {
-      "eyebrow": "How it works",
-      "title": "From raw feeds to smarter prices",
-      "text": "No technical setup. Add your products and the pipeline does the rest overnight.",
-      "steps": [
-        {
-          "title": "Add your products",
-          "text": "Enter each product with its name, price and optional brand and size. More detail means better matches."
-        },
-        {
-          "title": "We collect prices",
-          "text": "Every night we read the official price feeds that large chains must publish by law."
-        },
-        {
-          "title": "AI matches them",
-          "text": "A keyword search shortlists listings, then Gemini confirms which one is the same product."
-        },
-        {
-          "title": "You act on it",
-          "text": "Each product gets a status and shows up in your reports, so you know what to reprice today."
-        }
-      ]
-    },
     "final": {
-      "eyebrow": "Start today",
-      "title": "Know where you stand against the market",
+      "title": "See where you stand against the market",
       "text": "Create an account, add your products or import your price list and see how every price compares with the chains.",
       "signup": "Create account",
       "signupHover": "Takes a minute",

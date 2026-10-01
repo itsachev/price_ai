@@ -44,10 +44,10 @@ h1 {
 }
 
 /* Page and section titles fill with the title gradient. Skipped where the
-   heading has its own colour (hero, CTA band, eyebrow labels). In the app
+   heading has its own colour (home page, eyebrow labels). In the app
    (.dash) only the page title gets it; section titles stay solid so the
    focus stays on the data. */
-:is(h1, h2):not(.hero__title, .cta h2, .eyebrow, .chain-strip__title, .dash h2) {
+:is(h1, h2):not(.hero__title, .home h2, .eyebrow, .dash h2) {
   background: var(--title-gradient);
   -webkit-background-clip: text;
   background-clip: text;

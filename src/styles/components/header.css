@@ -1,6 +1,17 @@
-/* Header: a floating glass bar. Phones get brand, CTA and a menu button; the
+/* Header: a floating pill dock. Phones get brand, CTA and a menu button; the
    nav (a native popover) opens as a panel under the bar. From 60rem the same
-   nav sits inline, so there's one set of links and no JS menu state. */
+   nav sits inline, so there's one set of links and no JS menu state.
+   At the top of a page the dock rests open (no surface, the links sit on the
+   page) and lifts into its pill over the first scroll; a scan line along its
+   lower edge then fills with reading progress. Both are CSS scroll-driven
+   animations, so nothing runs on scroll in JS. */
+
+/* 0 = resting at the top, 1 = lifted dock. Paint-only: nothing moves layout. */
+@property --lift {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
 .site-header {
   /* Popover surface (phone menu): glass with the accent edge on top. */
   --popover-bg:
@@ -13,6 +24,22 @@
   top: 0;
   z-index: 10;
   padding-block: 0.625rem;
+
+  /* Scan line: the accent edge across the dock's straight bottom edge, filled
+     by page scroll. Only drawn where scroll timelines exist. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-end: 0.625rem;
+    inset-inline: calc(max(var(--gutter), (100% - 80rem) / 2) + 1.75rem);
+    block-size: 2px;
+    border-radius: 2px;
+    background: var(--edge-gradient);
+    box-shadow: 0 0 0.625rem color-mix(in srgb, var(--signal) 55%, transparent);
+    transform-origin: 0 50%;
+    scale: 0 1;
+    pointer-events: none;
+  }
 }
 
 /* Segmented dock: a solid pill bar. A spotlight (fill + ring) follows the
@@ -28,12 +55,15 @@
   gap: 0.25rem;
   min-height: 3.5rem;
   padding: 0.25rem 0.375rem 0.25rem clamp(1rem, 2.5vw, 1.25rem);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid;
   border-radius: 999px;
+  /* Every surface colour scales with --lift, so the resting dock is see-through. */
+  background: color-mix(in srgb, var(--surface) calc(var(--lift) * 100%), transparent);
+  border-color: color-mix(in srgb, var(--border) calc(var(--lift) * 100%), transparent);
   box-shadow:
-    0 1px 2px color-mix(in srgb, var(--text) 8%, transparent),
-    0 0.75rem 2rem -1.25rem light-dark(color-mix(in srgb, var(--text) 25%, transparent), #000);
+    0 1px 2px color-mix(in srgb, var(--text) calc(var(--lift) * 8%), transparent),
+    0 0.75rem 2rem -1.25rem color-mix(in srgb,
+      light-dark(color-mix(in srgb, var(--text) 25%, transparent), #000) calc(var(--lift) * 100%), transparent);
 
   &::before,
   &::after {
@@ -65,6 +95,10 @@
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-block-size: 2.75rem;
   font-family: var(--font-heading);
   font-weight: var(--weight-heading);
   letter-spacing: var(--tracking-heading);
@@ -73,8 +107,23 @@
   margin-inline-end: auto;
 }
 
-.brand span {
+.brand > span > span {
   color: var(--accent);
+}
+
+/* The tag hangs from its hole (a third in from the corner): hover tips it. */
+.brand__mark {
+  flex: none;
+  inline-size: 1.15em;
+  block-size: 1.15em;
+  fill: var(--accent);
+  filter: drop-shadow(0 0 0.35em color-mix(in srgb, var(--signal) 45%, transparent));
+  transform-origin: 33% 33%;
+  transition: rotate 0.5s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@media (hover: hover) {
+  .brand:hover .brand__mark { rotate: -14deg; }
 }
 
 /* A pill like the bar: square corners poke past the bar's curve at its end.
@@ -130,6 +179,19 @@
 .site-menu__links a,
 .site-menu__account {
   padding-inline: 0.875rem;
+}
+
+.site-header__menu path {
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  transition: translate 0.25s, rotate 0.25s;
+}
+
+.site-header:has(.site-menu:popover-open) .site-header__menu {
+  color: var(--text);
+
+  & path:first-child { translate: 0 4px; rotate: 45deg; }
+  & path:last-child { translate: 0 -4px; rotate: -45deg; }
 }
 
 /* Bar controls are pills, like the bar. */
@@ -456,8 +518,90 @@
   .account__who { flex: 0 1 auto; }
 }
 
+/* Lift and scan line. A page too short to scroll has an inactive timeline,
+   so it keeps the base style: resting, empty line. Without scroll timelines
+   (Firefox today) the dock stays lifted and there is no line. Reduced motion
+   gets the lifted dock and no scrubbing. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .site-header__inner {
+      --lift: 0;
+      animation: header-lift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 6rem;
+    }
+
+    .site-header::after {
+      animation: header-scan linear both;
+      animation-timeline: scroll(root);
+    }
+
+    /* The phone menu opens as a panel under the bar: lift it so they read as one. */
+    .site-header:has(.site-menu:popover-open) .site-header__inner {
+      animation: none;
+      --lift: 1;
+    }
+  }
+}
+
+@keyframes header-lift {
+  to { --lift: 1; }
+}
+
+@keyframes header-scan {
+  to { scale: 1 1; }
+}
+
+/* First paint: the bar's items drop in on a short stagger and the tag swings
+   on its hole. The header outlives client navigation, so this plays once per
+   hard load; it is short and starts visible enough to use at once. */
+@media (prefers-reduced-motion: no-preference) {
+  .site-header .brand,
+  .site-header__inner > .bell,
+  .site-header__cta,
+  .site-header__menu {
+    animation: header-in 0.6s var(--d, 0s) cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .site-header .brand__mark {
+    animation: tag-swing 1.2s 0.2s ease-out backwards;
+  }
+
+  .site-header__inner > .bell { --d: 0.2s; }
+  .site-header__cta { --d: 0.24s; }
+  .site-header__menu { --d: 0.12s; }
+
+  /* The inline nav joins the stagger; the phone popover has its own reveal. */
+  @media (width >= 60rem) {
+    .site-menu > * {
+      animation: header-in 0.6s var(--d, 0s) cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .site-menu > .site-menu__links { --d: 0.06s; }
+    .site-menu > .site-menu__tools { --d: 0.12s; }
+    .site-menu > :last-child { --d: 0.18s; }
+  }
+}
+
+@keyframes header-in {
+  from {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+
+@keyframes tag-swing {
+  0% { rotate: -28deg; }
+  30% { rotate: 14deg; }
+  55% { rotate: -7deg; }
+  78% { rotate: 3deg; }
+  100% { rotate: 0deg; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-header__inner::before,
   .site-header__inner::after,
-  .site-menu__links::after { transition: none; }
+  .site-menu__links::after,
+  .brand__mark,
+  .site-header__menu path { transition: none; }
 }

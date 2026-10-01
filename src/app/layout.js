@@ -50,6 +50,13 @@ export async function generateMetadata() {
   };
 }
 
+// Brand mark: a shelf price tag hanging from its hole (header.css swings it).
+const brandMark = (
+  <svg className="brand__mark" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" d="M3 4.5A1.5 1.5 0 0 1 4.5 3h7.4a1.5 1.5 0 0 1 1.06.44l7.6 7.6a1.5 1.5 0 0 1 0 2.12l-7.4 7.4a1.5 1.5 0 0 1-2.12 0l-7.6-7.6A1.5 1.5 0 0 1 3 11.9zM8 9.75a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5z" />
+  </svg>
+);
+
 // Dark by default; the `theme` cookie can switch to light.
 const themeOf = (cookieStore) => (cookieStore.get('theme')?.value === 'light' ? 'light' : 'dark');
 
@@ -79,7 +86,8 @@ export default async function RootLayout({ children }) {
           <header className="site-header">
             <div className="container site-header__inner" data-spotlight>
               <Link href="/" className="brand">
-                Price<span>AI</span>
+                {brandMark}
+                <span>Price<span>AI</span></span>
               </Link>
               {/* Inline row from 60rem up; below that a native popover opened by the menu button. */}
               <nav id="site-menu" className="site-menu" popover="auto" aria-label={dict.nav.main}>
@@ -145,7 +153,7 @@ export default async function RootLayout({ children }) {
                 signedOut={<Link href="/signup" className="button button--signal site-header__cta"><ButtonLabel>{dict.auth.signUp}</ButtonLabel></Link>}
               />
               <button className="site-header__menu" popoverTarget="site-menu" aria-label={dict.nav.menu} title={dict.nav.menu}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16" /></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16" /><path d="M4 16h16" /></svg>
               </button>
               <MenuCloser id="site-menu" />
             </div>
@@ -155,7 +163,8 @@ export default async function RootLayout({ children }) {
             <div className="container site-footer__inner">
               <div className="site-footer__intro stack">
                 <Link href="/" className="brand">
-                  Price<span>AI</span>
+                  {brandMark}
+                  <span>Price<span>AI</span></span>
                 </Link>
                 <p>{dict.footer.tagline}</p>
                 <p className="site-footer__live">{dict.footer.updated}</p>
@@ -164,7 +173,7 @@ export default async function RootLayout({ children }) {
                 <h2 id="footer-product" className="eyebrow">{dict.footer.product}</h2>
                 <ul>
                   <li><Link href="/dashboard">{dict.nav.dashboard}</Link></li>
-                  <li><Link href="/#how">{dict.home.how.eyebrow}</Link></li>
+                  <li><Link href="/#how">{dict.home.how.link}</Link></li>
                 </ul>
               </nav>
               <nav className="site-footer__col" aria-labelledby="footer-legal">
