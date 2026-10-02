@@ -18,6 +18,11 @@
   animation-timeline: scroll(root);
   animation-range: 60dvh 100dvh;
 
+  /* The up arrow stays put: .button's hover nudge to the right is for forward arrows. */
+  &:hover > svg[aria-hidden] {
+    translate: none;
+  }
+
   & svg {
     inline-size: 1.25rem;
     aspect-ratio: 1;
