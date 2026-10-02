@@ -290,7 +290,7 @@ export default async function ReportsPage() {
             </div>
           </dl>
           <article className="card report" data-status="opportunity">
-            <ol className="rp__rank">
+            <ol className="rp__rank rp__rank--grid">
               {raises.slice(0, MONEY_ROWS).map((r, i) => (
                 <li key={r.id} style={{ '--w': r.raise / raises[0].raise }}>
                   <span className="rp__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>

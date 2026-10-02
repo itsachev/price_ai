@@ -25,9 +25,9 @@
   }
 }
 
-/* A page head stays close to what follows it (and a back link to the head);
-   only the sections after that sit a full section apart. */
-:is(.dash, .admin__main) > :is(.dash__head, .admin-hero, .admin-profile, .pd__back) + * {
+
+
+.admin__main > :is(.admin-hero, .admin-profile) + * {
   margin-block-start: calc(var(--space-3) - var(--space-section));
 }
 

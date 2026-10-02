@@ -240,6 +240,34 @@
   }
 }
 
+/* Cells instead of rows: 4 across on wide screens, fewer as the card narrows. */
+.rp__rank--grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+
+  & li {
+    grid-template-columns: auto 1fr;
+    row-gap: 0.25rem;
+    padding: 0.5rem 1rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    & + li {
+      padding-block-start: 0.5rem;
+      border-block-start: 1px solid var(--border);
+    }
+
+    & strong {
+      justify-self: end;
+    }
+
+    & a,
+    & .rp__bar {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
 .rp__n {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
