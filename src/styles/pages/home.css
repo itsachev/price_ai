@@ -703,84 +703,130 @@
   }
 }
 
-/* Closing CTA band */
+/* Closing CTA: the hero's bookend. Left-aligned copy beside a paper
+   checkout receipt, always light like the shelf tag. */
+/* Phones: copy, receipt, then the buttons. Desktop: buttons under the copy,
+   receipt beside both. */
 .cta {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+  display: grid;
+  gap: var(--space-3);
+  margin-block-end: var(--space-section);
+}
+
+@media (min-width: 64rem) {
+  .cta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    grid-template-areas: 'copy receipt' 'actions receipt';
+    row-gap: var(--space-2);
+
+    & .cta__copy { grid-area: copy; align-self: end; }
+    & .receipt { grid-area: receipt; align-self: center; }
+    & .actions { grid-area: actions; align-self: start; }
+  }
+}
+
+.cta__copy {
   display: grid;
   gap: var(--space-2);
-  justify-items: center;
-  margin-block: var(--space-4) var(--space-2);
-  padding: clamp(2rem, 6vw, 4.5rem);
-  border: 1px solid color-mix(in srgb, var(--on-band) 12%, transparent);
-  border-radius: calc(var(--radius) * 2);
-  text-align: center;
-  color: var(--on-band);
-  background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--signal) 22%, transparent), transparent 55%),
-    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 55%),
-    var(--band);
-
-  /* Faint grid that fades out from the centre, echoing the dashboard. */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      linear-gradient(color-mix(in srgb, var(--on-band) 7%, transparent) 1px, transparent 1px) 0 0 / 2.5rem 2.5rem,
-      linear-gradient(90deg, color-mix(in srgb, var(--on-band) 7%, transparent) 1px, transparent 1px) 0 0 / 2.5rem 2.5rem;
-    mask: radial-gradient(ellipse at center, #000 20%, transparent 75%);
-  }
+  justify-items: start;
 
   & h2 {
-    max-inline-size: 20ch;
+    max-inline-size: 14ch;
+    font-size: var(--text-h1);
   }
 
   & p {
-    max-inline-size: 50ch;
-    color: color-mix(in srgb, var(--on-band) 75%, transparent);
-  }
-
-  & .actions {
-    justify-content: center;
+    max-inline-size: 46ch;
+    font-size: var(--text-lead);
   }
 }
 
-/* Secondary action on the dark band: outline in the band's own ink. */
-.cta__ghost {
-  --btn-bg: transparent;
-  --btn-fg: var(--on-band);
-  --btn-glow: var(--on-band);
-  --btn-ring: color-mix(in srgb, var(--on-band) 30%, transparent);
+.receipt {
+  /* drop-shadow follows the torn edge; a box-shadow would be cut off by the mask. */
+  filter: drop-shadow(0 1.25rem 1.5rem light-dark(color-mix(in srgb, var(--text) 20%, transparent), #000));
 }
 
-.cta__points {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.5rem;
+.receipt__paper {
+  color-scheme: light;
+  --zig: 0.5rem;
+  display: grid;
+  gap: var(--space-2);
+  padding: clamp(1.125rem, 5vw, 1.75rem) clamp(1.125rem, 5vw, 1.75rem) calc(clamp(1.125rem, 5vw, 1.75rem) + var(--zig));
+  border-start-start-radius: calc(var(--radius) * 0.5);
+  border-start-end-radius: calc(var(--radius) * 0.5);
+  font-family: var(--font-mono);
+  color: var(--text);
+  background: var(--surface);
+  /* Torn bottom edge: a row of teeth --zig tall. */
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--zig)) 100%;
+
+  & small {
+    font-size: var(--text-xs);
+    color: var(--muted);
+    text-align: center;
+  }
+}
+
+.receipt__head {
+  display: grid;
+  gap: 0.125rem;
+  justify-items: center;
+  padding-block-end: var(--space-2);
+  border-block-end: 2px dashed var(--border);
+  text-align: center;
+
+  & strong {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    letter-spacing: var(--tracking-heading);
+  }
+
+  & span {
+    font-size: var(--text-sm);
+    color: var(--muted);
+  }
+}
+
+.receipt__lines {
+  display: grid;
+  gap: 0.75rem;
   padding: 0;
   list-style: none;
-  font-size: var(--text-sm);
-  color: color-mix(in srgb, var(--on-band) 70%, transparent);
 
+  /* Label, dotted leader, mark. */
   & li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5em;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
 
-    &::before {
-      content: '✓';
-      color: var(--signal);
-      font-weight: 700;
+    &::after {
+      content: '';
+      order: 1;
+      flex: 1 0 1rem;
+      border-block-end: 2px dotted var(--border);
     }
+  }
+
+  & .receipt__mark {
+    order: 2;
+    font-weight: 700;
+    color: var(--status-competitive);
   }
 }
 
-.cta__or {
-  align-self: center;
-  color: var(--on-band);
-  opacity: 0.7;
+.receipt__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding-block-start: var(--space-2);
+  border-block-start: 2px dashed var(--border);
+  text-transform: uppercase;
+
+  & strong {
+    font-family: var(--font-heading);
+    font-size: var(--text-stat);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
 }

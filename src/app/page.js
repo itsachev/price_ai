@@ -352,23 +352,41 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Closing bookend to the hero's shelf tag: the checkout receipt. */}
       <section className="section cta" aria-labelledby="cta-title">
-        <h2 id="cta-title" data-split>{home.final.title}</h2>
-        <p>{home.final.text}</p>
+        <div className="cta__copy">
+          <h2 id="cta-title" data-split>{home.final.title}</h2>
+          <p className="muted">{home.final.text}</p>
+        </div>
+        <div className="receipt">
+          <div className="receipt__paper">
+            <p className="receipt__head">
+              <strong>PriceAI</strong>
+              <span>{home.final.receipt.title}</span>
+            </p>
+            <ul className="receipt__lines">
+              {home.final.points.map((p) => (
+                <li key={p}>
+                  <span>{p}</span>
+                  <span className="receipt__mark" aria-hidden="true">✓</span>
+                </li>
+              ))}
+            </ul>
+            <p className="receipt__total">
+              <span>{home.final.receipt.total}</span>
+              <strong>{price(0)}</strong>
+            </p>
+            <small>{home.final.receipt.free}</small>
+          </div>
+        </div>
         <div className="actions">
           {start}
           {!signedIn && (
-            <>
-              <span className="cta__or">{home.final.or}</span>
-              <Link href="/login" className="button cta__ghost">
-                <ButtonLabel>{home.final.login}</ButtonLabel>
-              </Link>
-            </>
+            <Link href="/login" className="button">
+              <ButtonLabel>{home.final.login}</ButtonLabel>
+            </Link>
           )}
         </div>
-        <ul className="cta__points">
-          {home.final.points.map((p) => <li key={p}>{p}</li>)}
-        </ul>
       </section>
     </HomeMotion>
   );

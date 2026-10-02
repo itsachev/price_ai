@@ -238,7 +238,11 @@
       "signup": "Create account",
       "signupHover": "Takes a minute",
       "login": "Log in",
-      "or": "or",
+      "receipt": {
+        "title": "Your first price check",
+        "total": "Total",
+        "free": "PriceAI is currently free to use."
+      },
       "points": [
         "Import a CSV price list",
         "Fresh prices every morning",

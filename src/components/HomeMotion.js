@@ -49,7 +49,7 @@ export default function HomeMotion({ children }) {
             '.home-head > p, .how__steps h3, .how__steps p',
             '.features__list h3, .features__list p',
             '.tracker__head h3, .tracker__head p, .tracker dt, .tracker dd, .tracker th, .tracker td',
-            '.cta > p, .cta__points li',
+            '.cta__copy > p',
           ].join(', '))
           .forEach((el) =>
             SplitText.create(el, {
@@ -75,7 +75,7 @@ export default function HomeMotion({ children }) {
       // The how-steps are left out: they already follow the scroll and dim by CSS.
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         gsap.utils
-          .toArray('.rail__chains li, .features__list > li, .chart, .tracker, .tracker tbody tr, .cta .actions, .cta__points li')
+          .toArray('.rail__chains li, .features__list > li, .chart, .tracker, .tracker tbody tr, .cta .actions')
           .forEach((el) =>
             gsap.fromTo(
               el,
@@ -83,6 +83,13 @@ export default function HomeMotion({ children }) {
               { autoAlpha: 1, y: 0, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'top 78%', scrub: 0.6 } }
             )
           );
+
+        // The receipt prints: the paper unrolls from its top edge, lines follow.
+        const receipt = scope.current.querySelector('.receipt');
+        gsap
+          .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: receipt, start: 'top 85%', end: 'top 35%', scrub: 0.6 } })
+          .fromTo(receipt.firstChild, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 1 })
+          .from(receipt.querySelectorAll('.receipt__lines li, .receipt__total'), { autoAlpha: 0, x: -12, stagger: 0.15, duration: 0.3 }, 0.25);
       });
 
       mm.add('(min-width: 60rem)', () => {
