@@ -6,7 +6,7 @@ import AiBackground from '@/components/AiBackground';
 import ButtonLabel from '@/components/ButtonLabel';
 import ButtonSpotlight from '@/components/ButtonSpotlight';
 import BackToTop from '@/components/BackToTop';
-import CookieNotice from '@/components/CookieNotice';
+import FooterMotion from '@/components/FooterMotion';import CookieNotice from '@/components/CookieNotice';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
@@ -154,7 +154,7 @@ export default async function RootLayout({ children }) {
             </div>
           </header>
           <main className="container">{children}</main>
-          <footer className="site-footer">
+          <FooterMotion>
             <div className="container site-footer__inner">
               <div className="site-footer__intro stack">
                 <Link href="/" className="brand">
@@ -184,7 +184,7 @@ export default async function RootLayout({ children }) {
                 <p>{dict.footer.currency}</p>
               </div>
             </div>
-          </footer>
+          </FooterMotion>
           <BackToTop label={dict.nav.backToTop} />
         </SmoothScroll>
         {!cookieNoticeSeen && <CookieNotice t={dict.cookieNotice} />}

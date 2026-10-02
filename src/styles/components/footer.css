@@ -1,6 +1,5 @@
 /* Footer: intro + link columns, an oversized fading wordmark, then a legal bar.
-   As it scrolls in a scan line draws along the top edge, each row rises as it
-   enters (columns in turn) and the wordmark climbs out of its baseline (see the motion block at the end). */
+   Its scroll-scrubbed entrance (scan line, rows, characters, wordmark) is GSAP: see FooterMotion. */
 .site-footer {
   position: relative;
   margin-block-start: var(--space-4);
@@ -150,6 +149,7 @@
   block-size: 1px;
   background: linear-gradient(to right, transparent, var(--accent) 15%, var(--signal) 30%, transparent 60%);
   transform-origin: left;
+  scale: var(--scan, 1) 1; /* FooterMotion draws it with scroll */
   pointer-events: none;
 }
 
@@ -158,53 +158,4 @@
     animation: pulse 1.6s ease-in-out infinite;
   }
 
-  .site-footer {
-    --ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-    &::before { animation: footer-scan 1.4s var(--ease) backwards; }
-
-    & .site-footer__inner > * { animation: footer-rise 0.9s var(--d, 0s) var(--ease) backwards; }
-    & .site-footer__col:nth-of-type(1) { --d: 0.1s; }
-    & .site-footer__col:nth-of-type(2) { --d: 0.2s; }
-    & .site-footer__bar { --d: 0.15s; }
-
-    & li { animation: footer-rise 0.7s calc(var(--d) + 0.15s) var(--ease) backwards; }
-    & li + li { animation-delay: calc(var(--d) + 0.22s); }
-
-    & .site-footer__wordmark {
-      --d: 0.05s;
-      animation-name: footer-word;
-      animation-duration: 1.3s;
-    }
-
-    /* Waiting below the fold: ButtonSpotlight tags the scan line's footer and
-       each row on its own, so every row rises as it scrolls in. Removing the
-       attribute restarts the animations above. */
-    &[data-reveal]::before,
-    & .site-footer__inner > [data-reveal],
-    & [data-reveal] li {
-      opacity: 0;
-      animation: none;
-    }
-  }
-}
-
-@keyframes footer-scan {
-  from { scale: 0 1; }
-}
-
-@keyframes footer-rise {
-  from {
-    opacity: 0;
-    translate: 0 1.5rem;
-  }
-}
-
-/* Rises out of a fixed baseline: the clip shrinks as fast as the text climbs. */
-@keyframes footer-word {
-  from {
-    translate: 0 60%;
-    clip-path: inset(0 0 60% 0);
-    letter-spacing: 0.06em;
-  }
 }

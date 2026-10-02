@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 // One pointer listener for the whole page: it tells the button and the
@@ -8,18 +8,15 @@ import { usePathname } from 'next/navigation';
 // where to centre their glow (--x/--y). Skipped on touch screens, which have
 // no hover.
 //
-// It also replays the entry of each button (button.css) and of the footer's
-// scan line and each of its rows (footer.css) when it scrolls into view: one first seen out of view (below
-// the fold, in a closed dialog or menu) gets [data-reveal], which hides it,
-// and loses it once it shows up. Ones already in view keep the entry they
-// played on first paint. The footer outlives client navigations (root
-// layout), so each new page hides it again and it replays on that page too.
-const FOOTER = '.site-footer, .site-footer__inner > *';
-const REVEAL = `.button, ${FOOTER}`;
+// It also replays the entry of each button (button.css) when it scrolls into
+// view: one first seen out of view (below the fold, in a closed dialog or
+// menu) gets [data-reveal], which hides it, and loses it once it shows up.
+// Ones already in view keep the entry they played on first paint. (The footer
+// is scrubbed by FooterMotion instead.)
+const REVEAL = '.button';
 
 export default function ButtonSpotlight() {
   const pathname = usePathname();
-  const firstPage = useRef(true);
 
   useEffect(() => {
     if (!matchMedia('(hover: hover)').matches) return;
@@ -57,8 +54,6 @@ export default function ButtonSpotlight() {
       if (root.matches?.(REVEAL)) io.observe(root);
       root.querySelectorAll?.(REVEAL).forEach((el) => io.observe(el));
     };
-    if (firstPage.current) firstPage.current = false;
-    else document.querySelectorAll(FOOTER).forEach((el) => { el.dataset.reveal = ''; });
     watch(document);
 
     // Client navigations and dialogs add buttons after mount.

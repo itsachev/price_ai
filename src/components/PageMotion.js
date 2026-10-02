@@ -45,12 +45,14 @@ export default function PageMotion({ as: Tag = 'div', className, reveal, childre
         }
 
         if (reveal) {
-          gsap.set(reveal, { autoAlpha: 0, y: 24 });
-          ScrollTrigger.batch(reveal, {
-            start: 'top 95%',
-            once: true,
-            onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, duration: 0.8, ease, stagger: 0.06, delay: 0.1 }),
-          });
+          // Scrubbed per element: lifts in as it enters from the bottom, reverses on scroll up.
+          gsap.utils.toArray(reveal).forEach((el) =>
+            gsap.fromTo(
+              el,
+              { autoAlpha: 0, y: 24 },
+              { autoAlpha: 1, y: 0, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'top 75%', scrub: 0.6 } }
+            )
+          );
         }
 
         const fmt = new Intl.NumberFormat(document.documentElement.lang === 'bg' ? 'bg-BG' : 'en-IE');
