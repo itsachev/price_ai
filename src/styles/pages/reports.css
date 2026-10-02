@@ -316,3 +316,57 @@
     scale: 0.4;
   }
 }
+
+/* Catalog status by week: one stacked column per snapshot (at risk on top),
+   month name under the first column of each month. */
+.rp__stack {
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  block-size: clamp(9rem, 28cqi, 14rem);
+  padding-block-end: 1.25rem;
+
+  & > span {
+    position: relative;
+    flex: 1 1 0;
+    min-inline-size: 0;
+    display: flex;
+  }
+
+  & b {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  & i {
+    flex-basis: 0;
+    background: var(--c);
+  }
+
+  & small {
+    position: absolute;
+    inset-block-end: -1.25rem;
+    inset-inline-start: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rp__stack b {
+    transform-origin: 50% 100%;
+    animation: rp-grow 0.9s cubic-bezier(0.16, 1, 0.3, 1) calc(0.3s + sibling-index() * 25ms) backwards;
+  }
+}
+
+@keyframes rp-grow {
+  from {
+    scale: 1 0;
+  }
+}

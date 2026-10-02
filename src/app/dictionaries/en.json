@@ -676,6 +676,17 @@
       "delta": "vs. market",
       "label": "Line chart of your price index by week. Your index is now {yours}, the market is {market}."
     },
+    "catalog": {
+      "title": "Your catalog today",
+      "matched": "{n} of {of} products matched to a chain.",
+      "compared": "Changes are against {date}.",
+      "share": "{pct} of products",
+      "since": "{change} since {date}",
+      "margin": "Average margin",
+      "marginOf": "Across {n} products with a cost",
+      "marginSince": "{change} pts since {date}",
+      "noCost": "Add a cost price to your products to track margin"
+    },
     "changes": {
       "title": "Your price changes · last {days} days",
       "bySource": "{apply} from suggestions · {manual} by hand · {csv} from CSV imports",
@@ -701,7 +712,44 @@
       "market": "Market"
     },
     "focus": "Where to look first",
-    "focusIntro": "The biggest gaps first. Open a product to see its suggested price."
+    "focusIntro": "The biggest gaps first. Open a product to see its suggested price.",
+    "money": {
+      "title": "Money left on the table",
+      "none": "No product is priced below the cheapest chain, so there is nothing to raise.",
+      "total": "Up to {amount} more per unit sold",
+      "detail": "Across {n} products priced below the cheapest chain. Each can rise to match it.",
+      "note": "Raise them one by one from the dashboard; your minimum margin and undercut rules still apply.",
+      "raiseTo": "{price} (+{gain})",
+      "more": "and {n} more on the dashboard"
+    },
+    "chains": {
+      "title": "Who undercuts you",
+      "intro": "For each chain, how many of the products it sells that it prices below you.",
+      "none": "No chain is matched to your products yet.",
+      "cheaper": "{n} of {of} cheaper than you",
+      "gap": "{pct} below you on average",
+      "level": "Not cheaper on any"
+    },
+    "statusTrend": {
+      "title": "Catalog status over time",
+      "subtitle": "Weekly · products by status",
+      "label": "Stacked bars of your products by status, one bar per week. Latest: {risk} at risk, {opp} opportunities, {comp} competitive."
+    },
+    "held": {
+      "title": "Priced above the market for a reason",
+      "intro": "{n} products are above the cheapest chain, but your minimum margin leaves no room to cut. Check their cost or margin rule before you chase the price."
+    },
+    "chainMoves": {
+      "title": "What the chains are doing",
+      "intro": "Average shelf-price change on your matched products over the last {days} days. Rising chains leave you room; cutting ones are coming for your customers.",
+      "detail": "{up} up, {down} down of {of} · {now} on promo (was {then})"
+    },
+    "export": "Download as CSV",
+    "stale": {
+      "title": "Matches that have gone quiet",
+      "intro": "{n} matched products have had no price from their chain in {days} days, so they are no longer compared. The chain may have delisted them. Open a product to check or re-match it.",
+      "seen": "{chain} · last seen {date}"
+    }
   },
   "notifications": {
     "title": "Notifications",
@@ -805,7 +853,7 @@
       "resend": "Resend email",
       "ban": "Ban",
       "unban": "Unban",
-      "delete": "Delete account",
+      "delete": "Delete",
       "deleteConfirm": "Delete {email} and its {n} products, price history, rules and notifications? This can’t be undone.",
       "intro": "Every account, newest first, with its catalog and the actions an admin can take.",
       "empty": "No accounts match this filter.",

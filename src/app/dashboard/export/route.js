@@ -1,18 +1,11 @@
 import { redirect } from 'next/navigation';
+import { cell } from '@/lib/csv';
 import { createClient } from '@/lib/supabase/server';
 
 const DEFAULT_DAYS = 7;
 const COLUMNS = ['name', 'brand', 'size', 'sku', 'price', 'cost', 'changed'];
 
-// Same layout as the import template (";" and decimal comma, so Bulgarian Excel
-// opens it as is), so the file loads into a POS or back into PriceAI. Text that
-// starts like a formula gets a leading ' so a spreadsheet shows it rather than
-// runs it (CSV injection through a product name).
-const cell = (value) => {
-  let s = typeof value === 'number' ? value.toFixed(2).replace('.', ',') : String(value ?? '');
-  if (typeof value !== 'number' && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return /[;"\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
-};
+// Same layout as the import template, so the file loads into a POS or back into PriceAI.
 
 // GET /dashboard/export?since=YYYY-MM-DD: the products whose price changed in
 // PriceAI since that day (applied or edited, not CSV imports, which came from
