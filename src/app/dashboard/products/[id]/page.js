@@ -252,11 +252,6 @@ export default async function ProductPage({ params, searchParams }) {
                 <input type="hidden" name="price" value={suggested} />
                 <button className="button button--primary"><ButtonLabel>{p.apply}</ButtonLabel></button>
               </form>
-              <form action={dismissSuggestion}>
-                <input type="hidden" name="id" value={product.id} />
-                <input type="hidden" name="price" value={suggested} />
-                <button className="button button--quiet"><ButtonLabel>{p.dismiss}</ButtonLabel></button>
-              </form>
             </div>
           </div>
         ) : (
