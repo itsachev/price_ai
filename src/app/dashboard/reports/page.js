@@ -56,7 +56,7 @@ export default async function ReportsPage() {
       .order('urgency', { ascending: false, nullsFirst: false })
       .limit(TOP);
 
-  const [movesRes, riskRes, oppRes, snapRes, changesRes, pressureRes, roomRes, heldRes, moveRes, staleRes] = await Promise.all([
+  const [movesRes, riskRes, oppRes, snapRes, changesRes, pressureRes, roomRes, heldRes, moveRes, staleRes, brandRes] = await Promise.all([
     supabase.rpc('price_moves').select('kind'),
     top('at-risk'),
     top('opportunity'),
@@ -73,8 +73,10 @@ export default async function ReportsPage() {
     supabase.rpc('product_overview', { active_days: activeDays }).select('id, name, gap_ratio').eq('held', true).order('gap_ratio', { ascending: false }),
     supabase.rpc('chain_movement', { period_days: MOVE_DAYS }),
     supabase.rpc('stale_matches', { active_days: activeDays }).order('last_seen', { ascending: false }),
+    supabase.rpc('brand_gaps', { active_days: activeDays }),
   ]);
-  check(movesRes, riskRes, oppRes, snapRes, changesRes, pressureRes, roomRes, heldRes, moveRes, staleRes);
+  check(movesRes, riskRes, oppRes, snapRes, changesRes, pressureRes, roomRes, heldRes, moveRes, staleRes, brandRes);
+  const brands = brandRes.data.toSorted((a, b) => Math.abs(b.avg_gap) - Math.abs(a.avg_gap)).slice(0, MONEY_ROWS);
 
   // Raising each opportunity to the cheapest chain's price, per unit sold.
   const raises = roomRes.data
@@ -137,6 +139,7 @@ export default async function ReportsPage() {
   const thenDate = then && date(then.data_date, { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const statusCols = [['at-risk', 'at_risk'], ['opportunity', 'opportunity'], ['competitive', 'competitive']];
   const statusLabels = monthLabels(points);
+  const stackTotal = (s) => statusCols.reduce((a, [, c]) => a + Number(s[c]), 0);
   const margin = latest?.avg_margin != null && Number(latest.avg_margin);
 
   // A printed market report: masthead, one verdict, then numbered sections.
@@ -282,13 +285,10 @@ export default async function ReportsPage() {
             <h2 id="rp-money">{t.money.title}</h2>
             <p className="muted">{t.money.note}</p>
           </div>
-          <dl className="stat-grid">
-            <div data-status="opportunity">
-              <dt>{fill(t.money.total, { amount: formatPrice(room, lang) })}</dt>
-              <dd data-count={raises.length}>{raises.length}</dd>
-              <small>{fill(t.money.detail, { n: raises.length })}</small>
-            </div>
-          </dl>
+          <div className="rp__total" data-status="opportunity">
+            <p>{fill(t.money.total, { amount: formatPrice(room, lang) })}</p>
+            <p className="muted">{fill(t.money.detail, { n: raises.length })}</p>
+          </div>
           <article className="card report" data-status="opportunity">
             <ol className="rp__rank rp__rank--grid">
               {raises.slice(0, MONEY_ROWS).map((r, i) => (
@@ -353,6 +353,30 @@ export default async function ReportsPage() {
         </section>
       )}
 
+      {brands.length > 0 && (
+        <section className="rp__section" aria-labelledby="rp-brands">
+          <div className="rp__section-head">
+            <h2 id="rp-brands">{t.brands.title}</h2>
+            <p className="muted">{t.brands.intro}</p>
+          </div>
+          <article className="card report">
+            <ol className="rp__rank">
+              {brands.map((b, i) => (
+                <li key={b.brand} style={{ '--w': Math.abs(b.avg_gap) / Math.max(Math.abs(brands[0].avg_gap), 1e-9) }} data-status={b.avg_gap > 0 ? 'at-risk' : b.avg_gap < 0 ? 'opportunity' : undefined}>
+                  <span className="rp__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span>
+                    {b.brand}
+                    <small className="muted"> · {fill(t.brands.detail, { matched: b.matched, risk: b.at_risk, opp: b.opportunity })}</small>
+                  </span>
+                  <strong>{formatPercent(Number(b.avg_gap), lang)}</strong>
+                  <span className="rp__bar" aria-hidden="true" />
+                </li>
+              ))}
+            </ol>
+          </article>
+        </section>
+      )}
+
       {heldRes.data.length > 0 && (
         <section className="rp__section" aria-labelledby="rp-held">
           <div className="rp__section-head">
@@ -407,16 +431,54 @@ export default async function ReportsPage() {
             role="img"
             aria-label={fill(t.statusTrend.label, { risk: latest.at_risk, opp: latest.opportunity, comp: latest.competitive })}
           >
-            {points.map((s, i) => (
-              <span key={s.data_date} title={date(s.data_date, { day: 'numeric', month: 'short', timeZone: 'UTC' })}>
-                <b>
-                  {[...statusCols].reverse().map(([status, col]) => (
-                    <i key={status} data-status={status} style={{ flexGrow: s[col] }} />
-                  ))}
-                </b>
-                <small>{statusLabels[i]}</small>
-              </span>
-            ))}
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              {statusCols.slice().reverse().map(([status, col], k, order) => {
+                // Bands stack from the bottom: competitive, opportunity, at risk on top.
+                const lower = (s) => order.slice(k + 1).reduce((a, [, c]) => a + Number(s[c]), 0);
+                const share = (s, v) => (100 * v) / (stackTotal(s) || 1);
+                const edge = (s) => 100 - share(s, lower(s) + Number(s[col]));
+                const base = (s) => 100 - share(s, lower(s));
+                const x = (i) => (i / (points.length - 1)) * 100;
+                const top = points.map((s, i) => `${x(i)},${edge(s)}`);
+                const bottom = points.map((s, i) => `${x(i)},${base(s)}`).reverse();
+                return <polygon key={status} data-status={status} points={[...top, ...bottom].join(' ')} />;
+              })}
+            </svg>
+            {points.map((s, i) => {
+              const prev = points[i - 1];
+              const x = (i / (points.length - 1)) * 100;
+              return (
+                <span
+                  key={s.data_date}
+                  className="rp__week"
+                  tabIndex={0}
+                  data-edge={i === 0 ? 'start' : i === points.length - 1 ? 'end' : undefined}
+                  style={{ '--x': `${x}%`, '--n': points.length }}
+                >
+                  <span className="rp__tip" role="group" aria-label={date(s.data_date, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}>
+                    <strong>{date(s.data_date, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}</strong>
+                    <dl>
+                      {statusCols.map(([status, col]) => {
+                        const d = prev ? s[col] - prev[col] : 0;
+                        return (
+                          <div key={status} data-status={status}>
+                            <dt>{dict.status[status]}</dt>
+                            <dd>
+                              {s[col]} <small>{Math.round((100 * s[col]) / (stackTotal(s) || 1))}%</small>
+                              {prev && d !== 0 && <em data-good={(status === 'at-risk') === (d < 0)}>{signed(d)}</em>}
+                            </dd>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                    <small>{fill(t.statusTrend.total, { n: stackTotal(s) })}{prev ? ` · ${t.statusTrend.vsPrev}` : ''}</small>
+                  </span>
+                </span>
+              );
+            })}
+            <ol className="rp__x" aria-hidden="true">
+              {statusLabels.map((m, i) => <li key={i} style={{ '--x': `${(i / (points.length - 1)) * 100}%` }}>{m}</li>)}
+            </ol>
           </div>
         </section>
       )}

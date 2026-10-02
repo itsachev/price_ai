@@ -733,7 +733,9 @@
     "statusTrend": {
       "title": "Catalog status over time",
       "subtitle": "Weekly · products by status",
-      "label": "Stacked bars of your products by status, one bar per week. Latest: {risk} at risk, {opp} opportunities, {comp} competitive."
+      "label": "Stacked bars of your products by status, one bar per week. Latest: {risk} at risk, {opp} opportunities, {comp} competitive.",
+      "total": "{n} products",
+      "vsPrev": "vs. the week before"
     },
     "held": {
       "title": "Priced above the market for a reason",
@@ -749,6 +751,11 @@
       "title": "Matches that have gone quiet",
       "intro": "{n} matched products have had no price from their chain in {days} days, so they are no longer compared. The chain may have delisted them. Open a product to check or re-match it.",
       "seen": "{chain} · last seen {date}"
+    },
+    "brands": {
+      "title": "Your brands against the market",
+      "intro": "Average price gap to the cheapest chain, brand by brand (brands with at least two compared products). Positive means you are pricier.",
+      "detail": "{matched} compared · {risk} at risk · {opp} opportunities"
     }
   },
   "notifications": {
