@@ -21,16 +21,24 @@ export default function FooterMotion({ children }) {
   useGSAP(
     () => {
       gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-        const scrub = (trigger, end = 'top 80%') => ({ trigger, start: 'top bottom', end, scrub: 0.6 });
+        // Short pages (auth, legal, empty states) show the footer without any scroll, so a
+        // scrub would already sit at its end: play the same reveal on a timer instead.
+        // A page with no scroll room at all can never finish a scrub either (the wordmark's end is the
+        // viewport bottom), even when the footer starts low in the viewport.
+        const root = document.documentElement;
+        const short = scope.current.getBoundingClientRect().top < window.innerHeight * 0.8 || root.scrollHeight - root.clientHeight < 2;
+        let n = 0;
+        const scrub = (trigger, end = 'top 80%') =>
+          short ? { delay: 0.1 + n++ * 0.05, duration: 0.8 } : { scrollTrigger: { trigger, start: 'top bottom', end, scrub: 0.6 } };
         const q = (s) => gsap.utils.toArray(s, scope.current);
 
-        gsap.fromTo(scope.current, { '--scan': 0 }, { '--scan': 1, ease: 'none', scrollTrigger: scrub(scope.current, 'top 40%') });
+        gsap.fromTo(scope.current, { '--scan': 0 }, { '--scan': 1, ease: 'none', ...scrub(scope.current, 'top 40%') });
 
         q('.site-footer__intro, .site-footer__col, .site-footer__bar, li').forEach((el) =>
           gsap.fromTo(
             el,
             { autoAlpha: 0, y: 24 },
-            { autoAlpha: 1, y: 0, ease: 'none', scrollTrigger: scrub(el, el.matches('.site-footer__bar') ? 'bottom bottom' : 'top 80%') }
+            { autoAlpha: 1, y: 0, ease: 'none', ...scrub(el, el.matches('.site-footer__bar') ? 'bottom bottom' : 'top 80%') }
           )
         );
 
@@ -42,7 +50,7 @@ export default function FooterMotion({ children }) {
             tag: 'span',
             autoSplit: true,
             onSplit: (self) =>
-              gsap.fromTo(self.chars, { opacity: 0.1 }, { opacity: 1, ease: 'none', stagger: 0.1, scrollTrigger: scrub(el, 'bottom 85%') }),
+              gsap.fromTo(self.chars, { opacity: 0.1 }, { opacity: 1, ease: 'none', stagger: short ? { amount: 0.8 } : 0.1, ...scrub(el, 'bottom 85%') }),
           })
         );
 
@@ -50,7 +58,7 @@ export default function FooterMotion({ children }) {
           gsap.fromTo(
             el,
             { yPercent: 60, clipPath: 'inset(0 0 60% 0)', letterSpacing: '0.06em' },
-            { yPercent: 0, clipPath: 'inset(0 0 0% 0)', letterSpacing: '-0.04em', ease: 'none', scrollTrigger: scrub(el, 'bottom bottom') }
+            { yPercent: 0, clipPath: 'inset(0 0 0% 0)', letterSpacing: '-0.04em', ease: 'none', ...scrub(el, 'bottom bottom') }
           )
         );
       });

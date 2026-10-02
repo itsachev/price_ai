@@ -358,9 +358,12 @@ export default async function HomePage() {
         <div className="actions">
           {start}
           {!signedIn && (
-            <Link href="/login" className="button cta__ghost">
-              <ButtonLabel>{home.final.login}</ButtonLabel>
-            </Link>
+            <>
+              <span className="cta__or">{home.final.or}</span>
+              <Link href="/login" className="button cta__ghost">
+                <ButtonLabel>{home.final.login}</ButtonLabel>
+              </Link>
+            </>
           )}
         </div>
         <ul className="cta__points">

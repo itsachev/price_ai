@@ -237,7 +237,8 @@
       "text": "Create an account, add your products or import your price list and see how every price compares with the chains.",
       "signup": "Create account",
       "signupHover": "Takes a minute",
-      "login": "I already have an account",
+      "login": "Log in",
+      "or": "or",
       "points": [
         "Import a CSV price list",
         "Fresh prices every morning",
@@ -280,66 +281,81 @@
   "legal": {
     "terms": {
       "title": "Terms & Conditions",
-      "updated": "Last updated: 28 September 2026",
+      "updated": "Last updated: 2 October 2026",
       "intro": "These Terms & Conditions govern your access to and use of PriceAI. By creating an account or using the service, you agree to these terms.",
       "sections": [
         {
           "heading": "1. The service",
           "body": [
-            "PriceAI matches your product catalog against competitor prices scraped from publicly available price feeds published by Bulgarian retail chains, and suggests prices using automated matching and AI. Matches, price suggestions, statuses and reports are informational aids, not guarantees. Competitor data may be delayed, incomplete or inaccurate, and product matches made by the matching pipeline may occasionally be wrong.",
-            "You remain solely responsible for the prices you set and for verifying any suggestion before acting on it. PriceAI is not liable for pricing, margin or business decisions made using the service."
+            "PriceAI compares your product catalog with competitor prices published every day by Bulgarian retail chains in the open price data of the Commission for Consumer Protection (KZP, kolkostruva.bg). It matches your products to competitor listings using keyword search and AI, labels each of your prices (competitive, opportunity, at risk or unmatched), suggests new prices, keeps price history and sends in-app notifications when competitors move. All prices are shown in euro (EUR).",
+            "Matches, suggestions, statuses, notifications and reports are informational aids, not guarantees. Competitor data may be delayed, incomplete or inaccurate, only covers products and stores the chains report, and automatic matches can occasionally be wrong. PriceAI is not affiliated with the chains whose prices it shows.",
+            "You remain solely responsible for the prices you set and for checking any suggestion before acting on it. PriceAI is not liable for pricing, margin or business decisions made using the service."
           ]
         },
         {
-          "heading": "2. Accounts",
+          "heading": "2. Your catalog and price changes",
           "body": [
-            "You must provide accurate information when creating an account and keep your login credentials confidential. You are responsible for all activity under your account. Tell us immediately if you suspect unauthorized access."
+            "You can add and edit products, import a CSV price list and export changed prices for your till or POS. PriceAI never changes the prices in your own shop or systems: a price changes in PriceAI only when you apply a suggestion (one at a time or in bulk) or edit it yourself, and you decide what to do with the exported file.",
+            "Pricing rules (minimum margin, undercut and largest change per step) shape the suggestions you see. They are set by you, and a rule can hold a suggestion back, but they do not guarantee a profit or a particular margin."
           ]
         },
         {
-          "heading": "3. Subscriptions and payment",
+          "heading": "3. Accounts",
           "body": [
-            "Where PriceAI is offered on a paid plan, fees, billing cycle and any trial period are shown at signup or in your account settings. Fees are non-refundable except where required by law. We may change pricing with advance notice; continued use after a price change takes effect means you accept it."
+            "You must provide accurate information when creating an account and keep your login credentials confidential. You are responsible for all activity under your account. Tell us immediately if you suspect unauthorized access.",
+            "To protect accounts we limit how often sign-in, signup and password-reset requests can be made, and we may block requests that look automated."
           ]
         },
         {
-          "heading": "4. Acceptable use",
+          "heading": "4. Support access",
           "body": [
-            "You agree not to: misuse the service to scrape or resell competitor data obtained through PriceAI, attempt to circumvent rate limits or security controls, upload catalog data you do not have the right to use, or use the service in a way that disrupts it for other merchants."
+            "PriceAI administrators can see your account details and catalog and, to give you support or investigate a fault, can sign in as your account. Administrators may also change an account's access, such as suspending it. We use this access only to operate, secure and support the service."
           ]
         },
         {
-          "heading": "5. Your data",
+          "heading": "5. Plans and payment",
           "body": [
-            "You retain ownership of the product catalog and pricing data you upload. You grant PriceAI a license to process that data solely to provide the service to you (matching, suggestions, reports and notifications)."
+            "PriceAI is currently free to use. If paid plans are introduced, we will tell you in advance, show the fees and what each plan includes at signup or in your account settings, and you will not be charged without your agreement. Fees, if any, are non-refundable except where required by law."
           ]
         },
         {
-          "heading": "6. Disclaimers and limitation of liability",
+          "heading": "6. Acceptable use",
           "body": [
-            "The service is provided \"as is\", without warranties of any kind, including accuracy or fitness for a particular purpose. To the maximum extent permitted by law, PriceAI is not liable for indirect, incidental or consequential damages, or for losses arising from pricing decisions, competitor data errors or service interruptions."
+            "You agree not to: misuse the service to scrape or resell competitor data obtained through PriceAI, attempt to circumvent rate limits or security controls, use bots or automated means to sign up or sign in, upload catalog data you do not have the right to use, or use the service in a way that disrupts it for other merchants."
           ]
         },
         {
-          "heading": "7. Termination",
+          "heading": "7. Your data",
           "body": [
-            "You may stop using PriceAI and close your account at any time from account settings. We may suspend or terminate accounts that violate these terms or applicable law."
+            "You retain ownership of the product catalog and pricing data you upload. You grant PriceAI a license to process that data solely to provide the service to you (matching, suggestions, reports and notifications). Matching results are cached by product name, brand and size, so other merchants selling the same product can reuse them; they contain no information about you or your prices."
           ]
         },
         {
-          "heading": "8. Changes to these terms",
+          "heading": "8. Disclaimers and limitation of liability",
+          "body": [
+            "The service is provided \"as is\", without warranties of any kind, including accuracy, availability or fitness for a particular purpose. To the maximum extent permitted by law, PriceAI is not liable for indirect, incidental or consequential damages, or for losses arising from pricing decisions, competitor data errors, wrong matches or service interruptions."
+          ]
+        },
+        {
+          "heading": "9. Termination",
+          "body": [
+            "You may stop using PriceAI at any time and ask us to delete your account at team@priceai.bg; deleting it removes your catalog and related data. We may suspend or terminate accounts that violate these terms or applicable law."
+          ]
+        },
+        {
+          "heading": "10. Changes to these terms",
           "body": [
             "We may update these terms from time to time. Material changes will be announced in the app or by email before they take effect."
           ]
         },
         {
-          "heading": "9. Governing law",
+          "heading": "11. Governing law",
           "body": [
             "These terms are governed by the laws of Bulgaria. Disputes are subject to the exclusive jurisdiction of the Bulgarian courts, without prejudice to any mandatory consumer-protection rights you may have."
           ]
         },
         {
-          "heading": "10. Contact",
+          "heading": "12. Contact",
           "body": [
             "Questions about these terms: [legal company name], [UIC/EIK], [registered address] — team@priceai.bg."
           ]
@@ -348,7 +364,7 @@
     },
     "privacy": {
       "title": "Privacy Policy",
-      "updated": "Last updated: 28 September 2026",
+      "updated": "Last updated: 2 October 2026",
       "intro": "This policy explains what personal data PriceAI collects, why, and the rights you have over it under the EU General Data Protection Regulation (GDPR).",
       "sections": [
         {
@@ -361,56 +377,66 @@
           "heading": "2. Data we collect",
           "body": [
             "Account data: email address, username and password (stored hashed by our authentication provider).",
-            "Catalog data: the products, prices and costs you add or import, which may include data about your business but is not personal data about you as an individual.",
-            "Usage data: language and theme preferences, and session cookies needed to keep you signed in."
+            "Catalog data: the products, SKUs, prices, costs and pricing rules you add or import, and the history of your own price changes. This describes your business and is generally not personal data about you as an individual.",
+            "Product activity: the competitor matches linked to your products, the suggestions you applied or dismissed, and in-app notifications generated for you.",
+            "Technical data: functional cookies (see section 7) and, for abuse protection, your IP address and email, which are turned into one-way hashes to count recent sign-in, signup and password-reset attempts. We do not store raw IP addresses for this."
           ]
         },
         {
           "heading": "3. How we use it",
           "body": [
-            "To provide the service: authenticate you, store and match your catalog, run price comparisons, send in-app notifications and, if you ask, email account notices (password reset, confirmation).",
-            "We do not sell your data or use it for advertising."
+            "To provide the service: authenticate you, store and match your catalog, run price comparisons, suggest prices, keep price history, send in-app notifications and, if you ask, email account notices (password reset, confirmation).",
+            "To keep the service secure: limit repeated or automated requests, and let administrators support your account.",
+            "We do not sell your data, use it for advertising or profile you for marketing."
           ]
         },
         {
           "heading": "4. Legal basis",
           "body": [
-            "We process account and catalog data to perform our contract with you (providing the service), and usage cookies under our legitimate interest in keeping the service secure and working correctly."
+            "We process account and catalog data to perform our contract with you (providing the service). We process technical data and cookies under our legitimate interest in keeping the service secure and working correctly."
           ]
         },
         {
-          "heading": "5. Who we share data with",
+          "heading": "5. Who can access your data",
+          "body": [
+            "Our administrators can see your account details and catalog and, for support or troubleshooting, can sign in as your account. This is limited to operating, securing and supporting the service.",
+            "Other merchants never see your catalog, prices or costs."
+          ]
+        },
+        {
+          "heading": "6. Who we share data with",
           "body": [
             "Supabase, our database and authentication provider, which stores your account and catalog data.",
-            "Google Gemini, which receives only product names and attributes (never account or contact details) to confirm matches between your catalog and competitor listings."
+            "Google Gemini, which receives only product names and attributes (never account or contact details, prices or costs) to confirm matches between your catalog and competitor listings. This runs in the background, never while you browse.",
+            "Competitor prices come from public open data; we send nothing about you to the chains."
           ]
         },
         {
-          "heading": "6. Cookies",
+          "heading": "7. Cookies",
           "body": [
-            "We use functional cookies only: a session cookie to keep you signed in, and cookies that remember your language and theme choice. We do not use third-party advertising or analytics cookies."
+            "We use functional cookies only: a session cookie to keep you signed in, cookies that remember your language and theme choice, and a cookie that remembers you dismissed the cookie notice. We do not use third-party advertising or analytics cookies."
           ]
         },
         {
-          "heading": "7. Data retention",
+          "heading": "8. Data retention",
           "body": [
-            "Account and catalog data is kept while your account is active. Competitor price history is kept to power trend reports. In-app notifications are kept for a limited number of days and then removed automatically. You can request deletion of your account and associated data at any time."
+            "Account and catalog data is kept while your account is active and is removed when your account is deleted. Competitor price history is public market data and is kept to power trend reports. In-app notifications are kept for a limited number of days and then removed automatically. Abuse-protection counters are short-lived."
           ]
         },
         {
-          "heading": "8. Your rights",
+          "heading": "9. Your rights",
           "body": [
-            "Under GDPR you have the right to access, correct, delete or export your personal data, and to object to or restrict certain processing. To exercise these rights, contact team@priceai.bg. You may also lodge a complaint with Bulgaria's Commission for Personal Data Protection (CPDP)."
+            "Under GDPR you have the right to access, correct, delete or export your personal data, and to object to or restrict certain processing. You can edit your username and password in settings; to access, export or delete your data, or for anything else, contact team@priceai.bg. You may also lodge a complaint with Bulgaria's Commission for Personal Data Protection (CPDP)."
           ]
         },
         {
-          "heading": "9. Security",
+          "heading": "10. Security",
           "body": [
-            "We use industry-standard measures (encryption in transit, access controls, hashed passwords) to protect your data. No method of transmission or storage is fully secure, and we cannot guarantee absolute security."
+            "We use industry-standard measures (encryption in transit, access controls, row-level data isolation between merchants, hashed passwords, rate limiting and security headers) to protect your data. No method of transmission or storage is fully secure, and we cannot guarantee absolute security."
           ]
         },
         {
-          "heading": "10. Changes to this policy",
+          "heading": "11. Changes to this policy",
           "body": [
             "We may update this policy from time to time. Material changes will be announced in the app or by email before they take effect."
           ]

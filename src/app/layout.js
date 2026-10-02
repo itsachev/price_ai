@@ -169,6 +169,7 @@ export default async function RootLayout({ children }) {
                 <ul>
                   <li><Link href="/dashboard">{dict.nav.dashboard}</Link></li>
                   <li><Link href="/#how">{dict.home.how.link}</Link></li>
+                  {user?.admin && <li><Link href="/dashboard/admin">{dict.nav.admin}</Link></li>}
                 </ul>
               </nav>
               <nav className="site-footer__col" aria-labelledby="footer-legal">

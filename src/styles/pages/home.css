@@ -778,3 +778,9 @@
     }
   }
 }
+
+.cta__or {
+  align-self: center;
+  color: var(--on-band);
+  opacity: 0.7;
+}
