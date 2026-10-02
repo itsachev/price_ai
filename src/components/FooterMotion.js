@@ -13,6 +13,8 @@ gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 // and link lifts in, and the wordmark climbs out of its baseline as you scroll
 // down, all reversing on scroll up. The footer outlives client navigations (root
 // layout) but the page height changes, so it is rebuilt on every route.
+// main fills the viewport (layout.css), so the footer always starts below the
+// fold, and clamp() keeps every end reachable at the page bottom.
 // Content is complete without it (no JS, reduced motion).
 export default function FooterMotion({ children }) {
   const scope = useRef(null);
@@ -21,15 +23,11 @@ export default function FooterMotion({ children }) {
   useGSAP(
     () => {
       gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
-        // Short pages (auth, legal, empty states) show the footer without any scroll, so a
-        // scrub would already sit at its end: play the same reveal on a timer instead.
-        // A page with no scroll room at all can never finish a scrub either (the wordmark's end is the
-        // viewport bottom), even when the footer starts low in the viewport.
-        const root = document.documentElement;
-        const short = scope.current.getBoundingClientRect().top < window.innerHeight * 0.8 || root.scrollHeight - root.clientHeight < 2;
-        let n = 0;
-        const scrub = (trigger, end = 'top 80%') =>
-          short ? { delay: 0.1 + n++ * 0.05, duration: 0.8 } : { scrollTrigger: { trigger, start: 'top bottom', end, scrub: 0.6 } };
+        // Each trigger is the element it moves, so measure it in its start state on every
+        // refresh (invalidateOnRefresh), wherever the page happens to be scrolled.
+        const scrub = (trigger, end = 'top 80%') => ({
+          scrollTrigger: { trigger, start: 'top bottom', end: `clamp(${end})`, scrub: 0.6, invalidateOnRefresh: true },
+        });
         const q = (s) => gsap.utils.toArray(s, scope.current);
 
         gsap.fromTo(scope.current, { '--scan': 0 }, { '--scan': 1, ease: 'none', ...scrub(scope.current, 'top 40%') });
@@ -50,7 +48,7 @@ export default function FooterMotion({ children }) {
             tag: 'span',
             autoSplit: true,
             onSplit: (self) =>
-              gsap.fromTo(self.chars, { opacity: 0.1 }, { opacity: 1, ease: 'none', stagger: short ? { amount: 0.8 } : 0.1, ...scrub(el, 'bottom 85%') }),
+              gsap.fromTo(self.chars, { opacity: 0.1 }, { opacity: 1, ease: 'none', stagger: 0.1, ...scrub(el, 'bottom 85%') }),
           })
         );
 

@@ -4,11 +4,15 @@
   position: relative;
   margin-block-start: var(--space-4);
   padding-block-start: var(--space-4);
-  border-block-start: 1px solid var(--border);
+  /* The top line is an inset shadow, not a border, so the scan line can sit on it inside the clip. */
+  box-shadow: inset 0 1px var(--border);
   background:
     radial-gradient(60% 80% at 50% 100%, var(--glow-1), transparent 70%),
     color-mix(in srgb, var(--surface) 55%, transparent);
-  overflow-x: clip;
+  /* Both axes: FooterMotion starts the wordmark and bar pushed down, and any
+     overflow below the footer would make the page taller until they rise, so
+     the scrub's end (the page bottom) could never be reached. */
+  overflow: clip;
   color: var(--muted);
   font-size: var(--text-sm);
 }
@@ -144,7 +148,7 @@
 .site-footer::before {
   content: '';
   position: absolute;
-  inset-block-start: -1px;
+  inset-block-start: 0;
   inset-inline: 0;
   block-size: 1px;
   background: linear-gradient(to right, transparent, var(--accent) 15%, var(--signal) 30%, transparent 60%);

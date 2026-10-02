@@ -29,6 +29,20 @@ export default function SmoothScroll({ children }) {
     return () => gsap.ticker.remove(update);
   }, [lenis]);
 
+  // Triggers are measured once, but pages keep changing height after that
+  // (loading.js skeleton -> streamed content, ?q=/?page=, fonts, toasts), which
+  // leaves every scrub (footer, home) pointing at stale positions. Re-measure
+  // whenever the document's height changes, on every route, in one place.
+  useEffect(() => {
+    let t;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(() => ScrollTrigger.refresh(), 150);
+    });
+    ro.observe(document.body);
+    return () => { ro.disconnect(); clearTimeout(t); };
+  }, []);
+
   // Next only scrolls a changed segment into view (and Lenis can carry its old
   // target over), so jump to the top on every new page. Back/forward keeps the
   // browser's restored position, and a #hash link keeps its anchor.
@@ -44,10 +58,15 @@ export default function SmoothScroll({ children }) {
 
   useEffect(() => {
     if (first.current) { first.current = false; return; }
-    if (popped.current) { popped.current = false; return; }
-    if (location.hash) return;
-    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
-    else scrollTo(0, 0);
+    if (popped.current) popped.current = false;
+    else if (!location.hash) {
+      if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+      else scrollTo(0, 0);
+    }
+    // The new page's triggers (footer, PageMotion) were built in this commit
+    // against the old page's cached scroll position, so every start/end is off
+    // by however far down the old page was. Re-measure now that scroll is final.
+    ScrollTrigger.refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run per page, not when Lenis appears
   }, [pathname]);
 

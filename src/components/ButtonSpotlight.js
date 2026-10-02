@@ -8,8 +8,8 @@ import { usePathname } from 'next/navigation';
 // where to centre their glow (--x/--y). Skipped on touch screens, which have
 // no hover.
 //
-// It also replays the entry of each button (button.css) when it scrolls into
-// view: one first seen out of view (below the fold, in a closed dialog or
+// On the home page only, it also replays the entry of each button (button.css)
+// when it scrolls into view: one first seen out of view (below the fold, in a closed dialog or
 // menu) gets [data-reveal], which hides it, and loses it once it shows up.
 // Ones already in view keep the entry they played on first paint. (The footer
 // is scrubbed by FooterMotion instead.)
@@ -34,7 +34,7 @@ export default function ButtonSpotlight() {
   }, []);
 
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (pathname !== '/' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const seen = new WeakSet();
     const io = new IntersectionObserver((entries) => {
@@ -65,6 +65,8 @@ export default function ButtonSpotlight() {
     return () => {
       io.disconnect();
       mo.disconnect();
+      // Leaving home: the header's buttons outlive the page, so unhide any still waiting.
+      document.querySelectorAll('[data-reveal]').forEach((el) => delete el.dataset.reveal);
     };
   }, [pathname]);
 

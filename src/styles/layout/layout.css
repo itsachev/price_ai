@@ -3,7 +3,10 @@
   margin-inline: auto;
 }
 
+/* Fills the viewport so the footer always starts below the fold and every
+   route has the scroll room FooterMotion's scrub needs. */
 main.container {
+  min-block-size: 100dvh;
   padding-block: var(--space-3);
 }
 
