@@ -41,10 +41,6 @@
   gap: var(--space-2);
   justify-items: start;
 
-  & h1 {
-    max-inline-size: 16ch;
-  }
-
   & .finder__lead {
     font-size: var(--text-lead);
   }
@@ -418,36 +414,202 @@
   white-space: nowrap;
 }
 
+/* Items: one card per product. The name and trash sit on top, then one row
+   with the chain, promo, stepper and line total (it wraps on narrow cards),
+   then the chain's closest product across the full width. */
+.shopping__items {
+  gap: var(--space-2);
+  border: 0;
+}
+
+.shopping__items > .shopping__item {
+  --pad: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'title remove' 'row row' 'alt alt';
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--pad);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover,
+  &:focus-within {
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+    background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+  }
+
+  & > .finder__title {
+    grid-area: title;
+    font-weight: 600;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+}
+
+.shopping__row {
+  grid-area: row;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+/* Where it's cheapest: a chain chip and the promo badge. */
+.shopping__best {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-inline-end: auto;
+}
+
+.shopping__store {
+  padding: 0.2em 0.65em;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* The chain's closest product when it isn't the one the shopper picked,
+   across the whole card. */
+.shopping__alt {
+  grid-area: alt;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.5;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+
+  &::before {
+    content: '≈ ';
+    color: var(--accent);
+  }
+}
+
+.shopping__line {
+  display: grid;
+  justify-items: end;
+  min-inline-size: 5.5rem;
+  text-align: end;
+
+  & .finder__price {
+    margin-inline-start: 0;
+    font-size: var(--text-h3);
+    font-weight: 700;
+  }
+}
+
+.shopping__each {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Quantity stepper: bare − n + with round 44px buttons. */
 .shopping__qty {
   display: inline-flex;
   align-items: center;
-  margin-inline-start: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 
   & button {
-    min-inline-size: 44px;
-    min-block-size: 44px;
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
     font-size: var(--text-h3);
+    line-height: 1;
     color: inherit;
     background: none;
     border: 0;
+    border-radius: 50%;
     cursor: pointer;
+    transition: color 0.15s, background-color 0.15s;
 
     &:hover:not(:disabled) {
       color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
     }
 
     &:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: default;
     }
   }
 
   & output {
-    min-inline-size: 2ch;
+    min-inline-size: 2.5ch;
     text-align: center;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Remove: a quiet trash icon tucked into the card's top corner at every
+   width; it keeps its own column so nothing runs under it. */
+.shopping__remove {
+  grid-area: remove;
+  align-self: start;
+  justify-self: end;
+  margin-block-start: calc(0.375rem - var(--pad));
+  margin-inline-end: calc(0.375rem - var(--pad));
+
+  & button {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem; /* 44px touch target */
+    block-size: 2.75rem;
+    color: var(--muted);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+      color: var(--status-at-risk);
+      background: color-mix(in srgb, var(--status-at-risk) 12%, transparent);
+      border-color: color-mix(in srgb, var(--status-at-risk) 30%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+      &:hover svg { rotate: -8deg; }
+    }
+  }
+
+  & svg {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: rotate 0.2s;
   }
 }
 
@@ -457,15 +619,16 @@
 
 /* Summary and items sit side by side when both fit. */
 .shopping__grid {
+  margin-block-start: var(--space-3);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-section) var(--space-4);
   align-items: start;
 }
 
 .shopping__col {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .shopping__col > .shopping__heading:first-child {
@@ -516,13 +679,37 @@
   grid-template-rows: auto 1fr auto auto;
   gap: 0.5rem;
   padding: 1.25rem var(--space-2) var(--space-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  isolation: isolate;
+  /* Brand-blue tint: an accent glow from the top corner, a sky wash at the
+     foot, and a gradient hairline border (padding-box fill over border-box). */
+  background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%) padding-box,
+    radial-gradient(90% 60% at 100% 100%, color-mix(in srgb, var(--signal) 9%, transparent), transparent 70%) padding-box,
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--accent) 55%, var(--border)),
+      var(--border) 45%,
+      color-mix(in srgb, var(--signal) 35%, var(--border))) border-box;
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  transition: border-color 0.2s, translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  &:hover {
-    border-color: color-mix(in srgb, var(--status-opportunity) 50%, var(--border));
+  /* Hover lifts a brighter accent sheen (opacity animates; gradients can't). */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+
+  &:hover::before,
+  &:focus-within::before {
+    opacity: 1;
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {

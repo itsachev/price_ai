@@ -107,23 +107,37 @@ export default async function ShoppingListPage({ searchParams }) {
             <h2 className="shopping__heading">{t.items}</h2>
             <ol className="finder__list shopping__items">
               {rows.map(({ item, best }) => (
-                <li key={item.id}>
+                <li key={item.id} className="shopping__item">
                   <span className="finder__title">{item.listing.title}</span>
-                  <span className="finder__chain">
-                    {t.bestAt.replace('{chain}', chain(best.competitor_key)).replace('{price}', formatPrice(best.price, lang))}
-                    {best.id !== item.listing.id && <> · {best.title}</>}
-                  </span>
-                  {best.on_promo && <span className="badge">{info.promo}</span>}
-                  <form action={setQuantity} className="shopping__qty">
+                  <div className="shopping__row">
+                    <p className="shopping__best">
+                      <span className="visually-hidden">{t.cheapestAt}</span>
+                      <span className="shopping__store">{chain(best.competitor_key)}</span>
+                      {best.on_promo && <span className="badge">{info.promo}</span>}
+                    </p>
+                    <form action={setQuantity} className="shopping__qty">
+                      <input type="hidden" name="item" value={item.id} />
+                      <button name="quantity" value={item.quantity - 1} aria-label={t.less}>−</button>
+                      <output aria-label={t.quantity}>{item.quantity}</output>
+                      <button name="quantity" value={item.quantity + 1} disabled={item.quantity >= 99} aria-label={t.more}>+</button>
+                    </form>
+                    <p className="shopping__line">
+                      <span className="visually-hidden">{t.lineTotal}</span>
+                      <span className="finder__price">{formatPrice(best.price * item.quantity, lang)}</span>
+                      {item.quantity > 1 && (
+                        <span className="shopping__each">{t.each.replace('{count}', item.quantity).replace('{price}', formatPrice(best.price, lang))}</span>
+                      )}
+                    </p>
+                  </div>
+                  {best.id !== item.listing.id && (
+                    <p className="shopping__alt">{t.similar.replace('{title}', best.title)}</p>
+                  )}
+                  <form action={removeFromList} className="shopping__remove">
                     <input type="hidden" name="item" value={item.id} />
-                    <button name="quantity" value={item.quantity - 1} aria-label={t.less}>−</button>
-                    <output aria-label={t.quantity}>{item.quantity}</output>
-                    <button name="quantity" value={item.quantity + 1} disabled={item.quantity >= 99} aria-label={t.more}>+</button>
-                  </form>
-                  <form action={removeFromList}>
-                    <input type="hidden" name="item" value={item.id} />
-                    <button className="button button--danger-quiet" aria-label={`${t.remove}: ${item.listing.title}`}>
-                      <ButtonLabel>{t.remove}</ButtonLabel>
+                    <button aria-label={`${t.remove}: ${item.listing.title}`} title={t.remove}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                      </svg>
                     </button>
                   </form>
                 </li>
