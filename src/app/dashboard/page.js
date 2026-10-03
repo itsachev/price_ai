@@ -85,8 +85,16 @@ export default async function DashboardPage({ searchParams }) {
   const [suggestions, rowsRes, addedRes, latestRes, movesRes, ...countRes] = await Promise.all([
     loadSuggestions(supabase),
     rowsQuery,
-    // A just-added product goes first, wherever it sorts.
-    added ? supabase.rpc('product_overview', { active_days: activeDays }).eq('id', added).maybeSingle() : { data: null },
+    // A just-added product, and on the unfiltered first page every product still
+    // matching (new ones sort last as unmatched), go first wherever they sort.
+    page === 1 && !status && !q
+      ? supabase.rpc('product_overview', { active_days: activeDays })
+          .or(`match_key.is.null${added ? `,id.eq.${added}` : ''}`)
+          .order('id', { ascending: false })
+          .limit(PAGE_SIZE)
+      : added
+        ? supabase.rpc('product_overview', { active_days: activeDays }).eq('id', added)
+        : { data: [] },
     supabase.from('competitor_listing_price_history').select('data_date').order('data_date', { ascending: false }).limit(1),
     // The day's price moves at the chains (Reports), counted for the link above the tiles.
     supabase.rpc('price_moves').select('kind'),
@@ -100,7 +108,8 @@ export default async function DashboardPage({ searchParams }) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const moves = movesRes.data.length;
   const undercut = movesRes.data.filter((m) => m.kind === 'undercut').length;
-  const rows = addedRes.data ? [addedRes.data, ...rowsRes.data.filter((r) => r.id !== added)] : rowsRes.data;
+  const pinned = new Set(addedRes.data.map((r) => r.id));
+  const rows = [...addedRes.data, ...rowsRes.data.filter((r) => !pinned.has(r.id))];
   const pages = Math.max(1, Math.ceil((rowsRes.count ?? 0) / PAGE_SIZE));
 
   const dataDate = latestRes.data[0]?.data_date;
@@ -330,12 +339,14 @@ export default async function DashboardPage({ searchParams }) {
               <span key={s} data-status={s} data-dim={(status && status !== s) || undefined} style={{ flexGrow: counts[s] }} />
             ))}
           </div>
-          {/* The status filter: each tile toggles ?status=. */}
+          {/* The status filter: each tile toggles ?status= in place (no scroll jump, no history entry). */}
           <nav className="dash__tiles" aria-label={t.summary}>
             {TILE_ORDER.map((s) => (
               <Link
                 key={s}
                 href={dashboardHref({ status: status === s ? null : s, q })}
+                scroll={false}
+                replace
                 className="dash__tile"
                 data-status={s}
                 data-quiet={QUIET.has(s) || undefined}
@@ -358,7 +369,7 @@ export default async function DashboardPage({ searchParams }) {
           {(status || q) && (
             <p className="dash__showing">
               {fill(t.showing, { n: rowsRes.count ?? 0, total })}{' '}
-              <Link href={dashboardHref()}>{t.showAll}</Link>
+              <Link href={dashboardHref()} scroll={false} replace>{t.showAll}</Link>
             </p>
           )}
           <ProductSearch action="/dashboard" defaultValue={q} placeholder={tp.searchPlaceholder} label={tp.search}>
@@ -377,7 +388,7 @@ export default async function DashboardPage({ searchParams }) {
             ) : q ? (
               <>
                 <p className="muted">{fill(tp.noResults, { q })}</p>
-                <Link href={dashboardHref({ status })} className="button"><ButtonLabel>{tp.clearSearch}</ButtonLabel></Link>
+                <Link href={dashboardHref({ status })} scroll={false} replace className="button"><ButtonLabel>{tp.clearSearch}</ButtonLabel></Link>
               </>
             ) : (
               <p className="muted">{t.emptyFilter}</p>
