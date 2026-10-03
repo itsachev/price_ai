@@ -499,11 +499,17 @@
       "password_missing": "Enter a password.",
       "current_missing": "Enter your current password.",
       "password_not_changed": "Your password wasn't changed. Please try again in a moment.",
-      "reauthentication_needed": "For your security, sign out and sign in again, then change your password."
+      "reauthentication_needed": "For your security, sign out and sign in again, then change your password.",
+      "account_type": "Choose an account type."
     },
     "signUpEyebrow": "Start in minutes",
     "username": "Username",
-    "usernameHint": "Shown in the header"
+    "usernameHint": "Shown in the header",
+    "accountType": "Account type",
+    "accountTypes": {
+      "merchant": "Merchant",
+      "consumer": "Consumer"
+    }
   },
   "products": {
     "addTitle": "Add a product",
@@ -978,5 +984,8 @@
       "editRules": "Edit rules",
       "editProduct": "Edit"
     }
+  },
+  "info": {
+    "title": "Welcome to PriceAI"
   }
 }

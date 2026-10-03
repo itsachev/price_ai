@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 import { createClient as createSupabase } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { SESSION_COOKIE, safeNext } from '@/lib/auth';
+import { ACCOUNT_TYPES, SESSION_COOKIE, safeNext } from '@/lib/auth';
 import { cleanText, isBot, newPasswordError, validEmail } from '@/lib/formGuard';
 
 // Supabase error codes the auth forms have a translated message for.
@@ -99,8 +99,10 @@ export async function signUp(_prev, formData) {
   const name = username(formData);
   const email = emailOf(formData);
   const password = String(formData.get('password') ?? '');
-  const values = { username: name, email };
+  const accountType = String(formData.get('accountType') ?? '');
+  const values = { username: name, email, accountType };
   if (isBot(formData, MIN_FILL_MS)) return { ...values, error: 'unknown' };
+  if (!ACCOUNT_TYPES.includes(accountType)) return { ...values, error: 'account_type' };
   if (!USERNAME.test(name)) return { ...values, error: 'username' };
   if (!email) return { ...values, error: 'missing' };
   if (!validEmail(email)) return { ...values, error: 'email_address_invalid' };
@@ -108,19 +110,20 @@ export async function signUp(_prev, formData) {
   if (invalid) return { ...values, error: invalid };
   if (await limited('signUp')) return { ...values, error: 'over_request_rate_limit' };
 
+  const next = accountType === 'consumer' ? '/info' : safeNext(formData.get('next'));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { username: name },
-      emailRedirectTo: await callbackUrl(safeNext(formData.get('next'))),
+      data: { username: name, account_type: accountType },
+      emailRedirectTo: await callbackUrl(next),
     },
   });
   if (error) return { ...values, error: errorCode(error) };
   // With email confirmation on, there is no session until the link is clicked.
   if (!data.session) return { ...values, notice: 'checkEmail' };
-  redirect(safeNext(formData.get('next')));
+  redirect(next);
 }
 
 export async function requestPasswordReset(_prev, formData) {

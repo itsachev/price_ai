@@ -6,6 +6,11 @@ export function safeNext(value, fallback = '/dashboard') {
   return typeof value === 'string' && /^\/(?![/\\])/.test(value) ? value : fallback;
 }
 
+// Chosen at signup, stored in user_metadata.account_type. Merchants get the
+// dashboard; consumers land on /info after signing up.
+// ponytail: user_metadata is user-editable, fine for routing; move it to app_metadata before it gates data.
+export const ACCOUNT_TYPES = ['merchant', 'consumer'];
+
 // Pages for signed-out visitors; signed-in visitors skip them (home goes to /dashboard).
 export const GUEST_PAGES = ['/', '/login', '/signup', '/forgot-password'];
 

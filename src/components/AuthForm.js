@@ -25,7 +25,8 @@ function PasswordInput({ t, ...input }) {
 }
 
 // One form for every auth page. `t` is dict.auth (dictionaries are server-only),
-// `fields` are <input> props plus a label (`half` pairs two side by side, `unit` shows a suffix like %), `hidden` becomes hidden inputs and
+// `fields` are <input> props plus a label (`half` pairs two side by side, `unit` shows a suffix like %,
+// `options` [[value, label]…] makes it a <select>), `hidden` becomes hidden inputs and
 // `children` render under the fields (e.g. the "forgot password" link).
 // `guard` (guest forms) adds the bot traps isBot() checks: a field people never
 // see, and the time the form came alive in the browser (set after hydration, so
@@ -54,7 +55,7 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, guard
           </label>
         </>
       )}
-      {fields.map(({ label, hint, half, unit, ...input }) => {
+      {fields.map(({ label, hint, half, unit, options, ...input }) => {
         const props = { required: true, ...input, defaultValue: state?.[input.name] ?? input.defaultValue };
         return (
           <label key={input.name} className={half ? 'field field--half' : 'field'}>
@@ -62,7 +63,15 @@ export default function AuthForm({ action, t, fields, submit, hidden = {}, guard
               {label}
               {hint && <small>{hint}</small>}
             </span>
-            {input.type === 'password' ? (
+            {options ? (
+              <span className="field__select">
+                <select {...props}>
+                  {options.map(([value, text]) => (
+                    <option key={value} value={value}>{text}</option>
+                  ))}
+                </select>
+              </span>
+            ) : input.type === 'password' ? (
               <PasswordInput t={t} {...props} />
             ) : unit ? (
               <span className="field__unit" data-unit={unit}>

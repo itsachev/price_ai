@@ -5,7 +5,8 @@
   font-size: var(--text-sm);
   font-weight: 500;
 
-  & input {
+  & input,
+  & select {
     inline-size: 100%; /* % width lets grids shrink it below its default 20ch */
     min-height: 2.75rem; /* 44px touch target */
     padding-inline: 0.875rem;
@@ -83,6 +84,112 @@
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+}
+
+/* Select with its own chevron inside the end edge. Where customizable select
+   is supported (appearance: base-select), the option list is styled too, like a
+   menu; elsewhere the browser's own list opens. */
+.field__select {
+  position: relative;
+  display: grid;
+
+  & select {
+    appearance: none;
+    /* base-select lays it out as a box that doesn't centre its text. */
+    display: flex;
+    align-items: center;
+    padding-block: 0;
+    padding-inline-end: 2.75rem;
+    text-align: start;
+    line-height: 1.5;
+    cursor: pointer;
+
+    &::picker-icon {
+      display: none; /* our chevron below */
+    }
+  }
+
+  @supports (appearance: base-select) {
+    & select,
+    & select::picker(select) {
+      appearance: base-select;
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(50% - 0.375rem);
+    inset-inline-end: 1.125rem;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-inline-end: 2px solid var(--muted);
+    border-block-end: 2px solid var(--muted);
+    rotate: 45deg;
+    transition: rotate 0.2s, translate 0.2s;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    border-color: var(--text);
+  }
+}
+
+.field__select:has(select:open)::after {
+  rotate: 225deg;
+  translate: 0 0.25rem;
+}
+
+.field__select select::picker(select) {
+  margin-block: 0.375rem;
+  padding: 0.375rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 0.15s, translate 0.15s, overlay 0.15s allow-discrete, display 0.15s allow-discrete;
+
+  @starting-style {
+    opacity: 0;
+    translate: 0 -0.25rem;
+  }
+}
+
+.field__select option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-block-size: 2.75rem; /* 44px touch target */
+  padding-inline: 0.75rem;
+  font-size: var(--text-base);
+  border-radius: calc(var(--radius) * 0.75);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  &:checked {
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  &::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field__select::after,
+  .field__select select::picker(select) {
+    transition: none;
   }
 }
 

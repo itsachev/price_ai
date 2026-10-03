@@ -2,7 +2,7 @@ import Link from 'next/link';
 import AuthForm from '@/components/AuthForm';
 import AuthShell from '@/components/AuthShell';
 import { signUp } from '../actions/auth';
-import { safeNext } from '@/lib/auth';
+import { ACCOUNT_TYPES, safeNext } from '@/lib/auth';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@/lib/formGuard';
 import { getDictionary, getLocale } from '../dictionaries';
 
@@ -36,6 +36,7 @@ export default async function SignupPage({ searchParams }) {
           { name: 'email', type: 'email', label: t.email, autoComplete: 'email', maxLength: 254, half: true },
           { name: 'password', type: 'password', label: t.password, hint: t.passwordHint, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
           { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
+          { name: 'accountType', label: t.accountType, options: ACCOUNT_TYPES.map((type) => [type, t.accountTypes[type]]) },
         ]}
       />
     </AuthShell>
