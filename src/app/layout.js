@@ -85,7 +85,7 @@ export default async function RootLayout({ children }) {
         <SmoothScroll>
           <header className="site-header">
             <div className="container site-header__inner" data-spotlight>
-              <Link href="/" className="brand">
+              <Link href={signedIn ? '/dashboard' : '/'} className="brand">
                 {brandMark}
                 <span>Price<span>AI</span></span>
               </Link>
@@ -157,7 +157,7 @@ export default async function RootLayout({ children }) {
           <FooterMotion>
             <div className="container site-footer__inner">
               <div className="site-footer__intro stack">
-                <Link href="/" className="brand">
+                <Link href={signedIn ? '/dashboard' : '/'} className="brand">
                   {brandMark}
                   <span>Price<span>AI</span></span>
                 </Link>

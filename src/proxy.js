@@ -51,8 +51,8 @@ export async function proxy(request) {
   return redirect;
 }
 
-// Only app routes pay for the session check; marketing pages stay untouched.
+// Only app routes and home (signed-in visitors skip it) pay for the session check.
 // Add every new signed-in route here.
 export const config = {
-  matcher: ['/dashboard/:path*', '/reset-password', '/login', '/signup', '/forgot-password'],
+  matcher: ['/', '/dashboard/:path*', '/reset-password', '/login', '/signup', '/forgot-password'],
 };

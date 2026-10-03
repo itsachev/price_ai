@@ -6,8 +6,8 @@ export function safeNext(value, fallback = '/dashboard') {
   return typeof value === 'string' && /^\/(?![/\\])/.test(value) ? value : fallback;
 }
 
-// Pages for signed-out visitors; signed-in visitors skip them.
-export const GUEST_PAGES = ['/login', '/signup', '/forgot-password'];
+// Pages for signed-out visitors; signed-in visitors skip them (home goes to /dashboard).
+export const GUEST_PAGES = ['/', '/login', '/signup', '/forgot-password'];
 
 // Supabase session cookie, whole or chunked (.0, .1…); not the PKCE code-verifier.
 export const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
