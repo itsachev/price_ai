@@ -52,6 +52,7 @@ export async function readChainCsvs(zip, eiks) {
  * Lenient CSV parser. Detects `,` or `;` from the header line. Some chains
  * (Lidl) leave stray quotes inside quoted fields (`"Simid хляб ;"Енергия;""`),
  * so a quote only closes a field when a delimiter or line end follows it.
+ * An escaped `""` before a delimiter closes it too, unless a space follows.
  */
 export function parseCsv(text) {
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
@@ -73,7 +74,9 @@ export function parseCsv(text) {
       else if (text[i + 1] === '"') {
         field += '"';
         i++;
-        if (ends(text[i + 1])) inQuotes = false; // stray quote right before the closer
+        // Stray quote right before the closer (Lidl), unless a space follows the
+        // delimiter: that's an escaped quote mid-field (BulMag's `""3-ти Март"", №20`).
+        if (ends(text[i + 1]) && text[i + 2] !== ' ') inQuotes = false;
       } else field += ch;
       continue;
     }

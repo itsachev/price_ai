@@ -43,7 +43,7 @@ The frontend is set up with Next.js 16, the App Router and a `src/` directory. T
 **Notifications:** in-site only. After matching, `npm run match` calls `record_notifications()` (0012), which writes rows to `notifications` from `price_moves()` (undercut, raised-above, delisted; promo start/end from `NOTIFY_MIN_CHANGE`) plus one `matched` row per merchant for products whose first match finished (`runMatch` returns `matched`). Rows hold data, not text, and are unique per merchant, feed date, kind, product and listing, so reruns add nothing. Rows older than `NOTIFY_KEEP_DAYS` are dropped. The header bell (`Notifications` → `NotificationBell`, a native `popover` `#notif-menu`) streams in its own `Suspense` boundary for signed-in visitors and shows the newest 8 with the unread count; opening it marks everything read (`markNotificationsRead`, which may only update `read_at`). `/dashboard/notifications` lists the newest 200, grouped by feed day.
 
 Commands:
-- `npm run scrape` runs all scrapers. `npm run scrape kaufland lidl` runs only the ones named.
+- `npm run scrape` runs all scrapers, then rebuilds the shopper insights `/info` reads (`refresh_shopper_insights()`, 0024/0025: `shopper_prices`, listings seen by a recent scrape). `npm run scrape kaufland lidl` runs only the ones named.
 - `npm run check` runs the self-checks (`scripts/check-kzp.mjs`, `scripts/check-match.mjs`, `scripts/check-auth.mjs`, `scripts/check-catalog.mjs`).
 - `npm run match` matches every product and refreshes price statuses (`src/lib/pipeline/match.js`).
 - `npm run seed-demo` creates a demo merchant (`demo@priceai.test`) with a small catalog.

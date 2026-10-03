@@ -16,7 +16,9 @@
     "settings": "Settings",
     "account": "Account",
     "admin": "Admin",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "prices": "Find prices",
+    "list": "Shopping list"
   },
   "dashboard": {
     "title": "Your prices today",
@@ -986,6 +988,85 @@
     }
   },
   "info": {
-    "title": "Welcome to PriceAI"
+    "title": "Find the cheapest price",
+    "lead": "Search a product and see which chain sells it for less today.",
+    "stats": "{count} prices from {chains} chains, updated every morning",
+    "quickLabel": "Popular searches",
+    "quick": [
+      {
+        "label": "Milk",
+        "q": "мляко"
+      },
+      {
+        "label": "Eggs",
+        "q": "яйца"
+      },
+      {
+        "label": "Bread",
+        "q": "хляб"
+      },
+      {
+        "label": "White cheese",
+        "q": "сирене"
+      },
+      {
+        "label": "Butter",
+        "q": "масло"
+      },
+      {
+        "label": "Coffee",
+        "q": "кафе"
+      },
+      {
+        "label": "Chicken",
+        "q": "пиле"
+      },
+      {
+        "label": "Bananas",
+        "q": "банани"
+      }
+    ],
+    "search": "Search products",
+    "placeholder": "e.g. milk Vereya 1l",
+    "cheapest": "Cheapest today",
+    "others": "{count} more, cheapest first",
+    "promo": "Promo",
+    "empty": "No chain lists a product like that right now. Try fewer or different words.",
+    "note": "Typical shelf price across each chain's stores, from today's official price feed. Promo prices may need the chain's loyalty card.",
+    "add": "Add",
+    "onList": "On list",
+    "list": {
+      "title": "Shopping list",
+      "addMore": "Add products",
+      "close": "Close",
+      "empty": "Your list is empty. Search for a product and press Add to build your basket.",
+      "cheapestWay": "Cheapest way to buy it all",
+      "stores": "across {count} chains",
+      "oneStore": "all at one chain",
+      "saving": "{amount} less than the best single chain ({chain}).",
+      "perChain": "Whole list per chain",
+      "complete": "has everything",
+      "missing": "missing {count}",
+      "items": "Items",
+      "bestAt": "Cheapest at {chain}: {price}",
+      "less": "One less",
+      "more": "One more",
+      "quantity": "Quantity",
+      "remove": "Remove",
+      "clear": "Clear list",
+      "note": "Each item is compared with the same kind and pack size in every chain, at the typical shelf price from today's official feed. Promo prices may need the chain's loyalty card."
+    },
+    "insights": {
+      "dealsTitle": "Today's best deals",
+      "real": "Real deal",
+      "realHint": "Cheaper than this chain's usual shelf price over the last 30 days, not just against a raised regular price.",
+      "dealsNote": "Promos that are no cheaper than the chain's usual price are left out. Promo prices may need the chain's loyalty card.",
+      "buyTitle": "Good time to buy",
+      "belowUsual": "{pct} under its usual price",
+      "building": "Nothing at a low yet. This fills in once we have two weeks of price history.",
+      "waitTitle": "Better to wait",
+      "usually": "usually {price}",
+      "waitEmpty": "Nothing priced above its usual level yet. This fills in once we have two weeks of price history."
+    }
   }
 }

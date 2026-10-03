@@ -11,6 +11,13 @@ export function safeNext(value, fallback = '/dashboard') {
 // ponytail: user_metadata is user-editable, fine for routing; move it to app_metadata before it gates data.
 export const ACCOUNT_TYPES = ['merchant', 'consumer'];
 
+// Accounts from before signup asked count as merchants.
+export const isMerchant = (userMetadata) => (userMetadata?.account_type ?? 'merchant') === 'merchant';
+
+// The merchant's catalog pages; settings and admin stay open to every account.
+export const merchantOnly = (pathname) =>
+  /^\/dashboard(\/|$)/.test(pathname) && !/^\/dashboard\/(settings|admin)(\/|$)/.test(pathname);
+
 // Pages for signed-out visitors; signed-in visitors skip them (home goes to /dashboard).
 export const GUEST_PAGES = ['/', '/login', '/signup', '/forgot-password'];
 
@@ -20,7 +27,7 @@ export const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
 // Header hint with no network call: a session cookie that holds a refresh token.
 // The access token inside expires hourly and only gets refreshed on proxy routes,
 // so checking its expiry showed signed-in visitors "Sign in" on marketing pages.
-// Returns { name, admin } (name: the signup username, else the email's local part;
+// Returns { name, admin, merchant } (name: the signup username, else the email's local part;
 // admin: a hint for the nav link, the admin page checks the role itself) or null.
 // ponytail: a revoked session or deleted user still reads as signed in here until
 // the first proxy route they open, where the proxy clears the dead cookie.
@@ -36,6 +43,7 @@ export async function sessionUser(cookieStore) {
     return {
       name: user.user_metadata?.username || user.email?.split('@')[0] || '',
       admin: user.app_metadata?.role === 'admin',
+      merchant: isMerchant(user.user_metadata),
     };
   } catch {
     return null;

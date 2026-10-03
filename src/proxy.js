@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { GUEST_PAGES, SESSION_COOKIE, safeNext } from '@/lib/auth';
+import { GUEST_PAGES, SESSION_COOKIE, isMerchant, merchantOnly, safeNext } from '@/lib/auth';
 
 // Refreshes the Supabase session cookie and does the optimistic auth redirects.
 // Pages still check the user themselves; RLS is the real guard.
@@ -40,9 +40,13 @@ export async function proxy(request) {
   const guestPage = GUEST_PAGES.includes(pathname);
 
   // Signed out on an app page: sign in, then come back. Signed in on a guest page: go on.
-  const target = !signedIn && !guestPage
+  let target = !signedIn && !guestPage
     ? `/login?next=${encodeURIComponent(pathname + search)}`
     : signedIn && guestPage ? safeNext(searchParams.get('next')) : null;
+  // Non-merchant accounts have no catalog: send them to /info instead.
+  if (signedIn && !isMerchant(data.claims.user_metadata) && merchantOnly(new URL(target ?? pathname, request.url).pathname)) {
+    target = '/info';
+  }
   if (!target) return response;
 
   // Keep any refreshed session cookies on the redirect.
@@ -54,5 +58,5 @@ export async function proxy(request) {
 // Only app routes and home (signed-in visitors skip it) pay for the session check.
 // Add every new signed-in route here.
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/reset-password', '/login', '/signup', '/forgot-password'],
+  matcher: ['/', '/dashboard/:path*', '/info/:path*', '/reset-password', '/login', '/signup', '/forgot-password'],
 };

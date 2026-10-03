@@ -12,6 +12,7 @@ import ScrollToOnMount from '@/components/ScrollToOnMount';
 import { COMPETITORS, PRICE_STATUSES } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
+import { isMerchant } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { PAGE_SIZE } from '@/lib/pagination';
 import { loadSuggestions } from '@/lib/suggestions';
@@ -58,6 +59,7 @@ export default async function DashboardPage({ searchParams }) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   if (!auth?.claims) redirect('/login');
+  if (!isMerchant(auth.claims.user_metadata)) redirect('/info');
 
   const params = await searchParams;
   const status = PRICE_STATUSES.includes(params.status) ? params.status : null;

@@ -74,6 +74,7 @@ export default async function RootLayout({ children }) {
   const user = await sessionUser(cookieStore);
   const signedIn = Boolean(user);
   const userName = user?.name || dict.nav.account;
+  const homeHref = !signedIn ? '/' : user.merchant ? '/dashboard' : '/info';
   const cookieNoticeSeen = Boolean(cookieStore.get('cookie_notice')?.value);
 
   return (
@@ -85,7 +86,7 @@ export default async function RootLayout({ children }) {
         <SmoothScroll>
           <header className="site-header">
             <div className="container site-header__inner" data-spotlight>
-              <Link href={signedIn ? '/dashboard' : '/'} className="brand">
+              <Link href={homeHref} className="brand">
                 {brandMark}
                 <span>Price<span>AI</span></span>
               </Link>
@@ -95,8 +96,14 @@ export default async function RootLayout({ children }) {
                   initial={signedIn}
                   signedIn={
                     <ul className="site-menu__links">
-                      <li><NavLink href="/dashboard" exact><ButtonLabel>{dict.nav.dashboard}</ButtonLabel></NavLink></li>
-                      <li><NavLink href="/dashboard/reports"><ButtonLabel>{dict.nav.reports}</ButtonLabel></NavLink></li>
+                      {user?.merchant !== false && <>
+                        <li><NavLink href="/dashboard" exact><ButtonLabel>{dict.nav.dashboard}</ButtonLabel></NavLink></li>
+                        <li><NavLink href="/dashboard/reports"><ButtonLabel>{dict.nav.reports}</ButtonLabel></NavLink></li>
+                      </>}
+                      {user?.merchant === false && <>
+                        <li><NavLink href="/info" exact><ButtonLabel>{dict.nav.prices}</ButtonLabel></NavLink></li>
+                        <li><NavLink href="/info/list"><ButtonLabel>{dict.nav.list}</ButtonLabel></NavLink></li>
+                      </>}
                       <li><NavLink href="/dashboard/settings"><ButtonLabel>{dict.nav.settings}</ButtonLabel></NavLink></li>
                       {user?.admin && <li><NavLink href="/dashboard/admin"><ButtonLabel>{dict.nav.admin}</ButtonLabel></NavLink></li>}
                     </ul>
@@ -158,7 +165,7 @@ export default async function RootLayout({ children }) {
           <FooterMotion key={lang}>
             <div className="container site-footer__inner">
               <div className="site-footer__intro stack">
-                <Link href={signedIn ? '/dashboard' : '/'} className="brand">
+                <Link href={homeHref} className="brand">
                   {brandMark}
                   <span>Price<span>AI</span></span>
                 </Link>

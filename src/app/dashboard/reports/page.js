@@ -6,6 +6,7 @@ import PriceTrend from '@/components/PriceTrend';
 import { COMPETITORS } from '@/lib/config';
 import { formatPercent, formatPrice } from '@/lib/format';
 import { matchConfig } from '@/lib/pipeline/match';
+import { isMerchant } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { getDictionary, getLocale } from '../../dictionaries';
 
@@ -44,6 +45,7 @@ export default async function ReportsPage() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) redirect('/login?next=/dashboard/reports');
+  if (!isMerchant(data.claims.user_metadata)) redirect('/info');
 
   const { activeDays, priceTolerance } = matchConfig();
   const top = (status) =>

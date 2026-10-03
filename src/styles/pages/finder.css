@@ -1,0 +1,575 @@
+/* Shopper's price finder (/info): a search hero, then either the results (the
+   cheapest hit as a shelf tag, the rest as price bars) or the day's insights
+   (deals as a grid of tags, buy now / wait side by side). The shopping list
+   (/info/list) and its Add dialog reuse the card, list and results. */
+.finder {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-3) var(--space-4);
+
+  & .catalog__search {
+    max-inline-size: none;
+    margin-inline-start: 0;
+  }
+
+  /* Section and card titles stay solid; only the page title gets the gradient. */
+  & :is(.insights, .finder__results) h2 {
+    background: none;
+    color: var(--text);
+  }
+}
+
+.finder--board {
+  gap: var(--space-section);
+}
+
+.finder__lead,
+.finder__empty,
+.finder__note {
+  max-inline-size: 60ch;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.finder__note {
+  font-size: var(--text-sm);
+}
+
+/* Hero: live data line, title, an oversized search box and quick picks. */
+.finder__hero {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+
+  & h1 {
+    max-inline-size: 16ch;
+  }
+
+  & .finder__lead {
+    font-size: var(--text-lead);
+  }
+}
+
+.finder__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.finder__live {
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal) 60%, transparent);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: finder-live 2.4s ease-out infinite;
+  }
+}
+
+@keyframes finder-live {
+  70%, 100% { box-shadow: 0 0 0 0.5rem transparent; }
+}
+
+.finder__searchbar {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 48rem;
+
+  & .catalog__search input {
+    min-block-size: 3.5rem;
+    padding-inline: 3.25rem 1.25rem;
+    font-size: var(--text-lead);
+    background: var(--surface);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: var(--shadow), 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+  }
+}
+
+.finder__glass {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 1.25rem;
+  inline-size: 1.25rem;
+  translate: 0 -50%;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* The glass pulses while a search is loading. */
+.finder__searchbar:has([aria-busy='true']) .finder__glass {
+  stroke: var(--accent);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: badge-pulse 1s ease-in-out infinite;
+  }
+}
+
+.finder__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+
+  & a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: 1rem;
+    font-size: var(--text-sm);
+    text-decoration: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+    &:hover {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    &[aria-current] {
+      color: var(--on-accent);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+}
+
+/* Results: dim while a new search loads. */
+.finder__results {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-2);
+  transition: opacity 0.2s 0.15s;
+}
+
+.finder:has(.catalog__search[aria-busy='true']) .finder__results {
+  opacity: 0.55;
+}
+
+/* The cheapest hit (and the list page's summary): a shelf tag with the accent
+   edge and a punched hole. */
+.finder__best {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) clamp(1rem, 4vw, 2.5rem);
+  padding-inline-start: clamp(2.25rem, 6vw, 3.5rem);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 4px;
+    background: var(--edge-gradient);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: clamp(0.75rem, 2vw, 1.25rem);
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    translate: 0 -50%;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow: inset 0 1px 2px color-mix(in srgb, var(--text) 25%, transparent);
+  }
+
+  & h2 {
+    font-size: var(--text-h3);
+    text-wrap: balance;
+  }
+}
+
+.finder__best-body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.finder__best-buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+
+  & .finder__price {
+    font-family: var(--font-heading);
+    font-size: var(--text-stat);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--tracking-heading);
+    line-height: 1;
+  }
+}
+
+@container (min-width: 36rem) {
+  .finder__best:has(.finder__best-buy) {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .finder__best-buy {
+    flex-direction: column;
+    align-items: end;
+  }
+}
+
+.finder__where {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+
+  & .finder__price {
+    font-size: var(--text-h3);
+    font-weight: var(--weight-heading);
+  }
+}
+
+.finder__store {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.finder__subhead {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-h3);
+}
+
+.finder__price {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.finder__list {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--border);
+
+  & li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem var(--space-1);
+    padding-block: 0.75rem;
+    border-block-end: 1px solid var(--border);
+  }
+
+  & .finder__price {
+    margin-inline-start: auto;
+  }
+}
+
+/* Results list: a bar per row, its length the price against the dearest hit.
+   Wide containers set each product on one row: name, bar, price, Add. */
+.finder__bar {
+  display: none;
+  block-size: 0.375rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  overflow: hidden;
+
+  & span {
+    display: block;
+    inline-size: var(--w);
+    block-size: 100%;
+    border-radius: inherit;
+    background: var(--edge-gradient);
+  }
+}
+
+@container (min-width: 44rem) {
+  .finder__list--bars li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(6rem, 12rem) 5.5rem minmax(5.5rem, auto);
+    grid-template-areas: 'title bar price add' 'meta bar price add';
+    column-gap: var(--space-2);
+    row-gap: 0.125rem;
+
+    & .finder__title { grid-area: title; }
+    & .finder__chain { grid-area: meta; }
+    & .badge { grid-area: meta; justify-self: end; }
+    & .finder__bar { grid-area: bar; display: block; }
+    & .finder__price { grid-area: price; text-align: end; }
+    & > :last-child { grid-area: add; justify-self: end; }
+  }
+}
+
+.finder__title {
+  flex: 1 1 100%;
+}
+
+.finder__chain {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* Title row: h1 with a button beside it, wrapping under it on phones. */
+.finder__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+}
+
+.finder__added {
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.finder__was {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shopping list (/info/list): reuses the finder's card and list. */
+.shopping__heading {
+  margin-block-start: var(--space-2);
+  font-size: var(--text-h3);
+}
+
+.shopping__saving {
+  color: var(--status-opportunity);
+  text-wrap: pretty;
+}
+
+.shopping__chains li:first-child strong {
+  color: var(--accent);
+}
+
+.shopping__qty {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+
+  & button {
+    min-inline-size: 44px;
+    min-block-size: 44px;
+    font-size: var(--text-h3);
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--accent);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  & output {
+    min-inline-size: 2ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.shopping__clear {
+  justify-self: start;
+}
+
+/* Summary and items sit side by side when both fit. */
+.shopping__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+  gap: var(--space-2) var(--space-4);
+  align-items: start;
+}
+
+.shopping__col {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.shopping__col > .shopping__heading:first-child {
+  margin-block-start: 0;
+}
+
+/* Insights on /info with no search. */
+.insights {
+  display: grid;
+  gap: var(--space-section);
+}
+
+.insights__section {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+
+  & h2 {
+    font-size: var(--text-h2);
+  }
+}
+
+.insights__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+
+  & .finder__note {
+    max-inline-size: 44ch;
+  }
+}
+
+/* Deals: a grid of shelf tags, the cut stamped on the corner. */
+.deals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-3) var(--space-2);
+  padding: 0;
+  padding-block-start: 0.75rem;
+  list-style: none;
+}
+
+.deal {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 0.5rem;
+  padding: 1.25rem var(--space-2) var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s, translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--status-opportunity) 50%, var(--border));
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover { translate: 0 -3px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: deal-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(min(var(--i), 11) * 45ms);
+  }
+}
+
+@keyframes deal-in {
+  from { opacity: 0; translate: 0 1rem; }
+}
+
+.deal__cut {
+  position: absolute;
+  inset-block-start: -0.75rem;
+  inset-inline-end: 0.75rem;
+  padding: 0.25em 0.6em;
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+  color: light-dark(#ffffff, #1a1003);
+  background: var(--status-opportunity);
+  border-radius: 0.375rem;
+  rotate: -4deg;
+  box-shadow: 0 0.25rem 0.75rem -0.25rem color-mix(in srgb, var(--status-opportunity) 70%, transparent);
+}
+
+.deal__chain {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.deal__title {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.deal__prices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+
+  & strong {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+  }
+}
+
+/* Perforated tear line above the actions. */
+.deal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block-start: 0.5rem;
+  border-block-start: 1px dashed var(--border);
+
+  & > :last-child {
+    margin-inline-start: auto;
+  }
+}
+
+/* Buy now / wait: two panels side by side when both fit. */
+.insights__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.insights__panel {
+  --tone: var(--status-opportunity);
+  padding: var(--space-3) clamp(1rem, 3vw, 2rem);
+  background: color-mix(in srgb, var(--tone) 5%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tone) 25%, var(--border));
+  border-radius: var(--radius);
+
+  &[data-tone='wait'] {
+    --tone: var(--status-at-risk);
+  }
+
+  & h2 {
+    font-size: var(--text-h3);
+    padding-inline-start: 0.75rem;
+    border-inline-start: 3px solid var(--tone);
+  }
+}
