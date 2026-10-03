@@ -665,6 +665,11 @@
   position: relative;
   cursor: pointer;
 
+  /* Dates, actions and chevron share the row's centre line. */
+  & > td {
+    vertical-align: middle;
+  }
+
   & .admin-who a::after {
     content: '';
     position: absolute;
