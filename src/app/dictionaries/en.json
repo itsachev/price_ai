@@ -305,6 +305,10 @@
         "Choose “Add to Home Screen”"
       ]
     },
+    "anytime": {
+      "browser": "You can always install it later: click the install icon in the address bar, or choose “Install app” in the browser menu.",
+      "ios": "You can always add it later: tap Share, then “Add to Home Screen”."
+    },
     "install": "Install",
     "later": "Not now"
   },

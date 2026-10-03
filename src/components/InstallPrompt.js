@@ -76,6 +76,7 @@ export default function InstallPrompt({ t }) {
             {t.steps[mode].map((step) => <li key={step}>{step}</li>)}
           </ol>
         )}
+        <p className="dock-card__hint">{t.anytime[mode === 'ios' ? 'ios' : 'browser']}</p>
       </div>
       <div className="dock-card__actions">
         <button type="button" className="button button--quiet" onClick={dismiss}>

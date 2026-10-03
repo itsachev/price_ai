@@ -47,6 +47,7 @@
     &:nth-child(2) { --i: 1; }
     &:nth-child(3) { --i: 2; }
     &:nth-child(4) { --i: 3; }
+    &:nth-child(5) { --i: 4; }
   }
 }
 
@@ -76,7 +77,6 @@
   min-inline-size: 0;
 
   & p:not(.eyebrow) {
-    max-inline-size: 52ch;
     color: var(--muted);
     font-size: var(--text-base);
     text-wrap: pretty;
@@ -179,22 +179,6 @@
   }
 }
 
-/* Icon, text and buttons share one row once there's room. */
-@media (width >= 44rem) {
-  .dock-card {
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-
-    & .dock-card__icon {
-      align-self: start;
-    }
-
-    & .dock-card__actions {
-      grid-column: auto;
-    }
-  }
-}
-
 /* The app-icon tile: the same in both themes, like the installed icon, with a
    ring that ripples out a few times to draw the eye, then rests. */
 .dock-card__icon.install-prompt__icon {
@@ -239,4 +223,12 @@
   .dock-card__icon.install-prompt__icon::after {
     animation: none;
   }
+}
+
+/* Quiet footnote under the main copy (e.g. how to install later). */
+.dock-card__body p.dock-card__hint {
+  margin-block-start: 0.4rem;
+  padding-block-start: 0.6rem;
+  border-block-start: 1px dashed var(--border);
+  font-size: var(--text-base);
 }
