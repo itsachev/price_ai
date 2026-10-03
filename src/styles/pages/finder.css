@@ -573,3 +573,16 @@
     border-inline-start: 3px solid var(--tone);
   }
 }
+
+/* Basket total under the items: the cheapest way, every unit counted. */
+.shopping__total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-weight: 600;
+
+  & .finder__price {
+    margin-inline-start: auto;
+  }
+}

@@ -120,6 +120,10 @@ export default async function ShoppingListPage({ searchParams }) {
                 </li>
               ))}
             </ol>
+            <p className="shopping__total">
+              <span>{t.total.replace('{count}', rows.reduce((n, r) => n + r.item.quantity, 0))}</span>
+              <span className="finder__price">{euros(split.total)}</span>
+            </p>
 
             <form action={clearList} className="shopping__clear">
               <button className="button button--danger-quiet"><ButtonLabel>{t.clear}</ButtonLabel></button>

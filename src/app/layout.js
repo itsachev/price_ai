@@ -11,6 +11,7 @@ import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
 import Notifications from '@/components/Notifications';
+import ListCount from '@/components/ListCount';
 import { LOCALES, SITE_URL } from '@/lib/config';
 import { getDictionary, getLocale } from './dictionaries';
 import { setLocale } from './actions/locale';
@@ -102,7 +103,10 @@ export default async function RootLayout({ children }) {
                       </>}
                       {user?.merchant === false && <>
                         <li><NavLink href="/info" exact><ButtonLabel>{dict.nav.prices}</ButtonLabel></NavLink></li>
-                        <li><NavLink href="/info/list"><ButtonLabel>{dict.nav.list}</ButtonLabel></NavLink></li>
+                        <li><NavLink href="/info/list">
+                          <ButtonLabel>{dict.nav.list}</ButtonLabel>
+                          <Suspense><ListCount label={dict.nav.listCount} /></Suspense>
+                        </NavLink></li>
                       </>}
                       <li><NavLink href="/dashboard/settings"><ButtonLabel>{dict.nav.settings}</ButtonLabel></NavLink></li>
                       {user?.admin && <li><NavLink href="/dashboard/admin"><ButtonLabel>{dict.nav.admin}</ButtonLabel></NavLink></li>}

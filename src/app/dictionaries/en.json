@@ -18,7 +18,8 @@
     "admin": "Admin",
     "backToTop": "Back to top",
     "prices": "Find prices",
-    "list": "Shopping list"
+    "list": "Shopping list",
+    "listCount": "{count} items on your list"
   },
   "dashboard": {
     "title": "Your prices today",
@@ -1038,6 +1039,7 @@
     "list": {
       "title": "Shopping list",
       "addMore": "Add products",
+      "total": "Total for {count} items",
       "close": "Close",
       "empty": "Your list is empty. Search for a product and press Add to build your basket.",
       "cheapestWay": "Cheapest way to buy it all",
