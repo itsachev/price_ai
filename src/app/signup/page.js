@@ -36,7 +36,7 @@ export default async function SignupPage({ searchParams }) {
           { name: 'email', type: 'email', label: t.email, autoComplete: 'email', maxLength: 254, half: true },
           { name: 'password', type: 'password', label: t.password, hint: t.passwordHint, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
           { name: 'confirm', type: 'password', label: t.confirmPassword, autoComplete: 'new-password', minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX, half: true },
-          { name: 'accountType', label: t.accountType, options: ACCOUNT_TYPES.map((type) => [type, t.accountTypes[type]]) },
+          { name: 'accountType', label: t.accountType, options: ACCOUNT_TYPES.map((type) => [type, t.accountTypes[type]]), note: ['consumer', t.consumerNote] },
         ]}
       />
     </AuthShell>

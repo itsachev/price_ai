@@ -509,6 +509,7 @@
     "username": "Username",
     "usernameHint": "Shown in the header",
     "accountType": "Account type",
+    "consumerNote": "For now, this type has accurate data only for prices in Sofia",
     "accountTypes": {
       "merchant": "Merchant",
       "consumer": "Consumer"
