@@ -185,7 +185,8 @@ export default async function HomePage() {
   );
 
   return (
-    <HomeMotion>
+    // Keyed on the language: SplitText keeps the old text, so a switch remounts it.
+    <HomeMotion key={lang}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
 
       {/* Hero: server-rendered and complete; CSS runs the entrance, so first paint never waits on JS. */}

@@ -36,11 +36,17 @@ export default function PageMotion({ as: Tag = 'div', className, reveal, childre
         const ease = 'expo.out';
         const title = scope.current.querySelector('h1');
         if (title) {
-          SplitText.create(title, {
-            type: 'lines',
-            mask: 'lines',
-            autoSplit: true,
-            onSplit: (self) => gsap.from(self.lines, { yPercent: 110, duration: 1, ease, stagger: 0.08 }),
+          // The split lives only for the entrance. SplitText reverts by rewriting the
+          // innerHTML it saved, which would bring back the old text after React
+          // updates the title (a language switch); put React's own nodes back instead.
+          const nodes = [...title.childNodes];
+          const split = SplitText.create(title, { type: 'lines', mask: 'lines' });
+          gsap.from(split.lines, {
+            yPercent: 110, duration: 1, ease, stagger: 0.08,
+            onComplete: () => {
+              split.revert();
+              title.replaceChildren(...nodes);
+            },
           });
         }
 

@@ -154,7 +154,8 @@ export default async function RootLayout({ children }) {
             </div>
           </header>
           <main className="container">{children}</main>
-          <FooterMotion>
+          {/* Keyed on the language: SplitText keeps the old text, so a switch remounts it. */}
+          <FooterMotion key={lang}>
             <div className="container site-footer__inner">
               <div className="site-footer__intro stack">
                 <Link href={signedIn ? '/dashboard' : '/'} className="brand">
