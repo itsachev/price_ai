@@ -1049,6 +1049,7 @@
       "perChain": "Whole list per chain",
       "complete": "has everything",
       "missing": "missing {count}",
+      "missingLabel": "Missing at {chain}",
       "items": "Items",
       "bestAt": "Cheapest at {chain}: {price}",
       "less": "One less",

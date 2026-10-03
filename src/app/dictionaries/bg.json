@@ -1049,6 +1049,7 @@
       "perChain": "Целият списък по вериги",
       "complete": "има всичко",
       "missing": "липсват {count}",
+      "missingLabel": "Липсват в {chain}",
       "items": "Продукти",
       "bestAt": "Най-евтино в {chain}: {price}",
       "less": "Едно по-малко",

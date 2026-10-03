@@ -89,6 +89,15 @@ export default async function ShoppingListPage({ searchParams }) {
                     {c.missing ? t.missing.replace('{count}', c.missing) : t.complete}
                   </span>
                   <span className="finder__price">{euros(c.total)}</span>
+                  {c.missing > 0 && (
+                    <ul className="shopping__gaps" aria-label={t.missingLabel.replace('{chain}', chain(c.key))}>
+                      {c.gaps.map((item) => (
+                        <li key={item.id} title={item.listing.title}>
+                          <span className="shopping__gap">{item.listing.title}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ol>

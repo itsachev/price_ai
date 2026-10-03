@@ -158,8 +158,12 @@
 
 .button--danger-quiet {
   --btn-fg: var(--status-at-risk);
+  --btn-ring: color-mix(in srgb, var(--status-at-risk) 45%, transparent);
 
-  &:hover { --btn-fg: var(--status-at-risk); }
+  &:hover {
+    --btn-fg: var(--status-at-risk);
+    --btn-ring: var(--status-at-risk);
+  }
 }
 
 /* Entry. The delay inherits --d from an animated parent (hero actions, the

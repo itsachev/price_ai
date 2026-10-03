@@ -39,12 +39,18 @@ export default function PageMotion({ as: Tag = 'div', className, reveal, childre
           // The split lives only for the entrance. SplitText reverts by rewriting the
           // innerHTML it saved, which would bring back the old text after React
           // updates the title (a language switch); put React's own nodes back instead.
+          // The split empties those text nodes, so save their text to restore too.
           const nodes = [...title.childNodes];
+          const texts = [];
+          for (const walk = document.createTreeWalker(title, NodeFilter.SHOW_TEXT); walk.nextNode(); ) {
+            texts.push([walk.currentNode, walk.currentNode.nodeValue]);
+          }
           const split = SplitText.create(title, { type: 'lines', mask: 'lines' });
           gsap.from(split.lines, {
             yPercent: 110, duration: 1, ease, stagger: 0.08,
             onComplete: () => {
               split.revert();
+              for (const [node, text] of texts) node.nodeValue = text;
               title.replaceChildren(...nodes);
             },
           });

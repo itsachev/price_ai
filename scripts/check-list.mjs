@@ -23,6 +23,7 @@ assert.equal(rows[1].best.id, 7);
 assert.equal(rows[2].offers.size, 1, 'no category: own chain only');
 // kaufland: 2*1.09 + 0.99 = 3.17, missing soap; lidl: 2*1.19 + 0.89 = 3.27; billa: 2*1.39 + 2.50 = 5.28, missing bread
 assert.deepEqual(chains.map((c) => [c.key, c.total, c.missing]), [['kaufland', 317, 1], ['lidl', 327, 1], ['billa', 528, 1]]);
+assert.equal(chains[0].gaps.length, 1);
 // split: 2*1.09 + 0.89 + 2.50 = 5.57 across 3 chains
 assert.deepEqual(split, { total: 557, stores: 3 });
 assert.deepEqual(planList([], []), { rows: [], chains: [], split: { total: 0, stores: 0 } });

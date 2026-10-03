@@ -714,8 +714,10 @@
       justify-content: start;
     }
     & .button {
-      --btn-ring: var(--border);
       flex: 1 1 8rem;
+    }
+    & .button:not(.button--danger-quiet) {
+      --btn-ring: var(--border);
     }
   }
 }
@@ -863,11 +865,8 @@
   }
 
   /* Quiet buttons get a ring here so they read as buttons in a list. */
-  & .button {
+  & .button:not(.button--danger-quiet) {
     --btn-ring: var(--border);
-  }
-  & .button--danger-quiet {
-    --btn-ring: color-mix(in srgb, var(--status-at-risk) 40%, var(--border));
   }
 }
 

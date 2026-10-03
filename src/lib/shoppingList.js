@@ -38,13 +38,13 @@ export function planList(items, listings) {
   const keys = new Set(rows.flatMap((r) => [...r.offers.keys()]));
   const chains = [...keys].map((key) => {
     let total = 0;
-    let missing = 0;
+    const gaps = [];
     for (const { item, offers } of rows) {
       const o = offers.get(key);
       if (o) total += cents(o.price) * item.quantity;
-      else missing += 1;
+      else gaps.push(item);
     }
-    return { key, total, missing };
+    return { key, total, missing: gaps.length, gaps };
   }).sort((a, b) => a.missing - b.missing || a.total - b.total);
 
   const split = {
