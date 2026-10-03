@@ -767,6 +767,21 @@
   }
 }
 
+/* Matching: what the cache draws on, right under the page intro. */
+.admin-scope {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+
+  & strong {
+    font-weight: 700;
+    color: var(--accent);
+  }
+  & [data-scope='products'] {
+    color: var(--status-opportunity);
+  }
+}
+
 /* Account page: identity and the one primary action. */
 .admin-profile {
   display: flex;
@@ -792,6 +807,12 @@
   font-size: var(--text-sm);
   color: var(--muted);
   overflow-wrap: anywhere;
+}
+
+.admin-profile__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
 }
 
 @container dash (width < 30rem) {
@@ -938,6 +959,19 @@
     color: var(--muted);
     text-wrap: pretty;
   }
+}
+
+/* An edit button at the end of a panel head, and the per-row Edit and Delete
+   in the products table. */
+.admin-head-action {
+  margin-inline-start: auto;
+}
+
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: var(--space-1);
 }
 
 /* Action forms. In a confirm dialog: what will happen, the typed guard (for

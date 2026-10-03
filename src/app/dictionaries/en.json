@@ -818,7 +818,12 @@
       "rateLimited": "Too many emails were sent. Try again in a few minutes.",
       "self": "You can’t do that to your own account.",
       "missing": "That account no longer exists.",
-      "failed": "That didn’t work. Try again."
+      "failed": "That didn’t work. Try again.",
+      "accountSaved": "Account details saved.",
+      "emailConfirmed": "The email is now confirmed. The account can sign in.",
+      "rulesSaved": "Pricing rules saved. Statuses are updated.",
+      "productSaved": "Product saved. Its status is updated.",
+      "productDeleted": "Product deleted."
     },
     "stats": {
       "products": "Products",
@@ -868,7 +873,8 @@
       "matched": "Matched",
       "unmatchedCol": "Unmatched",
       "waiting": "Waiting",
-      "none": "No account has products yet."
+      "none": "No account has products yet.",
+      "scope": "{markets} markets scraped · {products} products in the database"
     },
     "users": {
       "title": "Accounts",
@@ -964,7 +970,13 @@
       "signInAllowed": "Can sign in.",
       "signInBanned": "Banned until {date}.",
       "confirmedOn": "Confirmed {date}.",
-      "typeEmail": "Type {email} to confirm"
+      "typeEmail": "Type {email} to confirm",
+      "edit": "Edit account",
+      "emailHint": "Changed at once, without a confirmation email.",
+      "passwordHint": "Leave empty to keep the current password.",
+      "confirmEmail": "Mark confirmed",
+      "editRules": "Edit rules",
+      "editProduct": "Edit"
     }
   }
 }

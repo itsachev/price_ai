@@ -23,6 +23,9 @@ export default async function AdminMatching({ searchParams }) {
 
   const { merchants, verdicts } = stats;
   const judged = verdicts.confirmed + verdicts.rejected;
+  // Chains with at least one scraped listing, and every listing ever scraped.
+  const scraped = stats.chains.filter((c) => c.listings > 0);
+  const listings = scraped.reduce((sum, c) => sum + c.listings, 0);
   const name = new Map(users.map((u) => [u.id, accountName(u)]));
   const coverage = Object.entries(merchants)
     .map(([id, c]) => ({ id, ...c, matched: c.products - c.unmatched - c.matching }))
@@ -35,6 +38,12 @@ export default async function AdminMatching({ searchParams }) {
         <div className="dash__title">
           <h1>{m.title}</h1>
           <p className="muted">{m.intro}</p>
+          <p className="admin-scope">
+            {/* Odd parts of the split are the {markets} and {products} placeholders. */}
+            {m.scope.split(/\{(\w+)\}/).map((part, i) =>
+              i % 2 ? <strong key={part} data-scope={part}>{part === 'markets' ? num(scraped.length) : num(listings)}</strong> : part,
+            )}
+          </p>
         </div>
       </header>
 

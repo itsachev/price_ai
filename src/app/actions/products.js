@@ -2,12 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { after } from 'next/server';
 import { decodeCsv, parseCatalogCsv, parsePrice, toProduct } from '@/lib/catalog';
-import { runMatch, splitSize } from '@/lib/pipeline/match';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { splitSize } from '@/lib/pipeline/match';
 import { createClient } from '@/lib/supabase/server';
-import { loadSuggestions, refreshStatuses } from '@/lib/suggestions';
+import { loadSuggestions, matchInBackground, refreshStatuses } from '@/lib/suggestions';
 
 // Rows per import_products call; keeps each request well under PostgREST's body limit.
 const IMPORT_BATCH = 500;
@@ -26,19 +24,6 @@ async function merchant() {
 
 const fields = (formData) => Object.fromEntries(['name', 'brand', 'size', 'sku', 'price', 'cost'].map((f) => [f, formData.get(f)]));
 const dbError = (error) => (error.code === '23505' ? 'sku_taken' : 'unknown');
-
-// Matches one saved product against the listings already scraped, after the
-// response is sent, so saving never waits on Gemini. The id came back through
-// RLS, so the service-role client only touches the caller's own product. If the
-// platform cuts the run short, the daily `npm run match` picks it up.
-// ponytail: one run per save; batch through a queue if imports should match too.
-function matchInBackground(id) {
-  after(() =>
-    runMatch(createAdminClient(), { productIds: [id], log: () => {} })
-      .then(({ stopped }) => stopped && console.warn('background match stopped', id, stopped))
-      .catch((error) => console.error('background match failed', id, error)),
-  );
-}
 
 function done() {
   revalidatePath('/dashboard', 'layout');

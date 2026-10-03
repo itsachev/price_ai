@@ -1,9 +1,24 @@
 import Link from 'next/link';
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
-import { deleteUser, impersonate, resendConfirmation, setAdmin, setBanned } from '@/app/actions/admin';
+import {
+  confirmEmail,
+  deleteAccountProduct,
+  deleteUser,
+  impersonate,
+  resendConfirmation,
+  saveAccountProduct,
+  saveAccountRules,
+  setAdmin,
+  setBanned,
+  updateAccount,
+} from '@/app/actions/admin';
 import AccountBadges from '@/components/AccountBadges';
 import AdminAction, { ConfirmAction } from '@/components/AdminAction';
+import AuthForm from '@/components/AuthForm';
+import ProductDialog from '@/components/ProductDialog';
+import { DeleteForm, ProductForm } from '@/components/ProductForms';
+import { PASSWORD_MAX, PASSWORD_MIN } from '@/lib/formGuard';
 import Pager from '@/components/Pager';
 import { accountName, adminFormat, adminHealth, check, fill, isAdmin, isBanned, isUuid, requireAdmin } from '@/lib/admin';
 import { formatPercent, formatPrice } from '@/lib/format';
@@ -11,12 +26,16 @@ import { PAGE_SIZE, pageHref, paginate } from '@/lib/pagination';
 import { getDictionary, getLocale } from '../../../../dictionaries';
 
 // One account, as an admin sees it: who it is and the one primary action
-// (Sign in as), its catalog numbers, an Access panel where each row states
-// what's true now and offers the one change (admin role, sign-in, email),
-// details and pricing rules, its products (paged), and a Delete zone that
-// asks for the email to be typed first.
+// (Sign in as) beside Edit account (username, email, password), its catalog
+// numbers, an Access panel where each row states what's true now and offers
+// the one change (admin role, sign-in, email), its pricing rules (editable),
+// its products (paged, each with Edit and Delete), and a Delete zone that asks
+// for the email to be typed first. Every edit dialog is keyed on the row's
+// updated_at, so a save that lands back here closes it.
 const LIST = '/dashboard/admin/users';
 const ERRORS = ['failed', 'self', 'missing', 'rateLimited', 'unconfirmed'];
+// A rule as typed in the form: 0.15 → '15' (percent), 0.05 → '0.05' (euros).
+const shown = (v, scale = 1) => (v == null ? '' : String(Math.round(Number(v) * scale * 100) / 100));
 const STATUSES = ['at-risk', 'opportunity', 'competitive'];
 
 // Cached per request: the metadata and the page both need it.
@@ -64,7 +83,7 @@ export default async function AdminAccount({ params, searchParams }) {
     admin.from('pricing_rules').select('*').eq('owner_id', id).maybeSingle(),
     admin
       .from('products')
-      .select('id, name, brand, size, sku, price, cost, price_status, match_key', { count: 'exact' })
+      .select('id, name, brand, size, sku, price, cost, price_status, match_key, updated_at', { count: 'exact' })
       .eq('owner_id', id)
       .order('name')
       .range(productPage.from, productPage.to - 1),
@@ -98,17 +117,33 @@ export default async function AdminAccount({ params, searchParams }) {
           <p className="admin-profile__meta admin-mono" title={ta.id}>{user.id}</p>
           <AccountBadges user={user} self={self} t={tu} />
         </div>
-        {!self && confirmed && (
+        {!self && (
           <div className="admin-profile__cta">
-            <ConfirmAction
-              action={impersonate}
-              id={id}
-              back
-              label={tu.impersonate}
-              text={fill(tu.impersonateConfirm, { email: user.email })}
-              closeLabel={t.close}
-              variant="primary"
-            />
+            <ProductDialog key={user.updated_at} label={ta.edit} title={ta.edit} closeLabel={t.close}>
+              <AuthForm
+                action={updateAccount}
+                t={dict.auth}
+                submit={dict.products.save}
+                hidden={{ id, back: 'account' }}
+                fields={[
+                  { name: 'username', label: dict.auth.username, autoComplete: 'off', minLength: 2, maxLength: 32, defaultValue: user.user_metadata?.username ?? '' },
+                  { name: 'email', type: 'email', label: dict.auth.email, hint: ta.emailHint, autoComplete: 'off', maxLength: 254, defaultValue: user.email },
+                  { name: 'password', type: 'password', label: dict.auth.newPassword, hint: ta.passwordHint, autoComplete: 'new-password', required: false, minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
+                  { name: 'confirm', type: 'password', label: dict.auth.confirmPassword, autoComplete: 'new-password', required: false, minLength: PASSWORD_MIN, maxLength: PASSWORD_MAX },
+                ]}
+              />
+            </ProductDialog>
+            {confirmed && (
+              <ConfirmAction
+                action={impersonate}
+                id={id}
+                back
+                label={tu.impersonate}
+                text={fill(tu.impersonateConfirm, { email: user.email })}
+                closeLabel={t.close}
+                variant="primary"
+              />
+            )}
           </div>
         )}
       </header>
@@ -180,7 +215,10 @@ export default async function AdminAccount({ params, searchParams }) {
               state={confirmed ? fill(ta.confirmedOn, { date: date(user.email_confirmed_at) }) : ta.notConfirmed}
             >
               {!self && !confirmed && (
-                <AdminAction action={resendConfirmation} id={id} back variant="quiet">{tu.resend}</AdminAction>
+                <>
+                  <AdminAction action={resendConfirmation} id={id} back variant="quiet">{tu.resend}</AdminAction>
+                  <AdminAction action={confirmEmail} id={id} back variant="quiet">{ta.confirmEmail}</AdminAction>
+                </>
               )}
             </Access>
           </ul>
@@ -190,6 +228,23 @@ export default async function AdminAccount({ params, searchParams }) {
           <div className="dash__panel-head">
             <h2 id="account-rules">{ta.rules}</h2>
             {!rules && <p className="muted">{ta.defaults}</p>}
+            {!self && (
+              <div className="admin-head-action">
+                <ProductDialog key={rules?.updated_at} label={ta.editRules} title={ta.rules} closeLabel={t.close} variant="quiet">
+                  <AuthForm
+                    action={saveAccountRules}
+                    t={dict.settings.rules}
+                    submit={dict.settings.rules.save}
+                    hidden={{ id, back: 'account' }}
+                    fields={[
+                      { name: 'min_margin', unit: '%', label: dict.settings.rules.fields.min_margin, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '15', defaultValue: shown(rules?.min_margin, 100) },
+                      { name: 'undercut', unit: '€', label: dict.settings.rules.fields.undercut, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '0', defaultValue: Number(rules?.undercut) ? shown(rules.undercut) : '' },
+                      { name: 'max_change', unit: '%', label: dict.settings.rules.fields.max_change, inputMode: 'decimal', autoComplete: 'off', required: false, placeholder: '10', defaultValue: shown(rules?.max_change, 100) },
+                    ]}
+                  />
+                </ProductDialog>
+              </div>
+            )}
           </div>
           <dl className="admin-details">
             <div><dt>{dict.settings.rules.fields.min_margin}</dt><dd>{pct(rules?.min_margin)}</dd></div>
@@ -213,6 +268,7 @@ export default async function AdminAccount({ params, searchParams }) {
                 <th scope="col" className="num">{ta.price}</th>
                 <th scope="col" className="num">{ta.cost}</th>
                 <th scope="col">{ta.status}</th>
+                <th scope="col"><span className="visually-hidden">{tu.actions}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -231,6 +287,16 @@ export default async function AdminAccount({ params, searchParams }) {
                     ) : (
                       <span className="badge" data-status="matching">{ta.matching}</span>
                     )}
+                  </td>
+                  <td data-label={tu.actions}>
+                    <div className="admin-row-actions">
+                      <ProductDialog key={p.updated_at} label={ta.editProduct} title={dict.products.editTitle} closeLabel={t.close} variant="quiet">
+                        <ProductForm t={dict.products} action={saveAccountProduct} product={p} />
+                      </ProductDialog>
+                      <ProductDialog label={dict.products.delete} title={dict.products.delete} closeLabel={t.close} variant="danger-quiet">
+                        <DeleteForm t={dict.products} action={deleteAccountProduct} id={p.id} />
+                      </ProductDialog>
+                    </div>
                   </td>
                 </tr>
               ))}
