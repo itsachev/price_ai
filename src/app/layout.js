@@ -6,7 +6,9 @@ import AiBackground from '@/components/AiBackground';
 import ButtonLabel from '@/components/ButtonLabel';
 import ButtonSpotlight from '@/components/ButtonSpotlight';
 import BackToTop from '@/components/BackToTop';
-import FooterMotion from '@/components/FooterMotion';import CookieNotice from '@/components/CookieNotice';
+import FooterMotion from '@/components/FooterMotion';
+import CookieNotice from '@/components/CookieNotice';
+import InstallPrompt from '@/components/InstallPrompt';
 import MenuCloser from '@/components/MenuCloser';
 import NavLink from '@/components/NavLink';
 import SessionSwitch from '@/components/SessionSwitch';
@@ -201,6 +203,7 @@ export default async function RootLayout({ children }) {
           <BackToTop label={dict.nav.backToTop} />
         </SmoothScroll>
         {!cookieNoticeSeen && <CookieNotice t={dict.cookieNotice} />}
+        <InstallPrompt t={dict.installPrompt} />
       </body>
     </html>
   );

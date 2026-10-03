@@ -280,10 +280,33 @@
     "rights": "All rights reserved."
   },
   "cookieNotice": {
-    "title": "Cookie notice",
-    "text": "PriceAI uses only the cookies it needs to work: keeping you signed in, and remembering your language and theme. No tracking, no ads.",
+    "eyebrow": "Cookies · essential only",
+    "title": "No tracking, no ads",
+    "text": "PriceAI sets only the cookies it needs to work.",
     "link": "Privacy policy",
+    "kinds": [
+      "Sign-in session",
+      "Language",
+      "Theme"
+    ],
     "accept": "Got it"
+  },
+  "installPrompt": {
+    "eyebrow": "Web app",
+    "title": "Install PriceAI",
+    "text": "Open your prices from the home screen, in their own window without the browser bar.",
+    "steps": {
+      "menu": [
+        "Open the browser menu",
+        "Choose “Install app” or “Add to Home screen”"
+      ],
+      "ios": [
+        "Tap Share in the toolbar",
+        "Choose “Add to Home Screen”"
+      ]
+    },
+    "install": "Install",
+    "later": "Not now"
   },
   "legal": {
     "terms": {

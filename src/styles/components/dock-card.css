@@ -1,0 +1,242 @@
+/* Dock cards: the cookie notice and the "Install PriceAI" prompt. One floating
+   card at the bottom of the screen, dressed like the header and the modals: the
+   accent scan line on top, a soft glow and a mono eyebrow. Pure-CSS entrance:
+   @starting-style slides it in on first paint, with no client JS. The cookie
+   notice is server-rendered; the install card waits until it's gone, so only
+   one shows at a time. */
+.dock-card {
+  position: fixed;
+  z-index: 20;
+  inset-inline: var(--gutter);
+  inset-block-end: max(var(--gutter), env(safe-area-inset-bottom));
+  margin-inline: auto;
+  max-inline-size: 44rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--space-2);
+  padding: clamp(1rem, 0.75rem + 1vw, 1.5rem);
+  color: var(--text);
+  background:
+    var(--edge-gradient) no-repeat 0 0 / 100% 3px,
+    radial-gradient(70% 140% at 100% 0%, var(--glow-2), transparent 70%),
+    radial-gradient(50% 100% at 0% 100%, var(--glow-1), transparent 70%),
+    color-mix(in srgb, var(--surface) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  border-radius: calc(var(--radius) * 2);
+  box-shadow:
+    0 2rem 4rem -1.5rem light-dark(color-mix(in srgb, var(--band) 45%, transparent), #000),
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+  transition: translate 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+
+  @starting-style {
+    translate: 0 calc(100% + var(--gutter));
+    opacity: 0;
+  }
+
+  /* Body copy, then the title, chips and steps one by one after the card lands. */
+  & .dock-card__body > * {
+    transition: translate 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s;
+    transition-delay: calc(0.15s + var(--i, 0) * 0.07s);
+
+    @starting-style {
+      translate: 0 0.5rem;
+      opacity: 0;
+    }
+
+    &:nth-child(2) { --i: 1; }
+    &:nth-child(3) { --i: 2; }
+    &:nth-child(4) { --i: 3; }
+  }
+}
+
+.dock-card__icon {
+  inline-size: 3rem;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 28%;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+
+  & svg {
+    inline-size: 1.6rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.dock-card__body {
+  display: grid;
+  gap: 0.35rem;
+  min-inline-size: 0;
+
+  & p:not(.eyebrow) {
+    max-inline-size: 52ch;
+    color: var(--muted);
+    font-size: var(--text-base);
+    text-wrap: pretty;
+  }
+
+  & a {
+    color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+}
+
+.dock-card__body p.dock-card__title {
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-heading);
+  text-wrap: balance;
+}
+
+/* What the notice is about, at a glance: one pill per cookie. */
+.dock-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-start: 0.4rem;
+  padding: 0;
+  list-style: none;
+
+  & li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.75em;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+
+    &::before {
+      content: '';
+      inline-size: 0.4em;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0.5em var(--accent);
+    }
+  }
+}
+
+/* Install steps for browsers without an install event: numbered badges. */
+.dock-card__steps {
+  display: grid;
+  gap: 0.5rem;
+  margin-block-start: 0.4rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+
+  & li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    color: var(--text);
+    font-size: var(--text-base);
+    counter-increment: step;
+
+    &::before {
+      content: counter(step);
+      flex: none;
+      display: inline-grid;
+      place-items: center;
+      inline-size: 1.6rem;
+      aspect-ratio: 1;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--on-accent);
+      background: var(--edge-gradient);
+      border-radius: 50%;
+      translate: 0 -0.1em;
+    }
+  }
+}
+
+.dock-card__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: var(--space-1);
+}
+
+/* Narrow phones: full-width buttons, easy to hit with a thumb. */
+@media (width < 30rem) {
+  .dock-card__actions > *,
+  .dock-card__actions .button {
+    flex: 1;
+  }
+}
+
+/* Icon, text and buttons share one row once there's room. */
+@media (width >= 44rem) {
+  .dock-card {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+
+    & .dock-card__icon {
+      align-self: start;
+    }
+
+    & .dock-card__actions {
+      grid-column: auto;
+    }
+  }
+}
+
+/* The app-icon tile: the same in both themes, like the installed icon, with a
+   ring that ripples out a few times to draw the eye, then rests. */
+.dock-card__icon.install-prompt__icon {
+  position: relative;
+  background: #0a0f1a;
+  border-color: color-mix(in srgb, #7dd3fc 30%, transparent);
+
+  & svg {
+    inline-size: 60%;
+    fill: #7dd3fc;
+    stroke: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1px solid var(--signal);
+    opacity: 0;
+    animation: dock-ripple 2.4s 0.8s ease-out 3;
+  }
+}
+
+@keyframes dock-ripple {
+  from { scale: 1; opacity: 0.8; }
+  to { scale: 1.6; opacity: 0; }
+}
+
+.install-prompt {
+  body:has(.cookie-notice) & {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-card,
+  .dock-card .dock-card__body > * {
+    transition: none;
+  }
+
+  .dock-card__icon.install-prompt__icon::after {
+    animation: none;
+  }
+}
