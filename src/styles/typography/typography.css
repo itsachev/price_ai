@@ -52,6 +52,9 @@ h1 {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  /* background-clip: text only paints inside the box; tight line-height
+     leaves descenders (р, у) outside it, so give them room. */
+  padding-block-end: 0.15em;
 
   @media (forced-colors: active) {
     background: none;
