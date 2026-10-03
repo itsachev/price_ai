@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import ButtonLabel from './ButtonLabel';
 
 const KEY = 'install_prompt_dismissed';
-const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const installed = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-const snoozed = () => {
+const dismissed = () => {
   try {
-    return Date.now() - Number(localStorage.getItem(KEY) || 0) < SNOOZE_MS;
+    return localStorage.getItem(KEY) !== null;
   } catch {
     return false;
   }
@@ -23,13 +22,14 @@ const cantInstall = () => /firefox/i.test(navigator.userAgent) && !/android/i.te
 // Chromium hands over its install prompt (beforeinstallprompt) only after some
 // engagement, so until then the card shows the browser-menu steps and gains
 // an Install button once the event lands; iOS gets the Share-sheet steps.
-// Hidden once installed, and for two weeks after "Not now".
+// Hidden once installed, and for good after "Not now" (the card's footnote
+// says how to install later from the browser).
 export default function InstallPrompt({ t }) {
   const [mode, setMode] = useState(null); // null | 'menu' | 'ios' | 'prompt'
   const [event, setEvent] = useState(null);
 
   useEffect(() => {
-    if (installed() || snoozed() || cantInstall()) return;
+    if (installed() || dismissed() || cantInstall()) return;
     const onPrompt = (e) => {
       e.preventDefault();
       setEvent(e);
